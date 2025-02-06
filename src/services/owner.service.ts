@@ -35,6 +35,27 @@ export const getOwners = async () => {
     }
   };
 
+  export const getOwnerById = async (ownerId:string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/owners/${ownerId}`, {
+        headers: {
+            'Content-Type': 'application/json',
+          },
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        return data as Owner;
+      } else {
+        console.error(data);
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
 export const createOwner = async (
     values: OwnerSchemaType
   ) => {
@@ -101,6 +122,55 @@ export const createOwner = async (
       if (response.ok) {
         revalidateTag(getCacheTag('owners', 'all'));
         return data;
+      } else {
+        console.error(data);
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+
+  export const historialReceipts = async (
+    ownerId: string,
+  ) => {
+    try {
+      const response = await fetch(`${BASE_URL}/receipts/${ownerId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        return data
+      } else {
+        console.error(data);
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+  export const cancelReceipt = async (
+    ownerId: string,
+  ) => {
+    try {
+      const response = await fetch(`${BASE_URL}/receipts/cancelReceipt/${ownerId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        return data
       } else {
         console.error(data);
         return null;

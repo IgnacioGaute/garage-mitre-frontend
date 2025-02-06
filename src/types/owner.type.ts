@@ -1,4 +1,5 @@
 import { BoxList } from "./box-list.type";
+import { Receipt } from "./receipt.type";
 
 
 export type Owner = {
@@ -6,11 +7,14 @@ export type Owner = {
     firstName: string;
     lastName: string;  
     email: string;
+    address: string; 
     documentNumber: number;
-    vehicleLicesePlate: string;  
-    vehicleBrand: string;  
+    numberOfVehicles: number;
+    vehicleLicensePlates: string[];  
+    vehicleBrands: string[];  
     deletedAt: Date;
     createdAt: Date;
     updatedAt: Date;
     boxList: BoxList;
+    receipts: Receipt[];
 }

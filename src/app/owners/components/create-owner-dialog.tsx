@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -34,11 +34,25 @@ export function CreateOwnerDialog() {
       firstName: '',
       lastName: '',
       email: '',
+      address: '',
       documentNumber: undefined,
-      vehicleLicesePlate: '',
-      vehicleBrand: '',
+      numberOfVehicles: 1,
+      vehicleLicensePlates: [''],
+      vehicleBrands: [''],
     },
   });
+
+  useEffect(() => {
+    const numVehicles = form.watch('numberOfVehicles');
+
+    if (numVehicles === 2) {
+      form.setValue('vehicleLicensePlates', ['', '']);
+      form.setValue('vehicleBrands', ['', '']);
+    } else {
+      form.setValue('vehicleLicensePlates', ['']);
+      form.setValue('vehicleBrands', ['']);
+    }
+  }, [form.watch('numberOfVehicles')]);
 
   const onSubmit = (values: OwnerSchemaType) => {
     startTransition(() => {
@@ -62,7 +76,7 @@ export function CreateOwnerDialog() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="space-y-2">
+      <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
         <DialogHeader className="items-center">
           <DialogTitle>Crear Propietario</DialogTitle>
         </DialogHeader>
@@ -131,6 +145,27 @@ export function CreateOwnerDialog() {
                 </FormItem>
               )}
             />
+                                    <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem className="flex items-center">
+                  <FormLabel className="w-1/2 text-left">
+                    Direccion
+                  </FormLabel>
+                  <div className="w-full space-y-2">
+                    <FormControl>
+                      <Input
+                        disabled={isPending}
+                        placeholder="Escriba Direccion"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
             <FormField
                   control={form.control}
                   name="documentNumber"
@@ -151,20 +186,22 @@ export function CreateOwnerDialog() {
                     </FormItem>
                   )}
                 />
+            {/* Número de Vehículos */}
             <FormField
               control={form.control}
-              name="vehicleLicesePlate"
+              name="numberOfVehicles"
               render={({ field }) => (
                 <FormItem className="flex items-center">
-                  <FormLabel className="w-1/2 text-left">
-                    Patetne de vehiculo
-                  </FormLabel>
+                  <FormLabel className="w-1/2 text-left leading-tight">Número de vehículos</FormLabel>
                   <div className="w-full space-y-2">
                     <FormControl>
                       <Input
+                        type="number"
                         disabled={isPending}
-                        placeholder="Escriba Patente"
-                        {...field}
+                        min={1}
+                        max={2}
+                        value={field.value}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
                       />
                     </FormControl>
                     <FormMessage />
@@ -172,27 +209,64 @@ export function CreateOwnerDialog() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="vehicleBrand"
-              render={({ field }) => (
-                <FormItem className="flex items-center">
-                  <FormLabel className="w-1/2 text-left">
-                    Marca vehiculo
-                  </FormLabel>
-                  <div className="w-full space-y-2">
-                    <FormControl>
-                      <Input
-                        disabled={isPending}
-                        placeholder="Escriba Modelo"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
+
+            {/* Sección de Vehículos */}
+            {form.watch('vehicleLicensePlates').map((_, index) => (
+              <div key={index} className="space-y-2">
+                {/* Patente */}
+                <FormField
+                  control={form.control}
+                  name={`vehicleLicensePlates.${index}`}
+                  render={({ field }) => (
+                    <FormItem className="flex items-center">
+                      <FormLabel className="w-1/2 text-left">Patente Vehículo {index + 1}</FormLabel>
+                      <div className="w-full space-y-2">
+                        <FormControl>
+                          <Input
+                            disabled={isPending}
+                            placeholder="Escriba Patente"
+                            value={form.getValues(`vehicleLicensePlates.${index}`)}
+                            onChange={(e) => {
+                              const updatedPlates = [...form.getValues('vehicleLicensePlates')];
+                              updatedPlates[index] = e.target.value;
+                              form.setValue('vehicleLicensePlates', updatedPlates);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                {/* Marca */}
+                <FormField
+                  control={form.control}
+                  name={`vehicleBrands.${index}`}
+                  render={({ field }) => (
+                    <FormItem className="flex items-center">
+                      <FormLabel className="w-1/2 text-left">Marca Vehículo {index + 1}</FormLabel>
+                      <div className="w-full space-y-2">
+                        <FormControl>
+                          <Input
+                            disabled={isPending}
+                            placeholder="Escriba Marca"
+                            value={form.getValues(`vehicleBrands.${index}`)}
+                            onChange={(e) => {
+                              const updatedBrands = [...form.getValues('vehicleBrands')];
+                              updatedBrands[index] = e.target.value;
+                              form.setValue('vehicleBrands', updatedBrands);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ))}
+
             <div className="flex items-center justify-end gap-2">
               <Button
                 type="button"

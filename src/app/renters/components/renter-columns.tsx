@@ -54,6 +54,20 @@ export const renterColumns: ColumnDef<Renter>[] = [
     },
   },
   {
+    accessorKey: 'address',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Direccion" />
+    ),
+    cell: ({ row }) => {
+      const address = row.original.address;
+      return (
+        <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
+          {address}
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: 'documentNumber',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Numero de documento" />
@@ -63,6 +77,20 @@ export const renterColumns: ColumnDef<Renter>[] = [
       return (
         <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
           {price}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: 'numberOfVehicles',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Numero de vehiculos" />
+    ),
+    cell: ({ row }) => {
+      const numberOfVehicles = row.original.numberOfVehicles;
+      return (
+        <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
+          {numberOfVehicles}
         </div>
       );
     },

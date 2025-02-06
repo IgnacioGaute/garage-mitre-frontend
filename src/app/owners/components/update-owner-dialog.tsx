@@ -25,7 +25,7 @@ import { Renter } from '@/types/renter.type';
 import { renterSchema, RenterSchemaType } from '@/schemas/renter-schema';
 import { updateRenterAction } from '@/actions/renters/update-renter.action';
 import { Owner } from '@/types/owner.type';
-import { UpdateOwnerSchemaType } from '@/schemas/owner.schema';
+import { updateOwnerSchema, UpdateOwnerSchemaType } from '@/schemas/owner.schema';
 import { updateOwnerAction } from '@/actions/owners/update-owner.action';
 
 export function UpdateOwnerDialog({ owner }: { owner: Owner }) {
@@ -33,16 +33,34 @@ export function UpdateOwnerDialog({ owner }: { owner: Owner }) {
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<Partial<UpdateOwnerSchemaType>>({
-    resolver: zodResolver(renterSchema),
+    resolver: zodResolver(updateOwnerSchema),
     defaultValues: {
         firstName: owner.firstName,
         lastName: owner.lastName,
         email: owner.email,
+        address: owner.address,
         documentNumber: owner.documentNumber,
-        vehicleLicesePlate: owner.vehicleLicesePlate,
-        vehicleBrand: owner.vehicleBrand,
+        numberOfVehicles: owner.numberOfVehicles,
+        vehicleLicensePlates: owner.vehicleLicensePlates.length ? owner.vehicleLicensePlates : [''],
+        vehicleBrands: owner.vehicleBrands.length ? owner.vehicleBrands : [''],
     },
   });
+
+  useEffect(() => {
+    const numVehicles = form.watch('numberOfVehicles') ?? 1;
+    const currentPlates = form.getValues('vehicleLicensePlates') ?? [''];
+    const currentBrands = form.getValues('vehicleBrands') ?? [''];
+
+    if (numVehicles > currentPlates.length) {
+      // Agregar campos vacíos si hay más vehículos de los que ya tenemos
+      form.setValue('vehicleLicensePlates', [...currentPlates, '']);
+      form.setValue('vehicleBrands', [...currentBrands, '']);
+    } else if (numVehicles < currentPlates.length) {
+      // Eliminar campos si hay menos vehículos
+      form.setValue('vehicleLicensePlates', currentPlates.slice(0, numVehicles));
+      form.setValue('vehicleBrands', currentBrands.slice(0, numVehicles));
+    }
+  }, [form.watch('numberOfVehicles')]);
 
   const onSubmit = (values: Partial<UpdateOwnerSchemaType>) => {
     startTransition(() => {
@@ -57,7 +75,6 @@ export function UpdateOwnerDialog({ owner }: { owner: Owner }) {
       });
     });
   };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -71,7 +88,7 @@ export function UpdateOwnerDialog({ owner }: { owner: Owner }) {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="space-y-2">
+      <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
         <DialogHeader className="items-center">
           <DialogTitle>Editar Propietario</DialogTitle>
         </DialogHeader>
@@ -140,6 +157,27 @@ export function UpdateOwnerDialog({ owner }: { owner: Owner }) {
                 </FormItem>
               )}
             />
+                                    <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem className="flex items-center">
+                  <FormLabel className="w-1/2 text-left">
+                    Direccion
+                  </FormLabel>
+                  <div className="w-full space-y-2">
+                    <FormControl>
+                      <Input
+                        disabled={isPending}
+                        placeholder="Escriba Direccion"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
             <FormField
                   control={form.control}
                   name="documentNumber"
@@ -160,20 +198,22 @@ export function UpdateOwnerDialog({ owner }: { owner: Owner }) {
                     </FormItem>
                   )}
                 />
+            {/* Número de Vehículos */}
             <FormField
               control={form.control}
-              name="vehicleLicesePlate"
+              name="numberOfVehicles"
               render={({ field }) => (
                 <FormItem className="flex items-center">
-                  <FormLabel className="w-1/2 text-left">
-                    Patetne de vehiculo
-                  </FormLabel>
+                  <FormLabel className="w-1/2 text-left leading-tight">Número de vehículos</FormLabel>
                   <div className="w-full space-y-2">
                     <FormControl>
                       <Input
+                        type="number"
                         disabled={isPending}
-                        placeholder="Escriba Patente"
-                        {...field}
+                        min={1}
+                        max={2}
+                        value={field.value}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
                       />
                     </FormControl>
                     <FormMessage />
@@ -181,27 +221,63 @@ export function UpdateOwnerDialog({ owner }: { owner: Owner }) {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="vehicleBrand"
-              render={({ field }) => (
-                <FormItem className="flex items-center">
-                  <FormLabel className="w-1/2 text-left">
-                    Marca vehiculo
-                  </FormLabel>
-                  <div className="w-full space-y-2">
-                    <FormControl>
-                      <Input
-                        disabled={isPending}
-                        placeholder="Escriba Modelo"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
+
+            {/* Sección de Vehículos */}
+            {(form.watch('vehicleLicensePlates') ?? []).map((_, index) => (
+              <div key={index} className="space-y-2">
+                {/* Patente */}
+                <FormField
+                  control={form.control}
+                  name={`vehicleLicensePlates.${index}`}
+                  render={({ field }) => (
+                    <FormItem className="flex items-center">
+                      <FormLabel className="w-1/2 text-left">Patente Vehículo {index + 1}</FormLabel>
+                      <div className="w-full space-y-2">
+                        <FormControl>
+                          <Input
+                            disabled={isPending}
+                            placeholder="Escriba Patente"
+                            value={form.getValues('vehicleLicensePlates')?.[index] ?? ''}
+                            onChange={(e) => {
+                              const updatedPlates = [...(form.getValues('vehicleLicensePlates') ?? [])];
+                              updatedPlates[index] = e.target.value;
+                              form.setValue('vehicleLicensePlates', updatedPlates);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                {/* Marca */}
+                <FormField
+                  control={form.control}
+                  name={`vehicleBrands.${index}`}
+                  render={({ field }) => (
+                    <FormItem className="flex items-center">
+                      <FormLabel className="w-1/2 text-left">Marca Vehículo {index + 1}</FormLabel>
+                      <div className="w-full space-y-2">
+                        <FormControl>
+                          <Input
+                            disabled={isPending}
+                            placeholder="Escriba Marca"
+                            value={form.getValues('vehicleBrands')?.[index] ?? ''}
+                            onChange={(e) => {
+                              const updatedBrands = [...(form.getValues('vehicleBrands') ?? [])];
+                              updatedBrands[index] = e.target.value;
+                              form.setValue('vehicleBrands', updatedBrands);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ))}
             <div className="flex items-center justify-end gap-2">
               <Button
                 type="button"
@@ -217,7 +293,7 @@ export function UpdateOwnerDialog({ owner }: { owner: Owner }) {
                 size="sm"
                 disabled={isPending}
               >
-                Editar Inquilino
+                Editar Propietario
               </Button>
             </div>
           </form>

@@ -34,7 +34,9 @@ export function CreateRenterDialog() {
       firstName: '',
       lastName: '',
       email: '',
+      address: '',
       documentNumber: undefined,
+      numberOfVehicles: 1,
       vehicleLicesePlate: '',
       vehicleBrand: '',
     },
@@ -131,6 +133,27 @@ export function CreateRenterDialog() {
                 </FormItem>
               )}
             />
+                        <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem className="flex items-center">
+                  <FormLabel className="w-1/2 text-left">
+                    Direccion
+                  </FormLabel>
+                  <div className="w-full space-y-2">
+                    <FormControl>
+                      <Input
+                        disabled={isPending}
+                        placeholder="Escriba Direccion"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
             <FormField
                   control={form.control}
                   name="documentNumber"
@@ -143,6 +166,26 @@ export function CreateRenterDialog() {
                           type="number"
                           disabled={isPending}
                           placeholder="Escriba número de documento"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                                <FormField
+                  control={form.control}
+                  name="numberOfVehicles"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center"> 
+                      <FormLabel className="w-1/2 text-left leading-tight">Número de <br /> vehiculos</FormLabel>
+                      <div className="w-full space-y-2">
+                      <FormControl>
+                        <Input
+                          type="number"
+                          disabled={isPending}
+                          placeholder="Escriba número de vehiculos"
                           {...field}
                         />
                       </FormControl>

@@ -10,7 +10,11 @@ export const renterSchema = z.object({
   .min(2, 'El apellido debe tener al menos 2 caracteres')
   .max(50, 'El apellido no puede tener más de 50 caracteres'),
   email: z.string().email('El email no es válido'),
+  address: z
+  .string()
+  .min(2, 'La direccion debe tener al menos 2 caracteres'),
   documentNumber: z.coerce.number().positive('Este campo es requerido'),
+  numberOfVehicles: z.coerce.number().positive('Este campo es requerido'),
   vehicleLicesePlate: z
   .string()
   .max(7, 'La patente no puede tener más de 7 caracteres'),
@@ -31,7 +35,11 @@ export const updateRenterSchema = z.object({
   .min(2, 'El apellido debe tener al menos 2 caracteres')
   .max(50, 'El apellido no puede tener más de 50 caracteres'),
   email: z.string().email('El email no es válido'),
+  address: z
+  .string()
+  .min(2, 'La direccion debe tener al menos 2 caracteres'),
   documentNumber: z.coerce.number().positive('Este campo es requerido'),
+  numberOfVehicles: z.coerce.number().positive('Este campo es requerido'),
   vehicleLicesePlate: z
   .string()
   .max(7, 'La patente no puede tener más de 7 caracteres'),
