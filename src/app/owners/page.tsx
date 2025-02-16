@@ -1,12 +1,14 @@
 
 import { CreditCardIcon } from 'lucide-react';
-import { getOwners } from '@/services/owner.service';
+import { getCustomers } from '@/services/customer.service';
 import { OwnersTable } from './components/owners-table';
 import { OwnerColumns } from './components/owner-columns';
+import { CUSTOMER_TYPE } from '@/types/cutomer.type';
+import GenerateReceiptsButton from '../components/all-receipts-button';
 
 
-export default async function RenterPage() {
-  const owners = await getOwners();
+export default async function OwnerPage() {
+  const customers = await getCustomers(CUSTOMER_TYPE[0]);
 
   return (
     <div className="container mx-auto px-4 py-4 sm:p-6">
@@ -19,9 +21,12 @@ export default async function RenterPage() {
           </p>
         </div>
       </div>
+      <div className="mb-4">
+        <GenerateReceiptsButton customers={customers?.data || []} />
+      </div>
       <OwnersTable
         columns={OwnerColumns}
-        data={owners?.data || []}
+        data={customers?.data || []}
       />
     </div>
   );

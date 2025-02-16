@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -19,41 +19,74 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { toast } from 'sonner';
-import { Renter } from '@/types/renter.type';
-import { renterSchema, UpdateRenterSchemaType } from '@/schemas/renter-schema';
-import { updateRenterAction } from '@/actions/renters/update-renter.action';
+import { updateCustomerAction } from '@/actions/customers/update-customer.action';
+import { Customer } from '@/types/cutomer.type';
+import {
+  updateCustomerSchema,
+  UpdateCustomerSchemaType,
+} from '@/schemas/customer.schema';
+import { X } from 'lucide-react';
 
-export function UpdateRenterDialog({ renter }: { renter: Renter }) {
+export function UpdateRenterDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [phase, setPhase] = useState<'customer' | 'vehicles'>('customer');
+  const [isPending, setIsPending] = useState(false);
 
-  const form = useForm<Partial<UpdateRenterSchemaType>>({
-    resolver: zodResolver(renterSchema),
+  const form = useForm<Partial<UpdateCustomerSchemaType>>({
+    resolver: zodResolver(updateCustomerSchema),
     defaultValues: {
-        firstName: renter.firstName,
-        lastName: renter.lastName,
-        email: renter.email,
-        address: renter.address,
-        documentNumber: renter.documentNumber,
-        numberOfVehicles: renter.numberOfVehicles,
-        vehicleLicesePlate: renter.vehicleLicesePlate,
-        vehicleBrand: renter.vehicleBrand,
+      firstName: customer.firstName ?? '',
+      lastName: customer.lastName ?? '',
+      email: customer.email ?? '',
+      address: customer.address ?? '',
+      documentNumber: customer.documentNumber ?? 0,
+      numberOfVehicles: customer.numberOfVehicles ?? 0,
+      customerType: customer.customerType ?? 'RENTER',
+      vehicles: customer.vehicles ?? [],
     },
   });
 
-  const onSubmit = (values: Partial<UpdateRenterSchemaType>) => {
-    startTransition(() => {
-      updateRenterAction(renter.id, values).then((data) => {
-        if (!data || data.error) {
-          toast.error(data.error);
-        } else {
-          toast.success('Inquilino editado exitosamente');
-          form.reset();
-          setOpen(false);
-        }
-      });
+  const { fields, append, remove, replace } = useFieldArray({
+    control: form.control,
+    name: 'vehicles',
+  });
+
+  const handleCustomerSubmit = (values: Partial<UpdateCustomerSchemaType>) => {
+    const numberOfVehicles = values.numberOfVehicles ?? 0;
+    const currentVehicles = form.getValues('vehicles') ?? [];
+
+    // Sincronizar el número de vehículos
+    if (currentVehicles.length < numberOfVehicles) {
+      const vehiclesToAdd = Array.from(
+        { length: numberOfVehicles - currentVehicles.length },
+        () => ({
+          licensePlate: '',
+          vehicleBrand: '',
+          amount: 0,
+        })
+      );
+      replace([...currentVehicles, ...vehiclesToAdd]);
+    } else if (currentVehicles.length > numberOfVehicles) {
+      replace(currentVehicles.slice(0, numberOfVehicles));
+    }
+
+    setPhase('vehicles');
+  };
+
+  const handleVehiclesSubmit = (values: Partial<UpdateCustomerSchemaType>) => {
+    setIsPending(true);
+    updateCustomerAction(customer.id, values).then((data) => {
+      if (!data || data.error) {
+        toast.error(data.error ?? 'Error desconocido');
+      } else {
+        toast.success('Inquilino actualizado exitosamente');
+        form.reset();
+        setOpen(false);
+        setPhase('customer');
+      }
+      setIsPending(false);
     });
   };
 
@@ -70,194 +103,163 @@ export function UpdateRenterDialog({ renter }: { renter: Renter }) {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="space-y-2">
+      <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
         <DialogHeader className="items-center">
-          <DialogTitle>Editar Inquilino</DialogTitle>
+          <DialogTitle>
+            {phase === 'customer' ? 'Editar Cliente' : 'Editar Vehículos'}
+          </DialogTitle>
         </DialogHeader>
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-          <FormField
-              control={form.control}
-              name="firstName"
-              render={({ field }) => (
-                <FormItem className="flex items-center">
-                  <FormLabel className="w-1/2 text-left">
-                    Nombre
-                  </FormLabel>
-                  <div className="w-full space-y-2">
-                    <FormControl>
-                      <Input
-                        disabled={isPending}
-                        placeholder="Escriba Nombre"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-                        <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem className="flex items-center">
-                  <FormLabel className="w-1/2 text-left">
-                   Apellido
-                  </FormLabel>
-                  <div className="w-full space-y-2">
-                    <FormControl>
-                      <Input
-                        disabled={isPending}
-                        placeholder="Escriba Apellido"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem className="flex items-center">
-                  <FormLabel className="w-1/2 text-left">
-                    Email
-                  </FormLabel>
-                  <div className="w-full space-y-2">
-                    <FormControl>
-                      <Input
-                        disabled={isPending}
-                        placeholder="Escriba Email"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-                                    <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem className="flex items-center">
-                  <FormLabel className="w-1/2 text-left">
-                    Direccion
-                  </FormLabel>
-                  <div className="w-full space-y-2">
-                    <FormControl>
-                      <Input
-                        disabled={isPending}
-                        placeholder="Escriba Direccion"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-            <FormField
+          <form
+            onSubmit={form.handleSubmit(
+              phase === 'customer' ? handleCustomerSubmit : handleVehiclesSubmit
+            )}
+            className="space-y-4"
+          >
+            {/* Formulario de Cliente */}
+            {phase === 'customer' && (
+              <>
+                <FormField
                   control={form.control}
-                  name="documentNumber"
+                  name="firstName"
                   render={({ field }) => (
-                    <FormItem className="flex items-center"> 
-                      <FormLabel className="w-1/2 text-left leading-tight">Número de <br /> documento</FormLabel>
-                      <div className="w-full space-y-2">
+                    <FormItem>
+                      <FormLabel>Nombre</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          disabled={isPending}
-                          placeholder="Escriba número de documento"
-                          {...field}
-                        />
+                        <Input disabled={isPending} placeholder="Escriba Nombre" {...field} />
                       </FormControl>
                       <FormMessage />
-                      </div>
                     </FormItem>
                   )}
                 />
-                                <FormField
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Apellido</FormLabel>
+                      <FormControl>
+                        <Input disabled={isPending} placeholder="Escriba Apellido" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input disabled={isPending} placeholder="Escriba Email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
                   control={form.control}
                   name="numberOfVehicles"
                   render={({ field }) => (
-                    <FormItem className="flex items-center"> 
-                      <FormLabel className="w-1/2 text-left leading-tight">Número de <br /> vehiculos</FormLabel>
-                      <div className="w-full space-y-2">
+                    <FormItem>
+                      <FormLabel>Número de vehículos</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
                           disabled={isPending}
-                          placeholder="Escriba número de vehiculos"
+                          min={1}
+                          placeholder="Escriba número de vehículos"
                           {...field}
                         />
                       </FormControl>
                       <FormMessage />
-                      </div>
                     </FormItem>
                   )}
                 />
-            <FormField
-              control={form.control}
-              name="vehicleLicesePlate"
-              render={({ field }) => (
-                <FormItem className="flex items-center">
-                  <FormLabel className="w-1/2 text-left">
-                    Patetne de vehiculo
-                  </FormLabel>
-                  <div className="w-full space-y-2">
-                    <FormControl>
-                      <Input
-                        disabled={isPending}
-                        placeholder="Escriba Patente"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              </>
+            )}
+
+            {/* Formulario de Vehículos */}
+            {phase === 'vehicles' && (
+              <>
+{fields.map((field, index) => (
+  <div key={field.id} className="space-y-2 relative border p-4 rounded-md">
+    <FormField
+      control={form.control}
+      name={`vehicles.${index}.licensePlate`}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Placa del vehículo {index + 1}</FormLabel>
+          <FormControl>
+            <Input disabled={isPending} placeholder="Escriba la placa" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name={`vehicles.${index}.vehicleBrand`}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Marca del vehículo {index + 1}</FormLabel>
+          <FormControl>
+            <Input disabled={isPending} placeholder="Escriba la marca" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name={`vehicles.${index}.amount`}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Monto del vehículo {index + 1}</FormLabel>
+          <FormControl>
+            <Input
+              type="number"
+              disabled={isPending}
+              placeholder="Escriba el monto"
+              {...field}
             />
-            <FormField
-              control={form.control}
-              name="vehicleBrand"
-              render={({ field }) => (
-                <FormItem className="flex items-center">
-                  <FormLabel className="w-1/2 text-left">
-                    Marca vehiculo
-                  </FormLabel>
-                  <div className="w-full space-y-2">
-                    <FormControl>
-                      <Input
-                        disabled={isPending}
-                        placeholder="Escriba Modelo"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <button
+      type="button"
+      className="absolute top-2 right-2 hover:text-red-700"
+      onClick={() => {
+        // Eliminar el vehículo del array
+        remove(index);
+        // Actualizar el número de vehículos
+        form.setValue('numberOfVehicles', fields.length - 1);
+      }}
+    >
+      <X className="w-5 h-5" /> {/* Ícono de cruz */}
+    </button>
+  </div>
+))}
+
+              </>
+            )}
+
             <div className="flex items-center justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setOpen(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                variant="default"
-                size="sm"
-                disabled={isPending}
-              >
-                Editar Inquilino
+              {phase === 'vehicles' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setPhase('customer')}
+                >
+                  Atrás
+                </Button>
+              )}
+              <Button type="submit" disabled={isPending}>
+                {phase === 'customer' ? 'Siguiente' : 'Confirmar'}
               </Button>
             </div>
           </form>

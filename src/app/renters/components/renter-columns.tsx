@@ -1,135 +1,90 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Renter } from '@/types/renter.type';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { UpdateRenterDialog } from './update-renter-dialog';
 import { DeleteRenterDialog } from './delete-renter-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { useState } from 'react';
+import { ViewCustomerDialog } from '../../components/view-customer-dialog';
+import { toast } from 'sonner';
+import { Customer } from '@/types/cutomer.type';
+import { PaymentSummaryTable } from '../../components/payment-summary-customer-table';
+import generateReceipt from '@/utils/generate-receipt';
+import { cancelReceipt } from '@/services/customer.service';
+import { uploadAndPrintPdf } from '@/services/scanner.service';
 
-export const renterColumns: ColumnDef<Renter>[] = [
+export const renterColumns: ColumnDef<Customer>[] = [
   {
     accessorKey: 'firstName',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Nombre" />
-    ),
-    cell: ({ row }) => {
-      const fristName = row.original.firstName;
-      return <div className="font-medium text-sm sm:text-base">{fristName}</div>;
-    },
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Nombre" />,
+    cell: ({ row }) => <div className="font-medium text-sm sm:text-base">{row.original.firstName}</div>,
   },
   {
     accessorKey: 'lastName',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Apellido" />
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Apellido" />,
+    cell: ({ row }) => (
+      <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
+        {row.original.lastName}
+      </div>
     ),
-    cell: ({ row }) => {
-      const lastName = row.original.lastName;
-      return (
-        <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
-          {lastName}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: 'email',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Email" />
-    ),
-    cell: ({ row }) => {
-      const email = row.original.email;
-      return (
-        <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
-          {email}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: 'address',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Direccion" />
-    ),
-    cell: ({ row }) => {
-      const address = row.original.address;
-      return (
-        <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
-          {address}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: 'documentNumber',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Numero de documento" />
-    ),
-    cell: ({ row }) => {
-      const price = row.original.documentNumber;
-      return (
-        <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
-          {price}
-        </div>
-      );
-    },
   },
   {
     accessorKey: 'numberOfVehicles',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Numero de vehiculos" />
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Número de vehículos" />,
+    cell: ({ row }) => (
+      <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
+        {row.original.numberOfVehicles}
+      </div>
     ),
-    cell: ({ row }) => {
-      const numberOfVehicles = row.original.numberOfVehicles;
-      return (
-        <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
-          {numberOfVehicles}
-        </div>
-      );
-    },
   },
   {
-    accessorKey: 'vehicleLicesePlate',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Patente" />
+    id: 'paymentSummary',
+    cell: ({ row }) => (
+      <PaymentSummaryTable customer={row.original}>
+        <span className="text-gray-500 hover:underline cursor-pointer">Ver Resumen</span>
+      </PaymentSummaryTable>
     ),
-    cell: ({ row }) => {
-      const vehicleLicesePlate = row.original.vehicleLicesePlate;
-      return (
-        <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
-          {vehicleLicesePlate}
-        </div>
-      );
-    },
   },
   {
-    accessorKey: 'vehicleBrand',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Modelo vehiculo" />
-    ),
+    id: "actions",
     cell: ({ row }) => {
-      const vehicleBrand = row.original.vehicleBrand;
+      const customer = row.original;
+      const [openPrintDialog, setOpenPrintDialog] = useState(false);
+      const [openCancelDialog, setOpenCancelDialog] = useState(false);
+      const [openDropdown, setOpenDropdown] = useState(false);
+  
+      const handlePrint = async () => {
+        try {
+          const pdfBytes = await generateReceipt(customer, "Alquiler/es correspondiente"); // Generar el PDF
+          await uploadAndPrintPdf(pdfBytes); // Enviar al backend para imprimir
+          toast.success("Recibo enviado a la impresora");
+        } catch (error) {
+          console.error("Error al imprimir el recibo:", error);
+          toast.error("Error al enviar el recibo a la impresora");
+        }
+      };
+  
       return (
-        <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
-          {vehicleBrand}
-        </div>
-      );
-    },
-  },
-  {
-    id: 'actions',
-    cell: ({ row }) => {
-      const renter = row.original;
-
-      return (
-        <DropdownMenu>
+        <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Open menu</span>
@@ -137,14 +92,87 @@ export const renterColumns: ColumnDef<Renter>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel className="text-sm sm:text-base">
-              Acciones
-            </DropdownMenuLabel>
-            <UpdateRenterDialog renter={renter} />
-            <DeleteRenterDialog renter={renter} />
+            <DropdownMenuLabel className="text-sm sm:text-base">Acciones</DropdownMenuLabel>
+            <ViewCustomerDialog customer={customer} />
+            <DropdownMenuSeparator />
+            <UpdateRenterDialog customer={customer} />
+            <DeleteRenterDialog customer={customer} />
+            <DropdownMenuSeparator />
+  
+            {/* Dialog para Imprimir Recibo */}
+            <Dialog open={openPrintDialog} onOpenChange={setOpenPrintDialog}>
+              <DialogTrigger asChild>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setOpenPrintDialog(true);
+                  }}
+                >
+                  Imprimir Recibo
+                </DropdownMenuItem>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>¿Está seguro?</DialogTitle>
+                  <DialogDescription>Se generará e imprimirá un recibo para este inquilino.</DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setOpenPrintDialog(false)}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      await handlePrint(); // Llama a la función para generar e imprimir el recibo
+                      setOpenPrintDialog(false);
+                      setOpenDropdown(false); // Cierra el menú
+                    }}
+                  >
+                    Confirmar
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+  
+            {/* Dialog para Cancelar Recibo */}
+            <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>
+              <DialogTrigger asChild>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setOpenCancelDialog(true);
+                  }}
+                >
+                  Cancelar Recibo
+                </DropdownMenuItem>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>¿Está seguro?</DialogTitle>
+                  <DialogDescription>
+                    Se eliminará el último recibo del inquilino y el anterior se marcará como "pendiente".
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setOpenCancelDialog(false)}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      cancelReceipt(customer.id);
+                      setOpenCancelDialog(false);
+                      setOpenDropdown(false);
+                      toast.success("Recibo cancelado exitosamente");
+                    }}
+                  >
+                    Confirmar
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </DropdownMenuContent>
         </DropdownMenu>
       );
     },
-  },
+  }
+  
 ];
