@@ -1,3 +1,5 @@
+
+import { Receipt } from "./receipt.type";
 import { TicketRegistration } from "./ticket-registration.type";
 
 export type BoxList = {
@@ -5,4 +7,5 @@ export type BoxList = {
     date: Date;
     totalPrice: number;
     ticketRegistrations: TicketRegistration[];
+    receipts: Receipt[]
 }

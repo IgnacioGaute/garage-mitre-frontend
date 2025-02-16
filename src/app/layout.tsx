@@ -1,10 +1,13 @@
-import type { Metadata } from 'next';
+import { AppNavbar } from '@/components/navegation/app-navbar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
+import { cookies } from 'next/headers';
+import { Metadata } from 'next';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -13,11 +16,14 @@ export const metadata: Metadata = {
   description: 'Garage Mitre',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true';
+
   return (
     <html lang="es" suppressHydrationWarning>
       <body
@@ -33,7 +39,13 @@ export default function RootLayout({
           forcedTheme="dark"
           disableTransitionOnChange
         >
-          {children}
+          <SidebarProvider defaultOpen={defaultOpen}>
+            <AppNavbar>
+              <div className="flex flex-col flex-1 overflow-y-auto">
+                <main className="container mx-auto px-6 py-6">{children}</main>
+              </div>
+            </AppNavbar>
+          </SidebarProvider>
         </ThemeProvider>
         <SonnerToaster />
         <Toaster />

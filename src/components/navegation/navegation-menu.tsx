@@ -1,6 +1,4 @@
 "use client";
-
-import * as React from "react";
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -8,68 +6,65 @@ import {
   NavigationMenuTrigger,
   NavigationMenuContent,
 } from "@/components/ui/navigation-menu";
-import { FiBell } from "react-icons/fi";
+import { DropdownMenuSeparator } from "../ui/dropdown-menu";
+import { BoxListDialog } from "../box-list-dialog";
+import React from "react";
 import Link from "next/link";
 
 export function NavigationMenuDemo() {
+
   return (
-    <>
-<NavigationMenu>
-  <NavigationMenuList>
-    <NavigationMenuItem className="group">
-      <NavigationMenuTrigger className="text-white hover:text-black !important">
-        Clientes
-      </NavigationMenuTrigger>
-      <NavigationMenuContent className="thover:text-black max-w-[70vw] md:max-w-[150px] overflow-auto">
-        <ul className="p-2">
-          <NotificationItem className="hover:text-black !important" asChild>
-            <Link href="/owners" className="text-white hover:text-black !important">Propietarios</Link>
-          </NotificationItem>
-          <NotificationItem className="text-white hover:text-black !important" asChild>
-            <Link href="/renters" className="text-white hover:text-black !important">Inquilinos</Link>
-          </NotificationItem>
-        </ul>
-      </NavigationMenuContent>
-    </NavigationMenuItem>
-  </NavigationMenuList>
-</NavigationMenu>
-
-
-      <NavigationMenu>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger>
-              <FiBell className="text-xl" />
-            </NavigationMenuTrigger>
-            <NavigationMenuContent className="max-w-[90vw] md:max-w-[400px] overflow-auto">
-              <ul className="p-2">
-                <NotificationItem>Nueva notificación</NotificationItem>
-              </ul>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
-    </>
+    <NavigationMenu>
+      <NavigationMenuList>
+        <NavigationMenuItem className="group">
+          <NavigationMenuTrigger className="text-white hover:text-black active:text-black data-[state=open]:text-black">
+            Clientes
+          </NavigationMenuTrigger>
+          <NavigationMenuContent className="max-w-[70vw] md:max-w-[150px] overflow-auto">
+            <ul className="p-2">
+              <NotificationItem className="hover:text-black active:text-black" href="/owners">Propietarios</NotificationItem>
+              <DropdownMenuSeparator />
+              <NotificationItem className="hover:text-black active:text-black" href="/renters">Inquilinos</NotificationItem>
+              <DropdownMenuSeparator />
+              <NotificationItem className="hover:text-black active:text-black" href="/tickets">Tickets</NotificationItem>
+              <DropdownMenuSeparator />
+              <BoxListDialog/>
+            </ul>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
   );
 }
 
+// Componente corregido
 const NotificationItem = React.forwardRef<
   React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a"> & { asChild?: boolean }
->(({ className, title, children, asChild = false, ...props }, ref) => {
-  // Determina el componente raíz basado en `asChild`
-  const Component = asChild ? "span" : "a";
+  React.ComponentPropsWithoutRef<"a"> & { href?: string }
+>(({ className, href, children, ...props }, ref) => {
+  if (href) {
+    return (
+      <li>
+        <Link
+          ref={ref}
+          href={href}
+          className={`block w-full h-full space-y-1 rounded-md p-3 leading-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${className}`}
+          {...props}
+        >
+          {children}
+        </Link>
+      </li>
+    );
+  }
 
   return (
     <li>
-      <Component
-        ref={!asChild ? ref : undefined} // Solo pasa la referencia si no es un hijo
+      <span
         className={`block space-y-1 rounded-md p-3 leading-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${className}`}
         {...props}
       >
-        {title && <div className="text-sm font-medium">{title}</div>}
-        <p className="text-sm text-muted-foreground">{children}</p>
-      </Component>
+        {children}
+      </span>
     </li>
   );
 });

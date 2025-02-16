@@ -22,31 +22,31 @@ import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { Renter } from '@/types/renter.type';
-import { deleteRenterSchema, DeleteRenterSchemaType } from '@/schemas/renter-schema';
-import { deleteRenterAction } from '@/actions/renters/delete-renter.action';
+import { Customer } from '@/types/cutomer.type';
+import { deleteCustomerSchema, DeleteCustomerSchemaType } from '@/schemas/customer.schema';
+import { deleteCustomerAction } from '@/actions/customers/delete-customer.action';
 
 const DELETE_RENTER_TEXT = 'Eliminar Inquilino';
 
-export function DeleteRenterDialog({ renter }: { renter: Renter }) {
+export function DeleteRenterDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<DeleteRenterSchemaType>({
-    resolver: zodResolver(deleteRenterSchema),
+  const form = useForm<DeleteCustomerSchemaType>({
+    resolver: zodResolver(deleteCustomerSchema),
     defaultValues: {
       confirmation: '',
     },
   });
 
-  const onSubmit = (values: DeleteRenterSchemaType) => {
+  const onSubmit = (values: DeleteCustomerSchemaType) => {
     if (values.confirmation !== DELETE_RENTER_TEXT) {
       toast.error('Los detalles de confirmación no coinciden.');
       return;
     }
 
     startTransition(() => {
-        deleteRenterAction(renter.id).then((data) => {
+      deleteCustomerAction(customer.id).then((data) => {
         if (!data || data.error) {
           toast.error(data.error);
         } else {

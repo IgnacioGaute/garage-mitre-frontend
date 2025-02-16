@@ -31,4 +31,24 @@ export const startScanner = async (values: { barCode: string }) => {
   }
 };
 
+export const uploadAndPrintPdf = async (pdfBytes: Uint8Array): Promise<boolean> => {
+  try {
+    const pdfBlob = new Blob([pdfBytes], { type: "application/pdf" });
+
+    const formData = new FormData();
+    formData.append("file", pdfBlob, "box-list.pdf");
+
+    const response = await fetch(`${BASE_URL}/printer/upload-and-print`, {
+      method: "POST",
+      body: formData,
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error("Error uploading PDF:", error);
+    return false;
+  }
+};
+
+
 
