@@ -6,6 +6,7 @@ export type TicketType = (typeof TICKET_TYPE)[number];
 export type Ticket ={
     id: string;
     codeBar: string;
+    amount: number;
     vehicleType: TicketType;
     ticketRegistration: TicketRegistration;
 }

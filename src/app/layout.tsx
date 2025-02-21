@@ -21,8 +21,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true';
 
   return (
     <html lang="es" suppressHydrationWarning>
@@ -39,13 +37,7 @@ export default async function RootLayout({
           forcedTheme="dark"
           disableTransitionOnChange
         >
-          <SidebarProvider defaultOpen={defaultOpen}>
-            <AppNavbar>
-              <div className="flex flex-col flex-1 overflow-y-auto">
-                <main className="container mx-auto px-6 py-6">{children}</main>
-              </div>
-            </AppNavbar>
-          </SidebarProvider>
+          {children}
         </ThemeProvider>
         <SonnerToaster />
         <Toaster />

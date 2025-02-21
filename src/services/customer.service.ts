@@ -4,6 +4,8 @@ import { getCacheTag } from "./cache-tags";
 import { PaginatedResponse } from "@/types/paginated-response.type";
 import { Customer, CustomerType } from "@/types/cutomer.type";
 import { CustomerSchemaType, UpdateCustomerSchemaType } from "@/schemas/customer.schema";
+import { InterestSchemaType } from "@/schemas/interest-schema";
+import { Interest } from "@/types/interest.type";
 
 
 
@@ -171,6 +173,57 @@ export const createCustomer = async (
   
       if (response.ok) {
         return data
+      } else {
+        console.error(data);
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+  export const createInterest = async (
+    values: InterestSchemaType
+  ) => {
+    try {
+      const response = await fetch(`${BASE_URL}/customers/interestSetting`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+          },
+        body: JSON.stringify(values),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        revalidateTag(getCacheTag('interests', 'all'));
+        return data as Interest;
+      } else {
+        console.error('Error en la respuesta:', data);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error en create intereses:', error);
+      return null;
+    }
+  }
+
+  export const getinterests = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/customers/interestSetting`, {
+        headers: {
+            'Content-Type': 'application/json',
+          },
+        next: {
+          tags: [getCacheTag('interests', 'all')],
+        },
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        return data as Interest;
       } else {
         console.error(data);
         return null;

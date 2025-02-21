@@ -13,8 +13,12 @@ import { findBoxByDate } from '@/services/box-list.service';
 import generateBoxList from '@/utils/generate-box-list';
 import { uploadAndPrintPdf } from '@/services/scanner.service';
 
-export function BoxListDialog() {
-  const [open, setOpen] = useState(false);
+interface BoxListDialogProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [boxData, setBoxData] = useState<BoxList | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -74,16 +78,6 @@ export function BoxListDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          className="hover:text-amber-400 mt-2 mb-2 size-lg px-4 py-2 font-bold transition-all rounded-md shadow-lg
-            animate-pulse bg-amber-400 text-black"
-          onClick={() => setOpen(true)}
-        >
-          Lista de caja
-        </Button>
-      </DialogTrigger>
-
       <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
         <DialogHeader className="items-center">
           <DialogTitle>Elegir fecha</DialogTitle>

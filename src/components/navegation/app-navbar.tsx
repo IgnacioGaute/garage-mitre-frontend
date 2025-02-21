@@ -2,23 +2,22 @@ import { SidebarInset } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { ReactNode } from 'react';
 import { NavigationMenuDemo } from '@/components/navegation/navegation-menu';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { currentUser } from '@/lib/auth';
+import { NavUser } from './nav-user';
 
 interface AppNavbarProps {
   children: ReactNode;
 }
 
 export async function AppNavbar({ children }: AppNavbarProps) {
+  const user = await currentUser();
+
   return (
     <>
       <SidebarInset className="flex flex-col">
-        <header className="relative flex h-14 shrink-0 items-center gap-2 border-b shadow-sm">
-          <div className="flex items-center px-6 w-full justify-between">
+        <header className="relative flex h-14 items-center gap-2 border-b shadow-sm px-6">
+          <div className="flex items-center w-full justify-between">
+            {/* Logo */}
             <Link href="/tickets">
               <h1 className="text-2xl font-bold uppercase tracking-widest text-[#fffc34] hover:text-white">
                 GARAGE{' '}
@@ -28,9 +27,20 @@ export async function AppNavbar({ children }: AppNavbarProps) {
               </h1>
             </Link>
 
-            {/* Posiciona el NavigationMenuDemo en la esquina superior derecha */}
-            <div className="absolute top-0 right-0 flex items-center gap-4 h-14 pr-20">
-              <NavigationMenuDemo />
+            {/* Contenedor para NavigationMenuDemo y NavUser */}
+            <div className="flex items-center gap-6">
+              {/* Menú de navegación */}
+
+
+              {/* Usuario */}
+              <NavUser
+                userNav={{
+                  avatar: user?.image ?? '',
+                  email: user?.email ?? '',
+                  name: `${user?.firstName ?? ''} ${user?.lastName ?? ''}`,
+                  role: user?.role || 'USER',
+                }}
+              />
             </div>
           </div>
         </header>

@@ -19,11 +19,11 @@ export function UserPortal() {
       <DropdownMenuTrigger>
         <Avatar>
           <AvatarImage src={user?.image || ''} />
-          {/* <AvatarFallback className="bg-muted-foreground text-foreground uppercase">
+          <AvatarFallback className="bg-muted-foreground text-foreground uppercase">
             {user?.firstName?.length && user?.lastName?.length
               ? `${user.firstName[0]}${user.lastName[0]}`
               : user?.email?.slice(0, 2)}
-          </AvatarFallback> */}
+          </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40" align="end">

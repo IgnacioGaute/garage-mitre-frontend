@@ -10,9 +10,9 @@ export async function createCustomerAction(values: CustomerSchemaType) {
   }
 
   try {
-    const owner = await createCustomerAPI(validatedFields.data);
+    const customer = await createCustomerAPI(validatedFields.data);
 
-    if (!owner) {
+    if (!customer) {
       return { error: 'Error al crear el cliente' };
     }
     return { success: 'Cliente creado exitosamente' };

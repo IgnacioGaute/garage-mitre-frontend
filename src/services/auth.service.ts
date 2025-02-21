@@ -1,4 +1,3 @@
-import { getAuthHeaders } from '@/lib/auth';
 import { LoginSchemaType } from '@/schemas/auth/login.schema';
 import { PasswordResetToken } from '@/types/password-reset-token.type';
 import { User } from '@/types/user.type';
@@ -10,7 +9,9 @@ export const loginUser = async (values: LoginSchemaType, authToken: string) => {
   try {
     const user = await fetch(`${BASE_URL}/auth/login`, {
       method: 'POST',
-      headers: await getAuthHeaders(authToken),
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(values),
     });
     const data = await user.json();
@@ -35,7 +36,9 @@ export const getVerificationTokenByToken = async (
     const response = await fetch(
       `${BASE_URL}/auth/verification-token?token=${token}`,
       {
-        headers: await getAuthHeaders(authToken),
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
     );
     const data = await response.json();
@@ -60,7 +63,9 @@ export const getVerificationTokenByEmail = async (
     const response = await fetch(
       `${BASE_URL}/auth/verification-token?email=${email}`,
       {
-        headers: await getAuthHeaders(authToken),
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
     );
     const data = await response.json();
@@ -84,7 +89,9 @@ export const generateVerificationToken = async (
   try {
     const response = await fetch(`${BASE_URL}/auth/verification-token`, {
       method: 'POST',
-      headers: await getAuthHeaders(authToken),
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ email }),
     });
 
@@ -109,7 +116,9 @@ export const deleteVerificationToken = async (
   try {
     const response = await fetch(`${BASE_URL}/auth/verification-token/${id}`, {
       method: 'DELETE',
-      headers: await getAuthHeaders(authToken),
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     const data = await response.json();
@@ -134,7 +143,9 @@ export const getPasswordResetTokenByToken = async (
     const response = await fetch(
       `${BASE_URL}/auth/password-reset-token?token=${token}`,
       {
-        headers: await getAuthHeaders(authToken),
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
     );
     const data = await response.json();
@@ -159,7 +170,9 @@ export const getPasswordResetTokenByEmail = async (
     const response = await fetch(
       `${BASE_URL}/auth/password-reset-token?email=${email}`,
       {
-        headers: await getAuthHeaders(authToken),
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
     );
     const data = await response.json();
@@ -183,7 +196,9 @@ export const generatePasswordResetToken = async (
   try {
     const response = await fetch(`${BASE_URL}/auth/password-reset-token`, {
       method: 'POST',
-      headers: await getAuthHeaders(authToken),
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ email }),
     });
 
@@ -210,7 +225,9 @@ export const deletePasswordResetToken = async (
       `${BASE_URL}/auth/password-reset-token/${id}`,
       {
         method: 'DELETE',
-        headers: await getAuthHeaders(authToken),
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
     );
 

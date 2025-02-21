@@ -3,13 +3,13 @@ import { useState, useRef, useEffect, startTransition } from "react";
 import { startScanner } from "@/services/scanner.service";
 import { toast } from "sonner";
 
-export default function ScannerButton() {
+export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean }) {
   const [isScanning, setIsScanning] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Función para iniciar el escaneo cuando se presiona un botón
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (!isScanning) {
+    if (!isDialogOpen && !isScanning) { // ⬅️ Solo inicia si el diálogo está CERRADO
       setIsScanning(true);
       setTimeout(() => {
         inputRef.current?.focus();
@@ -23,19 +23,21 @@ export default function ScannerButton() {
   };
 
   useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("keyup", handleKeyUp);
+    if (!isDialogOpen) { // ⬅️ Si el diálogo está ABIERTO, no agregar eventos
+      document.addEventListener("keydown", handleKeyDown);
+      document.addEventListener("keyup", handleKeyUp);
+    }
+
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [isDialogOpen]); // ⬅️ Se vuelve a ejecutar si `isDialogOpen` cambia
 
   const handleSubmit = async (barCode: string) => {
     startTransition(() => {
       startScanner({ barCode })
         .then((data) => {
-          console.log("Respuesta del scanner:", data);
           if (!data || "error" in data) {
             toast.error(data?.error || "Error desconocido");
           } else {
@@ -44,7 +46,6 @@ export default function ScannerButton() {
           setIsScanning(false);
         })
         .catch((err) => {
-          console.error("Error en startScanner:", err);
           toast.error("Error en la solicitud.");
           setIsScanning(false);
         });

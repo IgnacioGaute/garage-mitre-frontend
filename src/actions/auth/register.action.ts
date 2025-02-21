@@ -22,7 +22,7 @@ export async function registerAction({
       return { error: 'Invalid fields' };
     }
 
-    const { email, password, username } =
+    const { email, firstName, lastName, password, username } =
       validatedFields.data;
 
     const existingUser = await getUserByEmail(
@@ -35,6 +35,8 @@ export async function registerAction({
     }
 
     const userData = {
+      firstName,
+      lastName,
       username,
       email,
       password,
