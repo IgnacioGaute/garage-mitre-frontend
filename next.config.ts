@@ -10,7 +10,7 @@ module.exports = {
     return [
       {
         source: '/',
-        destination: '/tickets', // Redirige a la página de tickets
+        destination: '/auth/login', // Redirige a la página de tickets
         permanent: true, // La redirección será permanente (código 301)
       },
     ];

@@ -1,71 +1,66 @@
-"use client";
-import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuTrigger,
-  NavigationMenuContent,
-} from "@/components/ui/navigation-menu";
-import { DropdownMenuSeparator } from "../ui/dropdown-menu";
-import { BoxListDialog } from "../box-list-dialog";
-import React from "react";
-import Link from "next/link";
+'use client';
 
-export function NavigationMenuDemo() {
+import {
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { ChevronsUpDown, Home, Key, Users } from 'lucide-react';
+import Link from 'next/link';
+import { BoxListDialog } from '../box-list-dialog';
+import { useState } from 'react';
+
+export function NavigationMenuDemo({ setIsExpanded }: { setIsExpanded: (state: boolean) => void }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleToggleMenu = () => {
+    const newState = !menuOpen; // Guardamos el nuevo estado en una variable
+    setMenuOpen(newState);
+    setIsExpanded(newState); // Pasamos el nuevo estado directamente
+  };
 
   return (
-    <NavigationMenu>
-      <NavigationMenuList>
-        <NavigationMenuItem className="group">
-          <NavigationMenuTrigger className="text-white hover:text-black active:text-black data-[state=open]:text-black">
-            Clientes
-          </NavigationMenuTrigger>
-          <NavigationMenuContent className="max-w-[70vw] md:max-w-[150px] overflow-auto">
-            <ul className="p-2">
-              <NotificationItem className="hover:text-black active:text-black" href="/owners">Propietarios</NotificationItem>
-              <DropdownMenuSeparator />
-              <NotificationItem className="hover:text-black active:text-black" href="/renters">Inquilinos</NotificationItem>
-              <DropdownMenuSeparator />
-              <NotificationItem className="hover:text-black active:text-black" href="/tickets">Tickets</NotificationItem>
-              <DropdownMenuSeparator />
-              <BoxListDialog/>
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-      </NavigationMenuList>
-    </NavigationMenu>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          size="lg"
+          className=" w-full h-full text-center data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          onClick={handleToggleMenu}
+        >
+                      <Users/>
+          <div className="hidden lg:grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-semibold">Clientes</span>
+          </div>
+          <ChevronsUpDown className="ml-auto size-4 mr-1" />
+        </SidebarMenuButton>
+
+        {/* Submenú dentro del NavUser */}
+        {menuOpen && (
+    <div className="w-[--radix-dropdown-menu-trigger-width] min-w-40 rounded-lg shadow-md mt-2">
+    <DropdownMenuSeparator />
+    <DropdownMenuGroup>
+      <Link href="/owners">
+        <DropdownMenuItem className="cursor-pointer flex items-center gap-2 pl-4">
+          <Home size={18} />
+          Propietarios
+        </DropdownMenuItem>
+      </Link>
+    </DropdownMenuGroup>
+
+    <DropdownMenuSeparator />
+
+    <DropdownMenuGroup>
+      <Link href="/renters">
+        <DropdownMenuItem className="cursor-pointer flex items-center gap-2 pl-4">
+          <Key size={18} />
+          Inquilinos
+        </DropdownMenuItem>
+      </Link>
+    </DropdownMenuGroup>
+  </div>
+        )}
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 }
-
-// Componente corregido
-const NotificationItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a"> & { href?: string }
->(({ className, href, children, ...props }, ref) => {
-  if (href) {
-    return (
-      <li>
-        <Link
-          ref={ref}
-          href={href}
-          className={`block w-full h-full space-y-1 rounded-md p-3 leading-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${className}`}
-          {...props}
-        >
-          {children}
-        </Link>
-      </li>
-    );
-  }
-
-  return (
-    <li>
-      <span
-        className={`block space-y-1 rounded-md p-3 leading-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${className}`}
-        {...props}
-      >
-        {children}
-      </span>
-    </li>
-  );
-});
-NotificationItem.displayName = "NotificationItem";

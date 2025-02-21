@@ -1,7 +1,7 @@
-import { getAuthHeaders } from '@/lib/auth';
+
 import {
-  UpdateProfilePasswordType,
-  UpdateProfileSchemaType,
+  UpdateUserPasswordType,
+  UpdateUserSchemaType,
   UserSchemaType,
 } from '@/schemas/user.schema';
 import { PaginatedResponse } from '@/types/paginated-response.type';
@@ -14,7 +14,9 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 export const getUsers = async (authToken?: string) => {
   try {
     const response = await fetch(`${BASE_URL}/users`, {
-      headers: await getAuthHeaders(authToken),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       next: {
         tags: [getCacheTag('users', 'all')],
       },
@@ -36,7 +38,9 @@ export const getUsers = async (authToken?: string) => {
 export const getUserById = async (id: string, authToken?: string) => {
   try {
     const response = await fetch(`${BASE_URL}/users/${id}`, {
-      headers: await getAuthHeaders(authToken),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
     const data = await response.json();
 
@@ -56,7 +60,9 @@ export const getUserByEmail = async (email: string, authToken?: string) => {
     if (!email) return null;
 
     const response = await fetch(`${BASE_URL}/users?filter.email=${email}`, {
-      headers: await getAuthHeaders(authToken),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
     const data = await response.json();
     const { data: user } = data as PaginatedResponse<User>;
@@ -83,7 +89,9 @@ export const getUserByUsername = async (
     const response = await fetch(
       `${BASE_URL}/users?filter.username=${username}`,
       {
-        headers: await getAuthHeaders(authToken),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       },
     );
     const data = await response.json();
@@ -105,12 +113,15 @@ export const createUser = async (user: UserSchemaType, authToken?: string) => {
   try {
     const response = await fetch(`${BASE_URL}/users`, {
       method: 'POST',
-      headers: await getAuthHeaders(authToken),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(user),
     });
     const data = await response.json();
 
     if (response.ok) {
+      revalidateTag(getCacheTag('users', 'all'));
       return data as User;
     } else {
       console.error(data);
@@ -124,13 +135,15 @@ export const createUser = async (user: UserSchemaType, authToken?: string) => {
 
 export const updateUser = async (
   id: string,
-  user: Partial<UpdateProfileSchemaType>,
+  user: Partial<UpdateUserSchemaType>,
   authToken?: string,
 ) => {
   try {
     const response = await fetch(`${BASE_URL}/users/${id}`, {
       method: 'PATCH',
-      headers: await getAuthHeaders(authToken),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(user),
     });
 
@@ -158,7 +171,9 @@ export const deleteUser = async (id: string, authToken?: string) => {
   try {
     const response = await fetch(`${BASE_URL}/users/${id}`, {
       method: 'DELETE',
-      headers: await getAuthHeaders(authToken),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     const data = await response.json();
@@ -179,13 +194,15 @@ export const deleteUser = async (id: string, authToken?: string) => {
 
 export const updatePassword = async (
   id: string,
-  values: UpdateProfilePasswordType,
+  values: UpdateUserPasswordType,
   authToken?: string,
 ) => {
   try {
     const response = await fetch(`${BASE_URL}/users/${id}/password`, {
       method: 'PATCH',
-      headers: await getAuthHeaders(authToken),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(values),
     });
     const data = await response.json();
@@ -207,26 +224,3 @@ export const updatePassword = async (
   }
 };
 
-export const userHasPassword = async (
-  id: string,
-  authToken?: string,
-): Promise<{ hasPassword: boolean } | null> => {
-  try {
-    if (!id) return null;
-
-    const response = await fetch(`${BASE_URL}/users/${id}/hasPassword`, {
-      headers: await getAuthHeaders(authToken),
-    });
-
-    if (!response.ok) {
-      console.error('Error al verificar la contraseña:', await response.text());
-      return null;
-    }
-
-    const data = (await response.json()) as { hasPassword: boolean };
-    return data;
-  } catch (error) {
-    console.error('Error al hacer la solicitud:', error);
-    return null;
-  }
-};

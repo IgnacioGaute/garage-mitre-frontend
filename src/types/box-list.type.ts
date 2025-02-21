@@ -1,5 +1,7 @@
 
+import { OtherPayment } from "./other-payment.type";
 import { Receipt } from "./receipt.type";
+import { TicketRegistrationForDay } from "./ticket-registration-for-day.type";
 import { TicketRegistration } from "./ticket-registration.type";
 
 export type BoxList = {
@@ -7,5 +9,7 @@ export type BoxList = {
     date: Date;
     totalPrice: number;
     ticketRegistrations: TicketRegistration[];
-    receipts: Receipt[]
+    ticketRegistrationForDays: TicketRegistrationForDay[];
+    receipts: Receipt[];
+    otherPayments: OtherPayment[];
 }

@@ -4,6 +4,8 @@ export type UserRole = (typeof USER_ROLES)[number];
 
 export type User = {
   id: string;
+  firstName: string;
+  lastName: string;
   username: string;
   email: string;
   role: UserRole;

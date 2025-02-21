@@ -35,6 +35,8 @@ export function RegisterForm() {
     defaultValues: {
       email: '',
       username: '',
+      firstName: '',
+      lastName: '',
       password: '',
       confirmPassword: '',
     },
@@ -61,10 +63,35 @@ export function RegisterForm() {
       headerLabel="Crear una cuenta"
       backButtonLabel="Ya tienes una cuenta?"
       backButtonHref="/auth/login"
-      showSocials
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nombre</FormLabel>
+                <FormControl>
+                  <Input disabled={isPending} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Apellido</FormLabel>
+                <FormControl>
+                  <Input disabled={isPending} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="username"

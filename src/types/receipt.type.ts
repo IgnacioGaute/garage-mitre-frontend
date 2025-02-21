@@ -1,3 +1,4 @@
+import { BoxList } from "./box-list.type";
 import { Customer } from "./cutomer.type";
 
 export const PAYMENT_STATUS_TYPE = ['PENDING', 'PAID'] as const;
@@ -11,5 +12,6 @@ export type Receipt = {
     lastInterestApplied: Date | null; 
     interestPercentage: number;
     paymentDate: Date | null;
+    boxList: BoxList;
     customer: Customer;
 }

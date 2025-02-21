@@ -10,9 +10,8 @@ import {
 } from '@/components/ui/dialog';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getCustomerById } from '@/services/customer.service';
-import { BadgeCheck, Clock, ArrowUp } from 'lucide-react'; // Importamos los íconos
+import { BadgeCheck, Clock, ArrowUp } from 'lucide-react';
 import { Customer } from '@/types/cutomer.type';
-import { vehicleSchema } from '@/schemas/vehicle.schema';
 
 interface PaymentSummaryTableProps {
   customer: Customer;
@@ -45,7 +44,7 @@ export function PaymentSummaryTable({ customer, children }: PaymentSummaryTableP
         </span>
       </DialogTrigger>
 
-      <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
+      <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-2xl sm:max-w-2xl">
         <DialogHeader className="items-center">
           <DialogTitle>Resumen de Pagos</DialogTitle>
         </DialogHeader>
@@ -55,6 +54,7 @@ export function PaymentSummaryTable({ customer, children }: PaymentSummaryTableP
           <TableHeader>
             <TableRow>
               <TableHead className="w-[150px]">Estado</TableHead>
+              <TableHead>Fecha de Inicio</TableHead>
               <TableHead>Fecha de Pago</TableHead>
               <TableHead className="text-right pr-12">Monto</TableHead>
             </TableRow>
@@ -72,25 +72,31 @@ export function PaymentSummaryTable({ customer, children }: PaymentSummaryTableP
                     <span>{receiptOwner.status === 'PAID' ? 'Pagado' : 'Pendiente'}</span>
                   </TableCell>
                   <TableCell>
+                    {customer.startDate &&
+                      new Date(
+                        new Date(customer.startDate).getTime() + new Date().getTimezoneOffset() * 60000
+                      ).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
                     {receiptOwner.paymentDate &&
                       new Date(
                         new Date(receiptOwner.paymentDate).getTime() + new Date().getTimezoneOffset() * 60000
                       ).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right relative pr-6">
-  <span className="block pr-5">{receiptOwner.price}</span>
-  {receiptOwner.interestPercentage > 0 && (
-    <span className="absolute top-[10px] right-[1px] text-xs text-green-500 flex items-center">
-      <ArrowUp className="h-3 w-3" />
-      <span className="ml-1">{`${receiptOwner.interestPercentage}%`}</span>
-    </span>
-  )}
-</TableCell>
+                    <span className="block pr-5">{receiptOwner.price}</span>
+                    {receiptOwner.interestPercentage !== null && (
+                      <span className="absolute right-0 top-1 text-xs text-green-500 flex items-center space-x-1">
+                        <ArrowUp className="w-3 h-3" />
+                        <span>{receiptOwner.interestPercentage}</span>
+                      </span>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={3} className="text-center">
+                <TableCell colSpan={4} className="text-center">
                   No hay pagos registrados.
                 </TableCell>
               </TableRow>

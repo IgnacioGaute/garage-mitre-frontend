@@ -8,11 +8,14 @@ export default async function generateBoxList(boxList: any): Promise<Uint8Array>
     }
 
     // Acceder a la data dentro de boxList
-    const { ticketRegistrations, receipts, totalPrice } = boxList.data;
+    const { ticketRegistrations, receipts, otherPayments, ticketRegistrationForDays, totalPrice } = boxList.data;
 
     // Asegurar que las listas sean arrays válidos
     const tickets = Array.isArray(ticketRegistrations) ? ticketRegistrations : [];
+    const ticketRegistrationDays = Array.isArray(ticketRegistrationForDays) ? ticketRegistrationForDays : [];
     const validReceipts = Array.isArray(receipts) ? receipts : [];
+    const otherPaymentsRegistration = Array.isArray(otherPayments) ? otherPayments : [];
+
 
     // Dividir recibos entre owners y renters según el customerType
     const renters = validReceipts.filter(
@@ -88,15 +91,13 @@ export default async function generateBoxList(boxList: any): Promise<Uint8Array>
     };
 
     // Dibujar los tickets
-    if (tickets.length > 0) {
+    if (tickets.length > 0 || ticketRegistrationDays.length > 0) {
       yPosition = drawSectionTitle('Tickets', page, yPosition, fontBold, sectionColor);
       tickets.forEach((ticket, index) => {
         if (yPosition < 50) {
           page = pdfDoc.addPage([600, 800]);
           yPosition = height - 50;
         }
-
-        // Detalles del ticket
         page.drawText(`${index + 1}. Desc: ${ticket.description}`, {
           x: 60,
           y: yPosition,
@@ -109,8 +110,26 @@ export default async function generateBoxList(boxList: any): Promise<Uint8Array>
           size: fontSize,
           font,
         });
-
-        yPosition -= 30; // Espacio entre filas
+        yPosition -= 20;
+      });
+      ticketRegistrationDays.forEach((ticket, index) => {
+        if (yPosition < 50) {
+          page = pdfDoc.addPage([600, 800]);
+          yPosition = height - 50;
+        }    
+        page.drawText(`${index + 1}. Desc: ${ticket.description}`, {
+          x: 60,
+          y: yPosition,
+          size: fontSize,
+          font,
+        });
+        page.drawText(`Precio: $${ticket.price}`, {
+          x: 400,
+          y: yPosition,
+          size: fontSize,
+          font,
+        });
+        yPosition -= 20;
       });
     } else {
       yPosition = drawSectionTitle('Tickets', page, yPosition, fontBold, sectionColor);
@@ -186,23 +205,47 @@ export default async function generateBoxList(boxList: any): Promise<Uint8Array>
       yPosition -= 20;
     }
 
-    // Calcular el total acumulado
-    const totalAmount =
-      tickets.reduce((sum, ticket) => sum + (ticket.price || 0), 0) +
-      renters.reduce((sum, renter) => sum + (renter.price || 0), 0) +
-      owners.reduce((sum, owner) => sum + (owner.price || 0), 0);
+    if (otherPaymentsRegistration.length > 0) {
+      yPosition = drawSectionTitle('Gastos Adicionales', page, yPosition, fontBold, sectionColor);
+      otherPaymentsRegistration.forEach((otherPayment, index) => {
+        if (yPosition < 50) {
+          page = pdfDoc.addPage([600, 800]);
+          yPosition = height - 50;
+        }
 
-    // Dibujar el total
-    const drawTotalSection = (total: number, page: any, yPosition: number) => {
-      const totalText = `Total: $${total.toFixed(2)}`;
-      page.drawText(totalText, { x: 50, y: yPosition, size: fontSize, font: fontBold });
-    };
+        // Detalles del ticket
+        page.drawText(`${index + 1}. Desc: ${otherPayment.description}`, {
+          x: 60,
+          y: yPosition,
+          size: fontSize,
+          font,
+        });
+        page.drawText(`Precio: $${otherPayment.price}`, {
+          x: 400,
+          y: yPosition,
+          size: fontSize,
+          font,
+        });
 
-    drawTotalSection(totalAmount, page, yPosition);
+        yPosition -= 30; // Espacio entre filas
+      });
+    } else {
+      yPosition = drawSectionTitle('Gastos Adicionales', page, yPosition, fontBold, sectionColor);
+      page.drawText('No hay Gastos Adicionales registrados.', { x: 60, y: yPosition, size: fontSize, font });
+      yPosition -= 20;
+    }
+
+
+    yPosition = drawSectionTitle(`Total: $${totalPrice}`, page, yPosition, fontBold, sectionColor);
+
+    
 
     // Generar el PDF y devolver los bytes
     const pdfBytes = await pdfDoc.save();
     toast.success('Lista de caja creada exitosamente');
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    window.open(url);
 
     return pdfBytes;
   } catch (error) {
