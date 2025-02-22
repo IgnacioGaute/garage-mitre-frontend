@@ -1,4 +1,3 @@
-import { ScannerSchemaType } from "@/schemas/ticket-registration.schema";
 import { Scanner } from "@/types/ticket.type";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;

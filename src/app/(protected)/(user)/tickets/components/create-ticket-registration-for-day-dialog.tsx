@@ -37,7 +37,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
     await createTicketRegistrationForDayAction(values);
     toast.success("Ticket creado exitosamente");
     setIsOpen(false);
-    setIsDialogOpen(false); // 🔴 Importante: cerrar estado del Dialog en el padre
+    setIsDialogOpen(false);
   };
 
   return (
@@ -46,7 +46,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
         className="text-gray-600 hover:text-white cursor-pointer underline"
         onClick={() => {
           setIsOpen(true);
-          setIsDialogOpen(true); // 🔴 Activamos estado del Dialog en el padre
+          setIsDialogOpen(true);
         }}
       >
         Crear Ticket Por Día
@@ -56,7 +56,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
         open={isOpen}
         onOpenChange={(open) => {
           setIsOpen(open);
-          setIsDialogOpen(open); // 🔴 Sincronizar estado con el padre
+          setIsDialogOpen(open);
         }}
       >
         <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
@@ -81,7 +81,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
                           <SelectValue placeholder="Seleccione días" />
                         </SelectTrigger>
                         <SelectContent className="max-h-48 overflow-y-auto">
-                          {[1, 2, 3, 4, 5, 6, 7, 10, 15, 30].map((day) => (
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 30].map((day) => (
                             <SelectItem key={day} value={String(day)}>
                               {day} días
                             </SelectItem>

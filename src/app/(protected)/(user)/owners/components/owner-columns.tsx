@@ -16,13 +16,14 @@ import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { UpdateOwnerDialog } from './update-owner-dialog';
 import { DeleteOwnerDialog } from './delete-owner-dialog';
-import { cancelReceipt } from '@/services/customer.service';
+import { cancelReceipt, getCustomerById } from '@/services/customer.service';
 import { PaymentSummaryTable } from '../../components/payment-summary-customer-table';
 import { ViewCustomerDialog } from '../../components/view-customer-dialog';
 import { toast } from 'sonner';
 import { Customer } from '@/types/cutomer.type';
 import generateReceipt from '@/utils/generate-receipt';
 import { uploadAndPrintPdf } from '@/services/scanner.service';
+import { useSession } from 'next-auth/react';
 
 export const OwnerColumns: ColumnDef<Customer>[] = [
   {
@@ -67,17 +68,28 @@ export const OwnerColumns: ColumnDef<Customer>[] = [
       const [openPrintDialog, setOpenPrintDialog] = useState(false);
       const [openCancelDialog, setOpenCancelDialog] = useState(false);
       const [openDropdown, setOpenDropdown] = useState(false);
+      const session = useSession();
 
       const handlePrint = async () => {
         try {
-          const pdfBytes = await generateReceipt(customer, "Expensas correspondientes"); // Generar el PDF
-          await uploadAndPrintPdf(pdfBytes); // Enviar al backend para imprimir
-          toast.success("Recibo enviado a la impresora");
+          const updatedCustomer = await getCustomerById(customer.id, session.data?.token);
+      
+          if (!updatedCustomer) {
+            toast.error("No se pudieron obtener los datos actualizados del cliente.");
+            return;
+          }
+      
+          const pdfBytes = await generateReceipt(updatedCustomer, "Expensas correspondientes");
+      
+          await uploadAndPrintPdf(pdfBytes);
+      
+          toast.success("Recibo actualizado y enviado a la impresora.");
         } catch (error) {
           console.error("Error al imprimir el recibo:", error);
-          toast.error("Error al enviar el recibo a la impresora");
+          toast.error("Error al enviar el recibo a la impresora.");
         }
       };
+      
 
 
       return (
@@ -110,9 +122,9 @@ export const OwnerColumns: ColumnDef<Customer>[] = [
                   <Button variant="outline" onClick={() => setOpenPrintDialog(false)}>Cancelar</Button>
                   <Button
                    onClick={async () => {
-                    await handlePrint(); // Llama a la función para generar e imprimir el recibo
+                    await handlePrint();
                     setOpenPrintDialog(false);
-                    setOpenDropdown(false); // Cierra el menú
+                    setOpenDropdown(false);
                   }}
                   >
                     Confirmar
@@ -121,7 +133,6 @@ export const OwnerColumns: ColumnDef<Customer>[] = [
               </DialogContent>
             </Dialog>
 
-            {/* Dialog para Cancelar Recibo */}
             <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>
               <DialogTrigger asChild>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Cancelar Recibo</DropdownMenuItem>

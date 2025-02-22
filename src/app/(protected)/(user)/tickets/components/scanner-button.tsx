@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useRef, useEffect, startTransition } from "react";
 import { startScanner } from "@/services/scanner.service";
 import { toast } from "sonner";
@@ -7,23 +8,21 @@ export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean 
   const [isScanning, setIsScanning] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Función para iniciar el escaneo cuando se presiona un botón
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (!isDialogOpen && !isScanning) { // ⬅️ Solo inicia si el diálogo está CERRADO
-      setIsScanning(true);
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
-    }
-  };
-
-  // Función para detener el escaneo cuando se suelta el botón
-  const handleKeyUp = (e: KeyboardEvent) => {
-    setIsScanning(false);
-  };
-
   useEffect(() => {
-    if (!isDialogOpen) { // ⬅️ Si el diálogo está ABIERTO, no agregar eventos
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isDialogOpen && !isScanning) {
+        setIsScanning(true);
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 100);
+      }
+    };
+
+    const handleKeyUp = () => {
+      setIsScanning(false);
+    };
+
+    if (!isDialogOpen) {
       document.addEventListener("keydown", handleKeyDown);
       document.addEventListener("keyup", handleKeyUp);
     }
@@ -32,7 +31,7 @@ export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean 
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  }, [isDialogOpen]); // ⬅️ Se vuelve a ejecutar si `isDialogOpen` cambia
+  }, [isDialogOpen]);
 
   const handleSubmit = async (barCode: string) => {
     startTransition(() => {
@@ -45,7 +44,7 @@ export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean 
           }
           setIsScanning(false);
         })
-        .catch((err) => {
+        .catch(() => {
           toast.error("Error en la solicitud.");
           setIsScanning(false);
         });

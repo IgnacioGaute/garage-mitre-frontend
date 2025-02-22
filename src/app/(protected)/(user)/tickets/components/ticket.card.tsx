@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -7,14 +10,28 @@ import {
 } from "@/components/ui/card";
 import { TicketRegistration } from "@/types/ticket-registration.type";
 import { CreateTicketRegistrationDialog } from "./create-ticket-registration-for-day-dialog";
+import ScannerButton from "./scanner-button";
+import io from "socket.io-client";
+
+const socket = io(process.env.NEXT_PUBLIC_HOST_URL);
 
 export default function CardTicket({
-  registrations,
-  setIsDialogOpen
+  initialRegistrations,
 }: {
-  registrations: TicketRegistration[];
-  setIsDialogOpen: (open: boolean) => void;
+  initialRegistrations: TicketRegistration[];
 }) {
+  const [registrations, setRegistrations] = useState<TicketRegistration[]>(initialRegistrations);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  useEffect(() => {
+    socket.on("new-registration", (newRegistration: TicketRegistration) => {
+      setRegistrations((prev) => [newRegistration, ...prev]);
+    });
+
+    return () => {
+      socket.off("new-registration");
+    };
+  }, []);
 
   const latestRegistration = registrations.length > 0 ? registrations[0] : null;
 
@@ -23,6 +40,8 @@ export default function CardTicket({
 
   return (
     <>
+      <ScannerButton isDialogOpen={isDialogOpen} />
+
       <Card className="w-200 max-w-md mx-auto mt-8 p-5">
         <CardHeader>
           <CardTitle>Registro de Tickets</CardTitle>
@@ -51,7 +70,6 @@ export default function CardTicket({
         )}
       </Card>
 
-      {/* Pasamos `setIsDialogOpen` al diálogo */}
       <CreateTicketRegistrationDialog setIsDialogOpen={setIsDialogOpen} />
     </>
   );

@@ -15,9 +15,9 @@ export function NavigationMenuDemo({ setIsExpanded }: { setIsExpanded: (state: b
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleToggleMenu = () => {
-    const newState = !menuOpen; // Guardamos el nuevo estado en una variable
+    const newState = !menuOpen;
     setMenuOpen(newState);
-    setIsExpanded(newState); // Pasamos el nuevo estado directamente
+    setIsExpanded(newState);
   };
 
   return (
@@ -35,7 +35,6 @@ export function NavigationMenuDemo({ setIsExpanded }: { setIsExpanded: (state: b
           <ChevronsUpDown className="ml-auto size-4 mr-1" />
         </SidebarMenuButton>
 
-        {/* Submenú dentro del NavUser */}
         {menuOpen && (
     <div className="w-[--radix-dropdown-menu-trigger-width] min-w-40 rounded-lg shadow-md mt-2">
     <DropdownMenuSeparator />

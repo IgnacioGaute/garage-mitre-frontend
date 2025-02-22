@@ -6,18 +6,17 @@ import { Customer, CustomerType } from "@/types/cutomer.type";
 import { CustomerSchemaType, UpdateCustomerSchemaType } from "@/schemas/customer.schema";
 import { InterestSchemaType } from "@/schemas/interest-schema";
 import { Interest } from "@/types/interest.type";
+import { getAuthHeaders } from "@/lib/auth";
 
 
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
-export const getCustomers = async (customer: CustomerType) => {
+export const getCustomers = async (customer: CustomerType, authToken?: string) => {
     try {
       const response = await fetch(`${BASE_URL}/customers/customer/${customer}`, {
-        headers: {
-            'Content-Type': 'application/json',
-          },
+        headers: await getAuthHeaders(authToken),
         next: {
           tags: [getCacheTag('customers', 'all')],
         },
@@ -36,12 +35,10 @@ export const getCustomers = async (customer: CustomerType) => {
     }
   };
 
-  export const getCustomerById = async (customerId:string) => {
+  export const getCustomerById = async (customerId:string, authToken?: string) => {
     try {
       const response = await fetch(`${BASE_URL}/customers/${customerId}`, {
-        headers: {
-            'Content-Type': 'application/json',
-          },
+        headers: await getAuthHeaders(authToken),
       });
       const data = await response.json();
   
@@ -58,14 +55,12 @@ export const getCustomers = async (customer: CustomerType) => {
   };
 
 export const createCustomer = async (
-    values: CustomerSchemaType
+    values: CustomerSchemaType, authToken?: string
   ) => {
     try {
       const response = await fetch(`${BASE_URL}/customers`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-          },
+        headers: await getAuthHeaders(authToken),
         body: JSON.stringify(values),
       });
   
@@ -86,14 +81,12 @@ export const createCustomer = async (
 
   export const updateCustomer = async (
     id: string,
-    cutomer: Partial<UpdateCustomerSchemaType>,
+    cutomer: Partial<UpdateCustomerSchemaType>, authToken?: string
   ) => {
     try {
       const response = await fetch(`${BASE_URL}/customers/${id}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: await getAuthHeaders(authToken),
         body: JSON.stringify(cutomer),
       });
       const data = await response.json();
@@ -111,12 +104,10 @@ export const createCustomer = async (
     }
   };
   
-  export const deleteCustomer = async (id: string) => {
+  export const deleteCustomer = async (id: string, authToken?: string) => {
     try {
       const response = await fetch(`${BASE_URL}/customers/${id}`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: await getAuthHeaders(authToken),
         method: 'DELETE',
       });
       const data = await response.json();
@@ -136,13 +127,13 @@ export const createCustomer = async (
 
 
   export const historialReceipts = async (
-    customerId: string,
+    customerId: string
   ) => {
     try {
       const response = await fetch(`${BASE_URL}/receipts/customers/${customerId}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
       const data = await response.json();
@@ -160,13 +151,13 @@ export const createCustomer = async (
   };
 
   export const cancelReceipt = async (
-    customerId: string,
+    customerId: string
   ) => {
     try {
       const response = await fetch(`${BASE_URL}/receipts/cancelReceipt/customers/${customerId}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
       const data = await response.json();
@@ -184,14 +175,12 @@ export const createCustomer = async (
   };
 
   export const createInterest = async (
-    values: InterestSchemaType
+    values: InterestSchemaType, authToken?: string
   ) => {
     try {
       const response = await fetch(`${BASE_URL}/customers/interestSetting`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-          },
+        headers: await getAuthHeaders(authToken),
         body: JSON.stringify(values),
       });
   
@@ -210,12 +199,10 @@ export const createCustomer = async (
     }
   }
 
-  export const getinterests = async () => {
+  export const getinterests = async ( authToken?: string) => {
     try {
       const response = await fetch(`${BASE_URL}/customers/interestSetting`, {
-        headers: {
-            'Content-Type': 'application/json',
-          },
+        headers: await getAuthHeaders(authToken),
         next: {
           tags: [getCacheTag('interests', 'all')],
         },

@@ -1,3 +1,4 @@
+import { getAuthHeaders } from "@/lib/auth";
 import { OtherPaymentSchemaType } from "@/schemas/other-payment.schema";
 import { BoxList } from "@/types/box-list.type";
 import { OtherPayment } from "@/types/other-payment.type";
@@ -5,13 +6,11 @@ import { OtherPayment } from "@/types/other-payment.type";
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
-export const findBoxByDate = async (date: Date) => {
+export const findBoxByDate = async (date: Date, authToken?: string) => {
   try {
 
     const response = await fetch(`${BASE_URL}/box-lists/date/${date}`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+        headers: await getAuthHeaders(authToken),
     });
 
     if (!response.ok) {
@@ -40,14 +39,13 @@ export const findBoxByDate = async (date: Date) => {
 };
 
 export const createOtherPayment = async (
-    values: OtherPaymentSchemaType
+    values: OtherPaymentSchemaType,
+    authToken?: string
   ) => {
     try {
       const response = await fetch(`${BASE_URL}/box-lists/otherPayment`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-          },
+        headers: await getAuthHeaders(authToken),
         body: JSON.stringify(values),
       });
   
