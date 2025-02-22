@@ -6,16 +6,13 @@ interface HeaderProps {
 }
 export function Header({ label }: HeaderProps) {
   return (
-<header className="w-full py-6 flex justify-center">
-  <Card className="shadow-md pt-5 w-full max-w-md flex flex-col justify-center items-center">
-    <CardContent className="flex flex-col justify-center items-center h-full">
-      {/* Logo y Nombre */}
-      <h1 className="text-3xl font-bold uppercase text-[#fffc34] hover:text-white text-center">
-        GARAGE{" "}
-        <span className="text-white hover:text-[#fffc34]">MITRE</span>
-      </h1>
-    </CardContent>
-  </Card>
+<header className="w-full flex justify-center">
+<div className="flex items-center space-x-2 m-10">
+    <div className="bg-yellow-400 px-4 py-1 rounded-md shadow-md">
+      <span className="text-black text-lg font-bold">GARAGE</span>
+    </div>
+    <span className="text-white text-lg font-semibold">MITRE</span>
+  </div>
 </header>
 
   );

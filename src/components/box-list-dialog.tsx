@@ -4,14 +4,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { BoxList } from '@/types/box-list.type';
 import { findBoxByDate } from '@/services/box-list.service';
 import generateBoxList from '@/utils/generate-box-list';
 import { uploadAndPrintPdf } from '@/services/scanner.service';
+import { useSession } from 'next-auth/react';
 
 interface BoxListDialogProps {
   open: boolean;
@@ -22,44 +21,43 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [boxData, setBoxData] = useState<BoxList | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { data: session } = useSession();
+
+  const fetchData = async (date: Date) => {
+    try {
+      const formattedDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const boxes = await findBoxByDate(formattedDay, session?.token);
+
+      if (!boxes) {
+        setError("No hay datos disponibles para la fecha seleccionada.");
+        setBoxData(null);
+      } else {
+        setError(null);
+        setBoxData(boxes);
+      }
+    } catch (error) {
+      console.error("Error fetching box data:", error);
+      setError("Ocurrió un error al obtener los datos.");
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const formattedDay = new Date(
-          selectedDate.getFullYear(),
-          selectedDate.getMonth(),
-          selectedDate.getDate()
-        );
-        const boxes = await findBoxByDate(formattedDay);
-  
-        if (!boxes) {
-          setError("No hay datos disponibles para la fecha seleccionada.");
-          setBoxData(null);
-        } else {
-          setError(null);
-          setBoxData(boxes);
-        }
-      } catch (error) {
-        console.error("Error fetching box data:", error);
-        setError("Ocurrió un error al obtener los datos.");
-      }
-    };
-  
-    if (selectedDate) {
-      fetchData();
-    }
+    fetchData(selectedDate);
   }, [selectedDate]);
-  
+
+  useEffect(() => {
+    if (open) {
+      fetchData(selectedDate);
+    }
+  }, [open]);
+
   const handlePrintPdf = async () => {
     if (boxData) {
       try {
-        // Generar el PDF como bytes
         const pdfBytes = await generateBoxList(boxData);
-  
-        // Enviar el PDF al backend para imprimir
+
         const success = await uploadAndPrintPdf(pdfBytes);
-  
+
         if (success) {
           console.log("PDF enviado correctamente para impresión.");
         } else {
@@ -74,7 +72,6 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
       setError("No hay datos disponibles para generar el PDF.");
     }
   };
-  
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -90,7 +87,7 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
             onSelect={(day) => {
               if (day && day <= new Date()) setSelectedDate(day);
             }}
-            disabled={(day) => day > new Date()} // Deshabilita días futuros
+            disabled={(day) => day > new Date()}
           />
 
           {error && <p className="text-red-500">{error}</p>}

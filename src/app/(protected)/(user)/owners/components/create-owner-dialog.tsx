@@ -52,9 +52,7 @@ export function CreateOwnerDialog() {
     const numberOfVehicles = values.numberOfVehicles;
     const currentVehicles = form.getValues('vehicles');
   
-    // Agregar o eliminar vehículos dinámicamente
     if (currentVehicles.length < numberOfVehicles) {
-      // Agregar solo la cantidad que falta
       const vehiclesToAdd = Array.from(
         { length: numberOfVehicles - currentVehicles.length },
         () => ({
@@ -65,14 +63,13 @@ export function CreateOwnerDialog() {
       );
       append(vehiclesToAdd);
     } else if (currentVehicles.length > numberOfVehicles) {
-      // Eliminar los sobrantes
       const excessCount = currentVehicles.length - numberOfVehicles;
       for (let i = 0; i < excessCount; i++) {
         remove(currentVehicles.length - 1);
       }
     }
   
-    setPhase('vehicles'); // Cambiar a la fase de vehículos
+    setPhase('vehicles');
   };
   
 
@@ -85,7 +82,7 @@ export function CreateOwnerDialog() {
           toast.success('Propietario y vehículos creados exitosamente');
           form.reset();
           setOpen(false);
-          setPhase('customer'); // Reiniciar la fase
+          setPhase('customer');
         }
       });
     });

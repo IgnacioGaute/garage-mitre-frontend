@@ -6,6 +6,7 @@ import { TicketSchemaType, UpdateTicketSchemaType } from "@/schemas/ticket.schem
 import { revalidateTag } from "next/cache";
 import { TicketRegistrationForDay } from "@/types/ticket-registration-for-day.type";
 import { TicketRegistrationForDaySchemaType } from "@/schemas/ticket-registration-for-day.schema";
+import { getAuthHeaders } from "@/lib/auth";
 
 
 
@@ -14,9 +15,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 export const getTickets = async (authToken?: string) => {
   try {
     const response = await fetch(`${BASE_URL}/tickets`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await getAuthHeaders(authToken),
       next: {
         tags: [getCacheTag('tickets', 'all')],
       },
@@ -40,9 +39,7 @@ export const createTicket = async (ticket: TicketSchemaType, authToken?: string)
   try {
     const response = await fetch(`${BASE_URL}/tickets`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+        headers: await getAuthHeaders(authToken),
       body: JSON.stringify(ticket),
     });
     const data = await response.json();
@@ -68,9 +65,7 @@ export const updateTicket = async (
   try {
     const response = await fetch(`${BASE_URL}/tickets/${id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await getAuthHeaders(authToken),
       body: JSON.stringify(ticket),
     });
 
@@ -97,9 +92,7 @@ export const deleteTicket = async (id: string, authToken?: string) => {
   try {
     const response = await fetch(`${BASE_URL}/tickets/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await getAuthHeaders(authToken),
     });
 
     const data = await response.json();
@@ -117,14 +110,12 @@ export const deleteTicket = async (id: string, authToken?: string) => {
   }
 };
 
-export const getTicketRegistrations = async () => {
+export const getTicketRegistrations = async (authToken?: string) => {
   try {
     const response = await fetch(`${BASE_URL}/tickets/registrations`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await getAuthHeaders(authToken),
       next: {
-        tags: ['tickets'],
+        tags: [getCacheTag('tickets', 'all')],
       },
     });
 
@@ -144,14 +135,12 @@ export const getTicketRegistrations = async () => {
 };
 
   
-  export const getTicketRegistrationById = async (id: string) => {
+  export const getTicketRegistrationById = async (id: string, authToken?: string) => {
     try {
       if (!id) return null;
   
       const response = await fetch(`${BASE_URL}/tickets/registrations/${id}`, {
-        headers: {
-            'Content-Type': 'application/json',
-          },
+        headers: await getAuthHeaders(authToken),
       });
       const data = await response.json();
   
@@ -170,9 +159,7 @@ export const getTicketRegistrations = async () => {
     try {
       const response = await fetch(`${BASE_URL}/tickets/registrationForDays`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: await getAuthHeaders(authToken),
         body: JSON.stringify(ticket),
       });
       const data = await response.json();

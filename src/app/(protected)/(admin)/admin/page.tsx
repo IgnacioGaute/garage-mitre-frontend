@@ -19,7 +19,7 @@ export default async function FAQPage() {
             Administrar 
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            Gestiona y supervisa los usuarios, intereses de los inquilinos y propietarios.
+            Gestiona y supervisa los Usuarios, Intereses, Gastos y Tickets.
           </p>
         </div>
       </div>

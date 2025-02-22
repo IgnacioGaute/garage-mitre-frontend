@@ -1,7 +1,6 @@
 import { SidebarInset } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { ReactNode } from 'react';
-import { NavigationMenuDemo } from '@/components/navegation/navegation-menu';
 import { currentUser } from '@/lib/auth';
 import { NavUser } from './nav-user';
 
@@ -17,22 +16,16 @@ export async function AppNavbar({ children }: AppNavbarProps) {
       <SidebarInset className="flex flex-col">
         <header className="relative flex h-14 items-center gap-2 border-b shadow-sm px-6">
           <div className="flex items-center w-full justify-between">
-            {/* Logo */}
             <Link href="/tickets">
-              <h1 className="text-2xl font-bold uppercase tracking-widest text-[#fffc34] hover:text-white">
-                GARAGE{' '}
-                <span className="text-2xl font-bold uppercase tracking-widest text-[#ffffff] hover:text-[#fffc34]">
-                  MITRE
-                </span>
-              </h1>
-            </Link>
+               <div className="flex items-center space-x-2 ml-20 mt-3 mb-2">
+                 <div className="bg-yellow-400 px-3 py-1 rounded-md shadow-md">
+                   <span className="text-black text-lg font-bold">GARAGE</span>
+                 </div>
+                  <span className="text-white text-lg font-semibold">MITRE</span>
+                </div>
+             </Link>
 
-            {/* Contenedor para NavigationMenuDemo y NavUser */}
             <div className="flex items-center gap-6">
-              {/* Menú de navegación */}
-
-
-              {/* Usuario */}
               <NavUser
                 userNav={{
                   avatar: user?.image ?? '',

@@ -13,7 +13,6 @@ export async function loginAction(
     const validatedFields = loginSchema.safeParse(values);
 
     if (!validatedFields.success) {
-      console.log("❌ Error en validación de campos:", validatedFields.error);
       return { error: 'Campos inválidos' };
     }
 
@@ -29,12 +28,12 @@ export async function loginAction(
       const result = await signIn('credentials', {
         identifier,
         password,
-        redirect: false, // 🚀 Evita redirección automática
+        redirect: false,
       });
 
       return { success: "Inicio de sesión exitoso.", redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT };
     } catch (error: any) {
-      console.error("⚠️ Error en signIn:", error);
+      console.error("Error en signIn:", error);
 
       if (error.type === 'CredentialsSignin') {
         return { error: 'Email o contraseña incorrectos' };

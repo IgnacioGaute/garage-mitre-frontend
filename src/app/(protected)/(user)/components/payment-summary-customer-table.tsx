@@ -12,6 +12,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { getCustomerById } from '@/services/customer.service';
 import { BadgeCheck, Clock, ArrowUp } from 'lucide-react';
 import { Customer } from '@/types/cutomer.type';
+import { useSession } from 'next-auth/react';
 
 interface PaymentSummaryTableProps {
   customer: Customer;
@@ -22,12 +23,14 @@ export function PaymentSummaryTable({ customer, children }: PaymentSummaryTableP
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [receipts, setReceipts] = useState(customer.receipts || []);
+  const { data: session } = useSession();
+
 
   useEffect(() => {
     if (open) {
       startTransition(async () => {
         try {
-          const updatedOwner = await getCustomerById(customer.id);
+          const updatedOwner = await getCustomerById(customer.id, session?.token);
           setReceipts(updatedOwner?.receipts || []);
         } catch (error) {
           console.error('Error fetching owner receipts:', error);

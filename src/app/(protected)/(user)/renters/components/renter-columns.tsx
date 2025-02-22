@@ -29,8 +29,9 @@ import { toast } from 'sonner';
 import { Customer } from '@/types/cutomer.type';
 import { PaymentSummaryTable } from '../../components/payment-summary-customer-table';
 import generateReceipt from '@/utils/generate-receipt';
-import { cancelReceipt } from '@/services/customer.service';
+import { cancelReceipt, getCustomerById } from '@/services/customer.service';
 import { uploadAndPrintPdf } from '@/services/scanner.service';
+import { useSession } from 'next-auth/react';
 
 export const renterColumns: ColumnDef<Customer>[] = [
   {
@@ -71,15 +72,25 @@ export const renterColumns: ColumnDef<Customer>[] = [
       const [openPrintDialog, setOpenPrintDialog] = useState(false);
       const [openCancelDialog, setOpenCancelDialog] = useState(false);
       const [openDropdown, setOpenDropdown] = useState(false);
-  
+      const session = useSession();
+
       const handlePrint = async () => {
         try {
-          const pdfBytes = await generateReceipt(customer, "Alquiler/es correspondiente"); // Generar el PDF
-          await uploadAndPrintPdf(pdfBytes); // Enviar al backend para imprimir
-          toast.success("Recibo enviado a la impresora");
+          const updatedCustomer = await getCustomerById(customer.id, session.data?.token);
+      
+          if (!updatedCustomer) {
+            toast.error("No se pudieron obtener los datos actualizados del cliente.");
+            return;
+          }
+      
+          const pdfBytes = await generateReceipt(updatedCustomer, "Alquiler/es correspondiente");
+      
+          await uploadAndPrintPdf(pdfBytes);
+      
+          toast.success("Recibo actualizado y enviado a la impresora.");
         } catch (error) {
           console.error("Error al imprimir el recibo:", error);
-          toast.error("Error al enviar el recibo a la impresora");
+          toast.error("Error al enviar el recibo a la impresora.");
         }
       };
   
@@ -122,9 +133,9 @@ export const renterColumns: ColumnDef<Customer>[] = [
                   </Button>
                   <Button
                     onClick={async () => {
-                      await handlePrint(); // Llama a la función para generar e imprimir el recibo
+                      await handlePrint();
                       setOpenPrintDialog(false);
-                      setOpenDropdown(false); // Cierra el menú
+                      setOpenDropdown(false);
                     }}
                   >
                     Confirmar
@@ -133,7 +144,6 @@ export const renterColumns: ColumnDef<Customer>[] = [
               </DialogContent>
             </Dialog>
   
-            {/* Dialog para Cancelar Recibo */}
             <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>
               <DialogTrigger asChild>
                 <DropdownMenuItem

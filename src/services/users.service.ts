@@ -8,15 +8,14 @@ import { PaginatedResponse } from '@/types/paginated-response.type';
 import { User } from '@/types/user.type';
 import { revalidateTag } from 'next/cache';
 import { getCacheTag } from './cache-tags';
+import { getAuthHeaders } from '@/lib/auth';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const getUsers = async (authToken?: string) => {
   try {
     const response = await fetch(`${BASE_URL}/users`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await getAuthHeaders(authToken),
       next: {
         tags: [getCacheTag('users', 'all')],
       },
@@ -38,9 +37,7 @@ export const getUsers = async (authToken?: string) => {
 export const getUserById = async (id: string, authToken?: string) => {
   try {
     const response = await fetch(`${BASE_URL}/users/${id}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await getAuthHeaders(authToken),
     });
     const data = await response.json();
 
@@ -60,9 +57,7 @@ export const getUserByEmail = async (email: string, authToken?: string) => {
     if (!email) return null;
 
     const response = await fetch(`${BASE_URL}/users?filter.email=${email}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await getAuthHeaders(authToken),
     });
     const data = await response.json();
     const { data: user } = data as PaginatedResponse<User>;
@@ -89,9 +84,7 @@ export const getUserByUsername = async (
     const response = await fetch(
       `${BASE_URL}/users?filter.username=${username}`,
       {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: await getAuthHeaders(authToken),
       },
     );
     const data = await response.json();

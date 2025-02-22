@@ -23,7 +23,6 @@ export default function CardInterest({ className }: { className?: string }) {
     const [success, setSuccess] = useState<string | undefined>('');
     const [isPending, startTransition] = useTransition();
     
-    // Variables para almacenar el interés actual
     const [currentInterestOwner, setCurrentInterestOwner] = useState<number>(0);
     const [currentInterestRenter, setCurrentInterestRenter] = useState<number>(0);
 
@@ -49,7 +48,6 @@ export default function CardInterest({ className }: { className?: string }) {
                         setSuccess(data.success);
                         toast.success('Intereses creados exitosamente');
 
-                        // Actualizar variables con los nuevos valores ingresados
                         setCurrentInterestOwner(values.interestOwner);
                         setCurrentInterestRenter(values.interestRenter);
                     }
@@ -66,7 +64,7 @@ export default function CardInterest({ className }: { className?: string }) {
         <Card className={`w-full h-full min-h-full flex flex-col ${className}`}>
             <CardHeader>
                 <CardTitle>Gestionar intereses de los inquilinos y propietarios</CardTitle>
-                <CardDescription>El número de intereses que escribas se multiplica x2 cada 10 días</CardDescription>
+                <CardDescription>El número de intereses que escribas se suma cada 10 días. El interes se aplica a los clientes que se excedan de los 10 dias despues del dia 1 de cada mes.</CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
                 <Form {...form}>

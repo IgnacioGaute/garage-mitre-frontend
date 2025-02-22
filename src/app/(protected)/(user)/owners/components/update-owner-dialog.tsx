@@ -57,7 +57,6 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
     const numberOfVehicles = values.numberOfVehicles ?? 0;
     const currentVehicles = form.getValues('vehicles') ?? [];
 
-    // Sincronizar el número de vehículos
     if (currentVehicles.length < numberOfVehicles) {
       const vehiclesToAdd = Array.from(
         { length: numberOfVehicles - currentVehicles.length },
@@ -117,7 +116,6 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
             )}
             className="space-y-4"
           >
-            {/* Formulario de Cliente */}
             {phase === 'customer' && (
               <>
                 <FormField
@@ -181,7 +179,6 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
               </>
             )}
 
-            {/* Formulario de Vehículos */}
             {phase === 'vehicles' && (
               <>
 {fields.map((field, index) => (

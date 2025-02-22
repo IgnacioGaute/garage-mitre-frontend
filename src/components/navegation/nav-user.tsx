@@ -97,7 +97,6 @@ export function NavUser({
 
 <DropdownMenuSeparator />
 
-{/* Botón para abrir BoxListDialog */}
 <DropdownMenuGroup>
   <DropdownMenuItem
     onClick={() => setOpenBoxDialog(true)}
@@ -136,8 +135,6 @@ export function NavUser({
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
-
-      {/* Diálogo de Lista de Caja */}
       <BoxListDialog open={openBoxDialog} setOpen={setOpenBoxDialog} />
     </>
   );
