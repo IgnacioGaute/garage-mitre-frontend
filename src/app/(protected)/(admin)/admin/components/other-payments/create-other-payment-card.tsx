@@ -6,7 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { useTransition, useState, useEffect } from 'react';
+import { useTransition, useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { interestSchema, InterestSchemaType } from "@/schemas/interest-schema";

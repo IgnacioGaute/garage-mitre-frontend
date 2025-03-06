@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { startTransition, useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import {
   updateUserPassword,
   UpdateUserPasswordType,
