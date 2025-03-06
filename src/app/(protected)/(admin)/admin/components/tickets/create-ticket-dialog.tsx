@@ -119,7 +119,7 @@ export function CreateTicketDialog() {
                       <SelectContent>
                         <SelectItem value="AUTO">Auto</SelectItem>
                         <SelectItem value="MOTO">Moto</SelectItem>
-                        <SelectItem value="CAMION">Camión</SelectItem>
+                        <SelectItem value="CAMIONETA">Camioneta</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
