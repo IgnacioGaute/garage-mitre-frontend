@@ -25,21 +25,25 @@ export async function loginAction(
     if (!existingUserByEmail && !existingUserByUserName) {
       return { error: 'El email o usuario no está registrado' };
     }
-      const result = await signIn('credentials', {
+      await signIn('credentials', {
         identifier,
         password,
         redirect: false,
       });
 
       return { success: "Inicio de sesión exitoso.", redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT };
-    } catch (error: any) {
+    }catch (error: unknown) {
       console.error("Error en signIn:", error);
-
-      if (error.type === 'CredentialsSignin') {
-        return { error: 'Email o contraseña incorrectos' };
+    
+      if (typeof error === "object" && error !== null && "type" in error) {
+        const typedError = error as { type: string };
+        if (typedError.type === "CredentialsSignin") {
+          return { error: "Email o contraseña incorrectos" };
+        }
       }
-
-      return { error: 'Algo salió mal. Intenta de nuevo.' };
+    
+      return { error: "Algo salió mal. Intenta de nuevo." };
     }
+    
   }
 

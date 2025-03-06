@@ -10,7 +10,6 @@ import { useTransition, useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { interestSchema, InterestSchemaType } from "@/schemas/interest-schema";
-import { Interest } from "@/types/interest.type";
 import { toast } from "sonner";
 import { createInterestAction } from "@/actions/customers/create-interest.action";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
