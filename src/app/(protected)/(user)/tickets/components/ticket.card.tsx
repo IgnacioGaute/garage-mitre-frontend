@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -11,9 +12,6 @@ import {
 import { TicketRegistration } from "@/types/ticket-registration.type";
 import { CreateTicketRegistrationDialog } from "./create-ticket-registration-for-day-dialog";
 import ScannerButton from "./scanner-button";
-import io from "socket.io-client";
-
-const socket = io(process.env.NEXT_PUBLIC_HOST_URL);
 
 export default function CardTicket({
   initialRegistrations,
@@ -22,14 +20,18 @@ export default function CardTicket({
 }) {
   const [registrations, setRegistrations] = useState<TicketRegistration[]>(initialRegistrations);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    socket.on("new-registration", (newRegistration: TicketRegistration) => {
-      setRegistrations((prev) => [newRegistration, ...prev]);
-    });
+
+    const handleNewScan = async () => {
+      router.refresh(); 
+    };
+
+    document.addEventListener("scan-success", handleNewScan);
 
     return () => {
-      socket.off("new-registration");
+      document.removeEventListener("scan-success", handleNewScan);
     };
   }, []);
 

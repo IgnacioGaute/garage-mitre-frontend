@@ -41,6 +41,9 @@ export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean 
             toast.error(data?.error || "Error desconocido");
           } else {
             toast.success("Escaneo exitoso");
+  
+            console.log("✅ Scanner exitoso, recargando con window.location.reload()...");
+            window.location.reload();
           }
           setIsScanning(false);
         })
@@ -50,6 +53,7 @@ export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean 
         });
     });
   };
+  
 
   return (
     <div className="flex flex-col items-center">
