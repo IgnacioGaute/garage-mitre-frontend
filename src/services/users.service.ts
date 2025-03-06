@@ -106,9 +106,7 @@ export const createUser = async (user: UserSchemaType, authToken?: string) => {
   try {
     const response = await fetch(`${BASE_URL}/users`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await getAuthHeaders(authToken),
       body: JSON.stringify(user),
     });
     const data = await response.json();
