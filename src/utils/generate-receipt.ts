@@ -49,7 +49,7 @@ export default async function generateReceipt(customer: any, description: string
     firstPage.drawText(`$${pendingPrice}`, { x: 470, y: 590, size: fontSize, color: textColor }); // Total correcto
 
     // 🟢 4️⃣ Total (fuera de la tabla, alineado correctamente)
-    firstPage.drawText(`$${customer.numberOfVehicles * pendingPrice}`, { x: 430, y: 470, size: fontSize, color: textColor });
+    firstPage.drawText(`$${pendingPrice}`, { x: 430, y: 470, size: fontSize, color: textColor });
 
 
     //DUPLICADO
@@ -73,7 +73,7 @@ export default async function generateReceipt(customer: any, description: string
     firstPage.drawText(`${customer.numberOfVehicles}`, { x: 80, y: 180, size: fontSize, color: textColor }); // Cantidad
     firstPage.drawText(description, { x: 140, y: 180, size: fontSize, color: textColor }); // Descripción
     firstPage.drawText(`$${pendingPrice}`, { x: 400, y: 180, size: fontSize, color: textColor }); // P. Unitario
-    firstPage.drawText(`$${customer.numberOfVehicles * pendingPrice}`, { x: 470, y: 180, size: fontSize, color: textColor }); // Total correcto
+    firstPage.drawText(`$${pendingPrice}`, { x: 470, y: 180, size: fontSize, color: textColor }); // Total correcto
 
     // 🟢 4️⃣ Total (fuera de la tabla, alineado correctamente)
     firstPage.drawText(`$${pendingPrice}`, { x: 430, y: 62, size: fontSize, color: textColor });
