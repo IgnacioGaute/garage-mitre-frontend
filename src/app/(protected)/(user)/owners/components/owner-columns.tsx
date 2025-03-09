@@ -22,7 +22,6 @@ import { ViewCustomerDialog } from '../../components/view-customer-dialog';
 import { toast } from 'sonner';
 import { Customer } from '@/types/cutomer.type';
 import generateReceipt from '@/utils/generate-receipt';
-import { uploadAndPrintPdf } from '@/services/scanner.service';
 import { useSession } from 'next-auth/react';
 
 export const OwnerColumns: ColumnDef<Customer>[] = [
@@ -79,9 +78,7 @@ export const OwnerColumns: ColumnDef<Customer>[] = [
             return;
           }
       
-          const pdfBytes = await generateReceipt(updatedCustomer, "Expensas correspondientes");
-      
-          await uploadAndPrintPdf(pdfBytes);
+          await generateReceipt(updatedCustomer, "Expensas correspondientes");
       
           toast.success("Recibo actualizado y enviado a la impresora.");
         } catch (error) {

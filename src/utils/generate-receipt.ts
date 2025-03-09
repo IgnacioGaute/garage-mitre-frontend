@@ -10,19 +10,13 @@ export default async function generateReceipt(customer: any, description: string
     const pages = pdfDoc.getPages();
     const firstPage = pages[0];
 
-    // Función para obtener el precio del recibo con estado PENDING
-    function getPendingReceiptPrice(receipts: any[]) {
-      const pendingReceipt = receipts.find((receipts) => receipts.status === "PENDING"); // Buscar el recibo con estado PENDING
-      return pendingReceipt ? pendingReceipt.price : 0; // Retornar el precio o 0 si no hay recibo PENDING
-    }
-
-    // Obtener el precio del recibo PENDING
-    const pendingPrice = getPendingReceiptPrice(customer.receipts);
+    // 🟢 Obtener el precio del recibo PENDING
+    const pendingReceipt = customer.receipts.find((receipt: any) => receipt.status === "PENDING");
+    const pendingPrice = pendingReceipt ? pendingReceipt.price : 0;
 
     // 🟢 2️⃣ Definir estilos y posiciones
     const fontSize = 12;
     const textColor = rgb(0, 0, 0);
-
     //ORIGINAL
     firstPage.drawText(`ORIGINAL`, {
       x: 508, y: 817, size: fontSize, color: textColor
@@ -77,26 +71,39 @@ export default async function generateReceipt(customer: any, description: string
 
     // 🟢 4️⃣ Total (fuera de la tabla, alineado correctamente)
     firstPage.drawText(`$${pendingPrice}`, { x: 430, y: 62, size: fontSize, color: textColor });
-    
 
-    // 🟢 5️⃣ Guardar el PDF y devolver los bytes
+    // 🟢 Guardar el PDF
     const pdfBytes = await pdfDoc.save();
 
-    // Descargar el PDF en el navegador (opcional, si todavía quieres esta funcionalidad)
-    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    window.open(url);
+// 🟢 3️⃣ Crear un Blob y URL para el PDF
+const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+const url = URL.createObjectURL(blob);
 
-    // Marcar el recibo en el historial
+// 🟢 4️⃣ Abrir en una nueva pestaña automáticamente
+const newWindow = window.open(url, '_blank');
+if (newWindow) {
+  newWindow.onload = () => {
+    newWindow.print(); // 🖨️ Imprimir automáticamente cuando se cargue
+  };
+}
+
+// 🟢 5️⃣ Forzar la descarga automática del PDF
+const a = document.createElement('a');
+a.href = url;
+a.download = `Recibo-${customer.firstName}-${customer.lastName}.pdf`;
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+
+
+    // 🟢 Marcar el recibo como procesado
     await historialReceipts(customer.id);
+    toast.success('Recibo generado y descargado exitosamente');
 
-    toast.success('Recibo creado exitosamente');
-
-    // Devuelve los bytes del PDF para otras acciones (como subir e imprimir)
     return pdfBytes;
   } catch (error) {
     console.error("Error generando el recibo:", error);
     toast.error('Error al generar el recibo');
-    throw error; // Lanza el error para manejarlo en la llamada de la función
+    throw error;
   }
 }

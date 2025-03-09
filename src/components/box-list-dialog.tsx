@@ -9,7 +9,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { BoxList } from '@/types/box-list.type';
 import { findBoxByDate } from '@/services/box-list.service';
 import generateBoxList from '@/utils/generate-box-list';
-import { uploadAndPrintPdf } from '@/services/scanner.service';
 import { useSession } from 'next-auth/react';
 
 interface BoxListDialogProps {
@@ -54,9 +53,7 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
   const handlePrintPdf = async () => {
     if (boxData) {
       try {
-        const pdfBytes = await generateBoxList(boxData);
-
-        const success = await uploadAndPrintPdf(pdfBytes);
+        const success = await generateBoxList(boxData);
 
         if (success) {
           console.log("PDF enviado correctamente para impresión.");

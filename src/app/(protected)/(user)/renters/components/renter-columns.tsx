@@ -30,7 +30,6 @@ import { Customer } from '@/types/cutomer.type';
 import { PaymentSummaryTable } from '../../components/payment-summary-customer-table';
 import generateReceipt from '@/utils/generate-receipt';
 import { cancelReceipt, getCustomerById } from '@/services/customer.service';
-import { uploadAndPrintPdf } from '@/services/scanner.service';
 import { useSession } from 'next-auth/react';
 
 export const renterColumns: ColumnDef<Customer>[] = [
@@ -83,9 +82,7 @@ export const renterColumns: ColumnDef<Customer>[] = [
             return;
           }
       
-          const pdfBytes = await generateReceipt(updatedCustomer, "Alquiler/es correspondiente");
-      
-          await uploadAndPrintPdf(pdfBytes);
+          await generateReceipt(updatedCustomer, "Alquiler/es correspondiente");
       
           toast.success("Recibo actualizado y enviado a la impresora.");
         } catch (error) {
