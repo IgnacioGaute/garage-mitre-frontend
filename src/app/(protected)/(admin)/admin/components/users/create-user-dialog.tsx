@@ -57,6 +57,7 @@ export function CreateUserDialog() {
           setError(data.error);
           setSuccess(data.success);
           toast.success('Usuario creado exitosamente');
+          setOpen(false);
         })
         .catch((error) => {
           console.error(error);
