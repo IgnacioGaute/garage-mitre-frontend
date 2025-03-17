@@ -53,9 +53,10 @@ export function UpdateTicketDialog({ ticket }: { ticket: Ticket }) {
   const form = useForm<UpdateTicketSchemaType>({
     resolver: zodResolver(updateTicketSchema),
     defaultValues: {
-      codeBar: ticket?.codeBar || '',
-      price: ticket.price || 0,
-      vehicleType: ticket?.vehicleType || 'AUTO',
+      codeBar: '',
+      dayPrice: 0,
+      nightPrice: 0,
+      vehicleType: 'AUTO',
     },
   });
 
@@ -93,7 +94,7 @@ export function UpdateTicketDialog({ ticket }: { ticket: Ticket }) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
+          <FormField
               control={form.control}
               name="codeBar"
               render={({ field }) => (
@@ -108,10 +109,10 @@ export function UpdateTicketDialog({ ticket }: { ticket: Ticket }) {
             />
             <FormField
               control={form.control}
-              name="price"
+              name="dayPrice"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Precio de Ticket por Hora</FormLabel>
+                  <FormLabel>Precio de Ticket por Hora Dia</FormLabel>
                   <FormControl>
                     <Input disabled={isPending} {...field} />
                   </FormControl>
@@ -119,35 +120,45 @@ export function UpdateTicketDialog({ ticket }: { ticket: Ticket }) {
                 </FormItem>
               )}
             />
-            
+            <FormField
+              control={form.control}
+              name="nightPrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Precio de Ticket por Hora Noche</FormLabel>
+                  <FormControl>
+                    <Input disabled={isPending} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             {/* Select para Vehicle Type */}
-           <FormField
-            control={form.control}
-            name="vehicleType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tipo de Vehículo</FormLabel>
-                <FormControl>
-                  <Select
-                    disabled={isPending}
-                    value={field.value} // ← Usar `value` en lugar de `defaultValue`
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="AUTO">Auto</SelectItem>
-                      <SelectItem value="CAMION">Camión</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-
+            <FormField
+              control={form.control}
+              name="vehicleType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Vehículo</FormLabel>
+                  <FormControl>
+                    <Select
+                      disabled={isPending}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="AUTO">Auto</SelectItem>
+                        <SelectItem value="CAMIONETA">Camioneta</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <Button className="w-full" type="submit" disabled={isPending}>
               Editar Ticket
             </Button>
