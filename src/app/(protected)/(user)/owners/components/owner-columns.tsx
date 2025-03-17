@@ -16,20 +16,16 @@ import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { UpdateOwnerDialog } from './update-owner-dialog';
 import { DeleteOwnerDialog } from './delete-owner-dialog';
-import { cancelReceipt, getCustomerById } from '@/services/customer.service';
+import { cancelReceipt, getCustomerById, historialReceipts } from '@/services/customers.service';
 import { PaymentSummaryTable } from '../../components/payment-summary-customer-table';
 import { ViewCustomerDialog } from '../../components/view-customer-dialog';
 import { toast } from 'sonner';
 import { Customer } from '@/types/cutomer.type';
 import generateReceipt from '@/utils/generate-receipt';
 import { useSession } from 'next-auth/react';
+import { PaymentTypeReceiptDialog } from '../../components/payment-type-receipt-dialog';
 
 export const OwnerColumns: ColumnDef<Customer>[] = [
-  {
-    accessorKey: 'firstName',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Nombre" />,
-    cell: ({ row }) => <div className="font-medium text-sm sm:text-base">{row.original.firstName}</div>,
-  },
   {
     accessorKey: 'lastName',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Apellido" />,
@@ -38,6 +34,11 @@ export const OwnerColumns: ColumnDef<Customer>[] = [
         {row.original.lastName}
       </div>
     ),
+  },
+  {
+    accessorKey: 'firstName',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Nombre" />,
+    cell: ({ row }) => <div className="font-medium text-sm sm:text-base">{row.original.firstName}</div>,
   },
   {
     accessorKey: 'numberOfVehicles',
@@ -64,12 +65,26 @@ export const OwnerColumns: ColumnDef<Customer>[] = [
     id: 'actions',
     cell: ({ row }) => {
       const customer = row.original;
+      const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
       const [openPrintDialog, setOpenPrintDialog] = useState(false);
       const [openCancelDialog, setOpenCancelDialog] = useState(false);
       const [openDropdown, setOpenDropdown] = useState(false);
       const session = useSession();
-
-      const handlePrint = async () => {
+      const [selectedPaymentType, setSelectedPaymentType] = useState<"TRANSFER" | "CASH" | null>(null);
+      
+      const handlePrint = () => {
+        setOpenPaymentDialog(true); // Primero abre el diálogo de selección de tipo de pago
+      };
+      
+      const handleConfirmPayment = async (paymentType: "TRANSFER" | "CASH") => {
+        setSelectedPaymentType(paymentType);
+        setOpenPaymentDialog(false);
+        setOpenPrintDialog(true); // Luego abre el diálogo de confirmación de impresión
+      };
+      
+      const handleConfirmPrint = async () => {
+        if (!selectedPaymentType) return;
+      
         try {
           const updatedCustomer = await getCustomerById(customer.id, session.data?.token);
       
@@ -78,38 +93,68 @@ export const OwnerColumns: ColumnDef<Customer>[] = [
             return;
           }
       
-          await generateReceipt(updatedCustomer, "Expensas correspondientes");
+          await generateReceipt(updatedCustomer, "Expensas correspondientes", { paymentType: selectedPaymentType });
       
-          toast.success("Recibo actualizado y enviado a la impresora.");
+          toast.success("Recibo generado y enviado a la impresora.");
         } catch (error) {
           console.error("Error al imprimir el recibo:", error);
           toast.error("Error al enviar el recibo a la impresora.");
+        } finally {
+          setOpenPrintDialog(false);
+          setSelectedPaymentType(null); // Limpiar el estado después de imprimir
         }
       };
-      
 
+            
+      const handleConfirm = async () => {
+        if (!selectedPaymentType) return;
+      
+        try {
+          const updatedCustomer = await getCustomerById(customer.id, session.data?.token);
+      
+          if (!updatedCustomer) {
+            toast.error("No se pudieron obtener los datos actualizados del cliente.");
+            return;
+          }
+      
+          await historialReceipts(customer.id, {paymentType: selectedPaymentType});
+      
+          toast.success("Pago registrado exitosamente.");
+        } catch (error) {
+          console.error("Error al registrar el pago:", error);
+          toast.error("Error al registrar el pago.");
+        } finally {
+          setOpenPrintDialog(false);
+          setSelectedPaymentType(null); // Limpiar el estado después de imprimir
+        }
+      };
 
       return (
-        <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel className="text-sm sm:text-base">Acciones</DropdownMenuLabel>
-            <ViewCustomerDialog customer={customer} />
-            <DropdownMenuSeparator />
-            <UpdateOwnerDialog customer={customer} />
-            <DeleteOwnerDialog customer={customer} />
-            <DropdownMenuSeparator />
+        <>
+          <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel className="text-sm sm:text-base">Acciones</DropdownMenuLabel>
+              <ViewCustomerDialog customer={customer} />
+              {session.data?.user.role === 'ADMIN' && (
+                <>
+                  <DropdownMenuSeparator />
+                  <UpdateOwnerDialog customer={customer} />
+                  <DeleteOwnerDialog customer={customer} />
+                </>
+              )}            
+              <DropdownMenuSeparator />
 
-            {/* Dialog para Imprimir Recibo */}
-            <Dialog open={openPrintDialog} onOpenChange={setOpenPrintDialog}>
-              <DialogTrigger asChild>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Imprimir Recibo</DropdownMenuItem>
-              </DialogTrigger>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={handlePrint}>
+                Imprimir Recibo
+              </DropdownMenuItem>
+
+              <Dialog open={openPrintDialog} onOpenChange={setOpenPrintDialog}>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>¿Está seguro?</DialogTitle>
@@ -117,45 +162,47 @@ export const OwnerColumns: ColumnDef<Customer>[] = [
                 </DialogHeader>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setOpenPrintDialog(false)}>Cancelar</Button>
-                  <Button
-                   onClick={async () => {
-                    await handlePrint();
-                    setOpenPrintDialog(false);
-                    setOpenDropdown(false);
-                  }}
-                  >
-                    Confirmar
-                  </Button>
+                  <Button onClick={handleConfirmPrint}>Imprimir y Registrar Pago</Button>
+                  <Button onClick={handleConfirm}>Registrar Pago</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
 
-            <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>
-              <DialogTrigger asChild>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Cancelar Recibo</DropdownMenuItem>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>¿Está seguro?</DialogTitle>
-                  <DialogDescription>Se eliminará el último recibo del propietario y el anterior se marcará como "pendiente".</DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setOpenCancelDialog(false)}>Cancelar</Button>
-                  <Button
-                    onClick={() => {
-                      cancelReceipt(customer.id);
-                      setOpenCancelDialog(false);
-                      setOpenDropdown(false);
-                      toast.success('Recibo cancelado exitosamente');
-                    }}
-                  >
-                    Confirmar
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </DropdownMenuContent>
-        </DropdownMenu>
+
+              <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>
+                <DialogTrigger asChild>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Cancelar Recibo</DropdownMenuItem>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>¿Está seguro?</DialogTitle>
+                    <DialogDescription>Se eliminará el último recibo del propietario y el anterior se marcará como "pendiente".</DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setOpenCancelDialog(false)}>Cancelar</Button>
+                    <Button
+                      onClick={() => {
+                        cancelReceipt(customer.id);
+                        setOpenCancelDialog(false);
+                        setOpenDropdown(false);
+                        toast.success('Recibo cancelado exitosamente');
+                      }}
+                    >
+                      Confirmar
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Dialog para seleccionar tipo de pago antes de imprimir */}
+          <PaymentTypeReceiptDialog
+            open={openPaymentDialog}
+            onConfirm={handleConfirmPayment}
+            onClose={() => setOpenPaymentDialog(false)}
+          />
+        </>
       );
     },
   },

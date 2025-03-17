@@ -56,6 +56,13 @@ export default function CardTicket({
               <p className="p-3"><strong>Descripción:</strong> {latestRegistration.description}</p>
               <p className="p-3"><strong>Día de entrada:</strong> {formatDate(latestRegistration.entryDay)}</p>
               <p className="p-3"><strong>Horario de entrada:</strong> {latestRegistration.entryTime}</p>
+              <p className="p-3">
+                <strong>
+                {latestRegistration.ticket.price === latestRegistration.ticket.dayPrice
+                  ? "Tipo de ticket: Día"
+                  : "Tipo de ticket: Noche"}
+                </strong>
+                </p>
             </CardContent>
           ) : (
             <CardContent>

@@ -1,11 +1,15 @@
-import { historialReceipts } from '@/services/customer.service';
+import { ReceiptSchemaType } from '@/schemas/receipt.schema';
+import { historialReceipts } from '@/services/customers.service';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { toast } from 'sonner';
 
-export default async function generateReceipt(customer: any, description: string): Promise<Uint8Array> {
+export default async function generateReceipt(customer: any, description: string, value:ReceiptSchemaType): Promise<Uint8Array> {
   try {
-    // 🟢 1️⃣ Cargar el PDF base desde /public
-    const existingPdfBytes = await fetch('/Recibo-Garage-Mitre.pdf').then(res => res.arrayBuffer());
+    const pdfFile = customer.customerType === 'OWNER' 
+      ? '/Recibo-Garage-Mitre-Expensas.pdf' 
+      : '/Recibo-Garage-Mitre-Alquiler.pdf';
+    
+    const existingPdfBytes = await fetch(pdfFile).then(res => res.arrayBuffer());
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
     const pages = pdfDoc.getPages();
     const firstPage = pages[0];
@@ -19,12 +23,20 @@ export default async function generateReceipt(customer: any, description: string
     const textColor = rgb(0, 0, 0);
     //ORIGINAL
     firstPage.drawText(`ORIGINAL`, {
-      x: 508, y: 817, size: fontSize, color: textColor
+      x: 60, y: 470, size: fontSize, color: textColor
     });
 
     firstPage.drawText(`${customer.firstName} ${customer.lastName}`, {
       x: 100, y: 705, size: fontSize, color: textColor
     });
+
+    firstPage.drawText(
+      value.paymentType === 'TRANSFER' ? 'Transferencia' : 'Efectivo',
+      {
+        x: 320, y: 705, size: fontSize, color: textColor
+      }
+    );
+    
 
     firstPage.drawText(`${customer.address}`, {
       x: 100, y: 675, size: fontSize, color: textColor
@@ -49,11 +61,19 @@ export default async function generateReceipt(customer: any, description: string
     //DUPLICADO
 
     firstPage.drawText(`DUPLICADO`, {
-      x: 505, y: 417, size: fontSize, color: textColor
+      x: 60, y: 62, size: fontSize, color: textColor
     });
     firstPage.drawText(`${customer.firstName} ${customer.lastName}`, {
       x: 100, y: 295, size: fontSize, color: textColor
     });
+
+    firstPage.drawText(
+      value.paymentType === 'TRANSFER' ? 'Transferencia' : 'Efectivo',
+      {
+        x: 320, y: 295, size: fontSize, color: textColor
+      }
+    );
+    
 
     firstPage.drawText(`${customer.address}`, {
       x: 100, y: 265, size: fontSize, color: textColor
@@ -97,7 +117,7 @@ document.body.removeChild(a);
 
 
     // 🟢 Marcar el recibo como procesado
-    await historialReceipts(customer.id);
+    await historialReceipts(customer.id, value);
     toast.success('Recibo generado y descargado exitosamente');
 
     return pdfBytes;

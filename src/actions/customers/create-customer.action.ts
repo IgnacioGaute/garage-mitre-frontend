@@ -1,7 +1,7 @@
 'use server';
 
 import { customerSchema, CustomerSchemaType } from '@/schemas/customer.schema';
-import { createCustomer as createCustomerAPI } from '@/services/customer.service';
+import { createCustomer as createCustomerAPI } from '@/services/customers.service';
 
 export async function createCustomerAction(values: CustomerSchemaType) {
   const validatedFields = customerSchema.safeParse(values);

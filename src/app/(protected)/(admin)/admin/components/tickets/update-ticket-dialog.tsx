@@ -54,7 +54,7 @@ export function UpdateTicketDialog({ ticket }: { ticket: Ticket }) {
     resolver: zodResolver(updateTicketSchema),
     defaultValues: {
       codeBar: ticket?.codeBar || '',
-      amount: ticket.amount || 0,
+      price: ticket.price || 0,
       vehicleType: ticket?.vehicleType || 'AUTO',
     },
   });
@@ -108,7 +108,7 @@ export function UpdateTicketDialog({ ticket }: { ticket: Ticket }) {
             />
             <FormField
               control={form.control}
-              name="amount"
+              name="price"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Precio de Ticket por Hora</FormLabel>
@@ -121,36 +121,35 @@ export function UpdateTicketDialog({ ticket }: { ticket: Ticket }) {
             />
             
             {/* Select para Vehicle Type */}
-            <FormField
-  control={form.control}
-  name="vehicleType"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Tipo de Vehículo</FormLabel>
-      <FormControl>
-        <Select
-          disabled={isPending}
-          value={field.value} // ← Usar `value` en lugar de `defaultValue`
-          onValueChange={field.onChange}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecciona un tipo" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="AUTO">Auto</SelectItem>
-            <SelectItem value="MOTO">Moto</SelectItem>
-            <SelectItem value="CAMION">Camión</SelectItem>
-          </SelectContent>
-        </Select>
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
+           <FormField
+            control={form.control}
+            name="vehicleType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipo de Vehículo</FormLabel>
+                <FormControl>
+                  <Select
+                    disabled={isPending}
+                    value={field.value} // ← Usar `value` en lugar de `defaultValue`
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="AUTO">Auto</SelectItem>
+                      <SelectItem value="CAMION">Camión</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
 
             <Button className="w-full" type="submit" disabled={isPending}>
-              Crear Ticket
+              Editar Ticket
             </Button>
           </form>
         </Form>

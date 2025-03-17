@@ -28,6 +28,7 @@ import {
   UpdateCustomerSchemaType,
 } from '@/schemas/customer.schema';
 import { X } from 'lucide-react';
+import { PARKING_TYPE } from '@/types/vehicle.type';
 
 export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
@@ -64,6 +65,7 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
           licensePlate: '',
           vehicleBrand: '',
           amount: 0,
+          parkingType: PARKING_TYPE[0]
         })
       );
       replace([...currentVehicles, ...vehiclesToAdd]);

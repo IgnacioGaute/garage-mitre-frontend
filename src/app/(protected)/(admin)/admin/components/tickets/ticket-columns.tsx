@@ -25,12 +25,21 @@ export const ticketColumns: ColumnDef<Ticket>[] = [
     ),
   },
   {
-    accessorKey: 'amount',
+    accessorKey: 'dayPrice',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Precio por hora" />
+      <DataTableColumnHeader column={column} title="Precio por hora Dia" />
     ),
     cell: ({ row }) => (
-      <div className="min-w-[100px] text-sm">{row.getValue('amount')}</div>
+      <div className="min-w-[100px] text-sm">{row.getValue('dayPrice')}</div>
+    ),
+  },
+  {
+    accessorKey: 'nightPrice',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Precio por hora Noche" />
+    ),
+    cell: ({ row }) => (
+      <div className="min-w-[100px] text-sm">{row.getValue('nightPrice')}</div>
     ),
   },
   {

@@ -76,7 +76,7 @@ export function DeleteTicketDialog({ ticket }: { ticket: Ticket }) {
 
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Eliminar Usuario</DialogTitle>
+            <DialogTitle>Eliminar Ticket</DialogTitle>
             <DialogDescription>
               Ingrese {DELETE_TICKET_TEXT} para confirmar.
             </DialogDescription>

@@ -10,6 +10,7 @@ export type TicketRegistration = {
     departureDay: Date;
     entryTime: string;
     departureTime: string;
+    dateNow: Date | null;
     ticket: Ticket;
     boxList: BoxList;
 }

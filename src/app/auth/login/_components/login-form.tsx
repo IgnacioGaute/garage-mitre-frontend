@@ -48,7 +48,6 @@ export function LoginForm() {
     startTransition(() => {
       loginAction(values, callbackUrl || '')
         .then((data) => {
-          console.log("🔍 Respuesta del login:", data);
   
           if (data?.error) {
             setError(data.error);

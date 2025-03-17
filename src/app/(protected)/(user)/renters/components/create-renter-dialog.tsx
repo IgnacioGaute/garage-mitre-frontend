@@ -23,6 +23,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { toast } from 'sonner';
 import { createCustomerAction } from '@/actions/customers/create-customer.action';
 import { customerSchema, CustomerSchemaType } from '@/schemas/customer.schema';
+import { PARKING_TYPE } from '@/types/vehicle.type';
 
 export function CreateRenterDialog() {
   const [open, setOpen] = useState(false);
@@ -59,6 +60,7 @@ export function CreateRenterDialog() {
           licensePlate: '',
           vehicleBrand: '',
           amount: 0,
+          parkingType: PARKING_TYPE[0] 
         })
       );
       append(vehiclesToAdd);

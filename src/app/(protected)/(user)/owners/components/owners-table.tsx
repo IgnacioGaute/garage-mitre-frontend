@@ -25,6 +25,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { DataTableViewOptions } from '@/components/ui/data-table-view-options';
 import { CreateOwnerDialog } from './create-owner-dialog';
+import { useSession } from 'next-auth/react';
 
 
 
@@ -39,6 +40,8 @@ export function OwnersTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const session = useSession();
+  
 
   const table = useReactTable({
     data,
@@ -74,7 +77,11 @@ export function OwnersTable<TData, TValue>({
 
         <div className="flex items-center justify-between sm:justify-end gap-4 sm:flex-1">
           <DataTableViewOptions table={table} />
-          < CreateOwnerDialog />
+          {session.data?.user.role === 'ADMIN' && (
+              <>
+              < CreateOwnerDialog />
+              </>
+            )}     
         </div>
       </div>
       <div className="rounded-xl border overflow-x-auto">

@@ -1,7 +1,7 @@
 'use server';
 
 import { UpdateCustomerSchemaType } from '@/schemas/customer.schema';
-import { updateCustomer as updateCustomerAPI } from '@/services/customer.service';
+import { updateCustomer as updateCustomerAPI } from '@/services/customers.service';
 
 export async function updateCustomerAction(
   id: string,

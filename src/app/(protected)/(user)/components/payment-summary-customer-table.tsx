@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { getCustomerById } from '@/services/customer.service';
+import { getCustomerById } from '@/services/customers.service';
 import { BadgeCheck, Clock, ArrowUp } from 'lucide-react';
 import { Customer } from '@/types/cutomer.type';
 import { useSession } from 'next-auth/react';
@@ -31,6 +31,7 @@ export function PaymentSummaryTable({ customer, children }: PaymentSummaryTableP
       startTransition(async () => {
         try {
           const updatedOwner = await getCustomerById(customer.id, session?.token);
+          console.log(updatedOwner?.receipts)
           setReceipts(updatedOwner?.receipts || []);
         } catch (error) {
           console.error('Error fetching owner receipts:', error);
@@ -59,6 +60,7 @@ export function PaymentSummaryTable({ customer, children }: PaymentSummaryTableP
               <TableHead className="w-[150px]">Estado</TableHead>
               <TableHead>Fecha de Inicio</TableHead>
               <TableHead>Fecha de Pago</TableHead>
+              <TableHead>Metodo de Pago</TableHead>
               <TableHead className="text-right pr-12">Monto</TableHead>
             </TableRow>
           </TableHeader>
@@ -85,6 +87,11 @@ export function PaymentSummaryTable({ customer, children }: PaymentSummaryTableP
                       new Date(
                         new Date(receiptOwner.paymentDate).getTime() + new Date().getTimezoneOffset() * 60000
                       ).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="font-medium flex items-center space-x-2">
+                    {receiptOwner.paymentType && (
+                      <span>{receiptOwner?.paymentType === 'TRANSFER' ? 'Transferencia' : 'Efectivo'}</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-right relative pr-6">
                     <span className="block pr-5">{receiptOwner.price}</span>

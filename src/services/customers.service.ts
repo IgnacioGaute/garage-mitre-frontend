@@ -7,6 +7,9 @@ import { CustomerSchemaType, UpdateCustomerSchemaType } from "@/schemas/customer
 import { InterestSchemaType } from "@/schemas/interest-schema";
 import { Interest } from "@/types/interest.type";
 import { getAuthHeaders } from "@/lib/auth";
+import { AmountCustomerSchemaType } from "@/schemas/amount-customer.schema";
+import { AmountCustomer } from "@/types/amount-customer.type";
+import { ReceiptSchemaType } from "@/schemas/receipt.schema";
 
 
 
@@ -81,13 +84,13 @@ export const createCustomer = async (
 
   export const updateCustomer = async (
     id: string,
-    cutomer: Partial<UpdateCustomerSchemaType>, authToken?: string
+    customer: Partial<UpdateCustomerSchemaType>, authToken?: string
   ) => {
     try {
       const response = await fetch(`${BASE_URL}/customers/${id}`, {
         method: 'PATCH',
         headers: await getAuthHeaders(authToken),
-        body: JSON.stringify(cutomer),
+        body: JSON.stringify(customer),
       });
       const data = await response.json();
   
@@ -127,7 +130,8 @@ export const createCustomer = async (
 
 
   export const historialReceipts = async (
-    customerId: string
+    customerId: string,
+    values: ReceiptSchemaType
   ) => {
     try {
       const response = await fetch(`${BASE_URL}/receipts/customers/${customerId}`, {
@@ -135,6 +139,7 @@ export const createCustomer = async (
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(values),
       });
       const data = await response.json();
   
@@ -201,7 +206,7 @@ export const createCustomer = async (
 
   export const getinterests = async ( authToken?: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/customers/interestSetting`, {
+      const response = await fetch(`${BASE_URL}/customers/interestSetting/interest`, {
         headers: await getAuthHeaders(authToken),
         next: {
           tags: [getCacheTag('interests', 'all')],
@@ -210,7 +215,30 @@ export const createCustomer = async (
       const data = await response.json();
   
       if (response.ok) {
-        return data as Interest;
+        return data as Interest[];
+      } else {
+        console.error(data);
+        return [];
+      }
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  };
+
+  export const updateAmountCustomer = async (
+    customer: Partial<AmountCustomerSchemaType>, authToken?: string
+  ) => {
+    try {
+      const response = await fetch(`${BASE_URL}/customers/update/updateAmount`, {
+        method: 'PATCH',
+        headers: await getAuthHeaders(authToken),
+        body: JSON.stringify(customer),
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        return data as AmountCustomer;
       } else {
         console.error(data);
         return null;

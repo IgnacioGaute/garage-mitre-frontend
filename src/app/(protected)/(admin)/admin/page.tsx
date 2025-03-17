@@ -1,7 +1,7 @@
 import { Settings } from 'lucide-react';
 import { AdminAccordion } from './components/admin-accordion';
 import { getUsers } from '@/services/users.service';
-import { getinterests } from '@/services/customer.service';
+import { getinterests } from '@/services/customers.service';
 import { Interest } from '@/types/interest.type';
 import { getTickets } from '@/services/tickets.service';
 import { date } from 'zod';
@@ -9,6 +9,7 @@ import { date } from 'zod';
 export default async function FAQPage() {
   const users = await getUsers();
   const tickets = await getTickets();
+  const interests = await getinterests();
 
   return (
     <div className="container mx-auto px-4 py-4 sm:p-6">
@@ -19,11 +20,11 @@ export default async function FAQPage() {
             Administrar 
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            Gestiona y supervisa los Usuarios, Intereses, Gastos y Tickets.
+            Gestiona y supervisa.
           </p>
         </div>
       </div>
-      <AdminAccordion users={users?.data || []} tickets={tickets?.data || []}/>
+      <AdminAccordion users={users?.data || []} tickets={tickets?.data || []} interests={Array.isArray(interests) ? interests : []}/>
     </div>
   );
 }

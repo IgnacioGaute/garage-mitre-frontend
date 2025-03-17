@@ -28,7 +28,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
   const form = useForm<TicketRegistrationForDaySchemaType>({
     resolver: zodResolver(ticketRegistrationForDaySchema),
     defaultValues: {
-      days: 0,
+      hours: 0,
       price: 0,
     },
   });
@@ -67,7 +67,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="days"
+                name="hours"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Seleccione la Cantidad de Días</FormLabel>
@@ -75,17 +75,17 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
                       <Select
                         disabled={false}
                         onValueChange={(value) => field.onChange(Number(value))}
-                        defaultValue={String(field.value)}
+                        defaultValue={String(field.value) || '24'}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Seleccione días" />
+                          <SelectValue placeholder="Seleccione horas" />
                         </SelectTrigger>
                         <SelectContent className="max-h-48 overflow-y-auto">
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 30].map((day) => (
-                            <SelectItem key={day} value={String(day)}>
-                              {day} días
-                            </SelectItem>
-                          ))}
+                        {[24, 48, 72, 96, 120, 144, 168, 192, 216, 240, 360, 720].map((hours) => (
+                          <SelectItem key={hours} value={String(hours)}>
+                            {hours}hs
+                          </SelectItem>
+                        ))}
                         </SelectContent>
                       </Select>
                     </FormControl>

@@ -1,7 +1,7 @@
 'use server';
 ;
 import { otherPaymentSchema, OtherPaymentSchemaType } from '@/schemas/other-payment.schema';
-import { createOtherPayment as createOtherPaymentAPI } from '@/services/box-list.service'
+import { createOtherPayment as createOtherPaymentAPI } from '@/services/box-lists.service'
 
 export async function createOtherPaymentAction(values: OtherPaymentSchemaType) {
   const validatedFields = otherPaymentSchema.safeParse(values);

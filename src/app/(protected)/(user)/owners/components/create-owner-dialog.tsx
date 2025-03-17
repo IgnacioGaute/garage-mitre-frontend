@@ -23,6 +23,10 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { toast } from 'sonner';
 import { createCustomerAction } from '@/actions/customers/create-customer.action';
 import { customerSchema, CustomerSchemaType } from '@/schemas/customer.schema';
+import { PARKING_TYPE } from '@/types/vehicle.type';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+
 
 export function CreateOwnerDialog() {
   const [open, setOpen] = useState(false);
@@ -59,6 +63,7 @@ export function CreateOwnerDialog() {
           licensePlate: '',
           vehicleBrand: '',
           amount: 0,
+          parkingType: PARKING_TYPE[0]
         })
       );
       append(vehiclesToAdd);
@@ -236,6 +241,32 @@ export function CreateOwnerDialog() {
                     />
                     <FormField
                       control={form.control}
+                      name={`vehicles.${index}.parkingType`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tipo de Estacionamiento</FormLabel>
+                          <FormControl>
+                            <Select
+                              disabled={isPending}
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona un tipo" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="EXPENSES_1">Expensas 1</SelectItem>
+                                <SelectItem value="EXPENSES_2">Expensas 2</SelectItem>
+                                <SelectItem value="EXPENSES_3">Expensas 3</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
                       name={`vehicles.${index}.amount`}
                       render={({ field }) => (
                         <FormItem>
@@ -252,6 +283,9 @@ export function CreateOwnerDialog() {
                         </FormItem>
                       )}
                     />
+                    <div className='p-5'>
+                    <Separator/>
+                    </div>
                   </div>
                 ))}
               </>

@@ -16,20 +16,19 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowUp } from "lucide-react";
+import { Interest } from "@/types/interest.type";
 
-export default function CardInterest({ className }: { className?: string }) {
+export default function CardInterest({ className, interests }: { className?: string, interests : Interest[] }) {
     const [error, setError] = useState<string | undefined>('');
     const [success, setSuccess] = useState<string | undefined>('');
     const [isPending, startTransition] = useTransition();
     
-    const [currentInterestOwner, setCurrentInterestOwner] = useState<number>(0);
-    const [currentInterestRenter, setCurrentInterestRenter] = useState<number>(0);
 
     const form = useForm<InterestSchemaType>({
         resolver: zodResolver(interestSchema),
         defaultValues: {
-            interestOwner: 0,
-            interestRenter: 0
+            interestOwner: interests?.[0]?.interestOwner || 0,
+            interestRenter: interests?.[0]?.interestRenter || 0
         },
     });
 
@@ -46,9 +45,6 @@ export default function CardInterest({ className }: { className?: string }) {
                     } else {
                         setSuccess(data.success);
                         toast.success('Intereses creados exitosamente');
-
-                        setCurrentInterestOwner(values.interestOwner);
-                        setCurrentInterestRenter(values.interestRenter);
                     }
                 })
                 .catch((error) => {
@@ -76,7 +72,7 @@ export default function CardInterest({ className }: { className?: string }) {
                                     <FormLabel className="flex items-center gap-2">
                                         Intereses Propietarios 
                                         <span className="text-green-600 flex items-center gap-1">
-                                            {currentInterestOwner}
+                                            {interests?.[0]?.interestOwner }
                                             <ArrowUp className="w-4 h-4 text-green-600" />
                                         </span>
                                     </FormLabel>
@@ -95,7 +91,7 @@ export default function CardInterest({ className }: { className?: string }) {
                                     <FormLabel className="flex items-center gap-2">
                                         Intereses Inquilinos 
                                         <span className="text-green-600 flex items-center gap-1">
-                                            {currentInterestRenter}
+                                            {interests?.[0]?.interestRenter}
                                             <ArrowUp className="w-4 h-4 text-green-600" />
                                         </span>
                                     </FormLabel>

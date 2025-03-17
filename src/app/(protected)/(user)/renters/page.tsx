@@ -2,7 +2,7 @@
 import { CreditCardIcon } from 'lucide-react';
 import { RentersTable } from './components/renters-table';
 import { renterColumns } from './components/renter-columns';
-import { getCustomers } from '@/services/customer.service';
+import { getCustomers } from '@/services/customers.service';
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
 import GenerateReceiptsButton from '../components/all-receipts-button';
 

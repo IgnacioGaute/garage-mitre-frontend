@@ -35,7 +35,8 @@ export function CreateTicketDialog() {
     resolver: zodResolver(ticketSchema),
     defaultValues: {
       codeBar: '',
-      amount: 0,
+      dayPrice: 0,
+      nightPrice: 0,
       vehicleType: 'AUTO',
     },
   });
@@ -50,6 +51,7 @@ export function CreateTicketDialog() {
           setError(data.error);
           setSuccess(data.success);
           toast.success('Ticket creado exitosamente');
+          setOpen(false)
         })
         .catch((error) => {
           console.error(error);
@@ -88,10 +90,10 @@ export function CreateTicketDialog() {
             />
             <FormField
               control={form.control}
-              name="amount"
+              name="dayPrice"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Precio de Ticket por Hora</FormLabel>
+                  <FormLabel>Precio de Ticket por Hora Dia</FormLabel>
                   <FormControl>
                     <Input disabled={isPending} {...field} />
                   </FormControl>
@@ -99,7 +101,19 @@ export function CreateTicketDialog() {
                 </FormItem>
               )}
             />
-            
+            <FormField
+              control={form.control}
+              name="nightPrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Precio de Ticket por Hora Noche</FormLabel>
+                  <FormControl>
+                    <Input disabled={isPending} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             {/* Select para Vehicle Type */}
             <FormField
               control={form.control}
@@ -118,7 +132,6 @@ export function CreateTicketDialog() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="AUTO">Auto</SelectItem>
-                        <SelectItem value="MOTO">Moto</SelectItem>
                         <SelectItem value="CAMIONETA">Camioneta</SelectItem>
                       </SelectContent>
                     </Select>

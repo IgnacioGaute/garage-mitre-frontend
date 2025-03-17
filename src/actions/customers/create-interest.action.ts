@@ -1,7 +1,7 @@
 'use server';
 
 import { interestSchema, InterestSchemaType } from '@/schemas/interest-schema';
-import { createInterest as createInterestAPI } from '@/services/customer.service';
+import { createInterest as createInterestAPI } from '@/services/customers.service';
 
 export async function createInterestAction(values: InterestSchemaType) {
   const validatedFields = interestSchema.safeParse(values);

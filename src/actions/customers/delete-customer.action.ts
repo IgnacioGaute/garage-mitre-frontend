@@ -1,6 +1,6 @@
 'use server';
 
-import { deleteCustomer as deleteCustomerAPI } from '@/services/customer.service';
+import { deleteCustomer as deleteCustomerAPI } from '@/services/customers.service';
 
 export async function deleteCustomerAction(id: string) {
   try {

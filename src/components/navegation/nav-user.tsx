@@ -1,6 +1,7 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  AlertCircle,
   BadgeCheck,
   Box,
   ChevronsUpDown,
@@ -27,11 +28,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { User } from 'next-auth';
 import { NavigationMenuDemo } from './navegation-menu';
 import { BoxListDialog } from '../box-list-dialog';
+import { getTodayNotes } from '@/services/notes.service';
 
 export function NavUser({
   userNav,
@@ -45,6 +47,28 @@ export function NavUser({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [openBoxDialog, setOpenBoxDialog] = useState(false);
+  const [hasNewAlert, setHasNewAlert] = useState(false);
+  const session = useSession();
+  
+  
+
+  useEffect(() => {
+    async function fetchTodayNotes() {
+      try {
+        const todayNotes = await getTodayNotes(session.data?.user.id || "", session.data?.token);
+        setHasNewAlert(todayNotes?.length > 0);
+      } catch (error) {
+        console.error('Error al obtener los avisos de hoy:', error);
+      }
+    }
+    
+    fetchTodayNotes();
+
+    const handleNewNote = () => setHasNewAlert(true);
+    window.addEventListener('new-note-created', handleNewNote);
+
+    return () => window.removeEventListener('new-note-created', handleNewNote);
+  }, []);
 
   return (
     <>
@@ -108,7 +132,22 @@ export function NavUser({
 </DropdownMenuGroup>
 
 <DropdownMenuSeparator />
-{userNav.role === 'ADMIN' && (
+<>
+<Link href={'/notes'}>
+      <DropdownMenuGroup>
+        <DropdownMenuItem className="cursor-pointer flex items-center gap-2 relative">
+          <AlertCircle />
+          Avisos
+          {hasNewAlert && (
+            <div className="absolute right-0 top-0 -mt-1 -mr-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+              !
+            </div>
+          )}
+        </DropdownMenuItem>
+      </DropdownMenuGroup>
+    </Link>
+    <DropdownMenuSeparator />
+  </>
   <>
     <Link href={'/admin'}>
       <DropdownMenuGroup>
@@ -120,7 +159,7 @@ export function NavUser({
     </Link>
     <DropdownMenuSeparator />
   </>
-)}
+
 
 
 <DropdownMenuItem

@@ -6,7 +6,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { ChevronsUpDown, Home, Key, Users } from 'lucide-react';
+import { ChevronsUpDown, Home, Key, KeyIcon, ShieldCheck, Users } from 'lucide-react';
 import Link from 'next/link';
 import { BoxListDialog } from '../box-list-dialog';
 import { useState } from 'react';
@@ -54,6 +54,17 @@ export function NavigationMenuDemo({ setIsExpanded }: { setIsExpanded: (state: b
         <DropdownMenuItem className="cursor-pointer flex items-center gap-2 pl-4">
           <Key size={18} />
           Inquilinos
+        </DropdownMenuItem>
+      </Link>
+    </DropdownMenuGroup>
+
+    <DropdownMenuSeparator />
+
+    <DropdownMenuGroup>
+      <Link href="/private-parking">
+        <DropdownMenuItem className="cursor-pointer flex items-center gap-2 pl-4">
+        <ShieldCheck size={24} />
+          Estacionamiento Privado
         </DropdownMenuItem>
       </Link>
     </DropdownMenuGroup>

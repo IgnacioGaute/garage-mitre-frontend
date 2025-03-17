@@ -4,7 +4,8 @@ export type ServiceName =
   | 'owners'
   | 'customers'
   | 'users'
-  | 'interests';
+  | 'interests'
+  | 'notes';
 
 // Define the cache tags structure
 export const CACHE_TAGS = {
@@ -26,6 +27,9 @@ export const CACHE_TAGS = {
   },
   interests: {
     all: 'interests',
+  },
+  notes: {
+    all: 'notes',
   },
 } as const;
 

@@ -1,6 +1,6 @@
 
 import { CreditCardIcon } from 'lucide-react';
-import { getCustomers } from '@/services/customer.service';
+import { getCustomers } from '@/services/customers.service';
 import { OwnersTable } from './components/owners-table';
 import { OwnerColumns } from './components/owner-columns';
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
