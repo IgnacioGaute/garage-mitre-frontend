@@ -75,19 +75,26 @@ export function CreatePrivateParkingDialog() {
   
 
   const handleVehiclesSubmit = (values: CustomerSchemaType) => {
-    startTransition(() => {
-      createCustomerAction(values).then((data) => {
-        if (!data || data.error) {
-          toast.error(data.error);
-        } else {
-          toast.success('Estacionamiento privado creado exitosamente');
-          form.reset();
-          setOpen(false);
-          setPhase('customer');
-        }
-      });
+
+    startTransition(async () => {
+      const data = await createCustomerAction(values); // Se almacena el resultado de la acción en 'data'
+  
+      if (!data || data.error) {
+        // Verifica si data.error es un string o un objeto antes de acceder a 'message'
+        const errorMessage = typeof data.error === 'string' 
+          ? data.error // Si el error es solo un string, mostramos ese mensaje
+          : data.error.message; // Si el error es un objeto, accedemos a 'message'
+  
+        toast.error(errorMessage); // Mostramos el mensaje de error
+      } else {
+        toast.success('Propietario y vehículos creados exitosamente');
+        form.reset();
+        setOpen(false);
+        setPhase('customer');
+      }
     });
   };
+  
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
