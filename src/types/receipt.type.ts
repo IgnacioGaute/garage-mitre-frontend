@@ -11,6 +11,7 @@ export type Receipt = {
     id: string;
     status: PaymentStatusType;
     paymentType: PaymentType;
+    receiptNumber: number;
     price: number;
     startAmount: number;
     lastInterestApplied: Date | null; 

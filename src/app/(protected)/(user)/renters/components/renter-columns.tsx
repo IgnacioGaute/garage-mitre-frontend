@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, SortingFn } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { UpdateRenterDialog } from './update-renter-dialog';
 import { DeleteRenterDialog } from './delete-renter-dialog';
@@ -32,6 +32,14 @@ import generateReceipt from '@/utils/generate-receipt';
 import { cancelReceipt, getCustomerById, historialReceipts } from '@/services/customers.service';
 import { useSession } from 'next-auth/react';
 import { PaymentTypeReceiptDialog } from '../../components/payment-type-receipt-dialog';
+import { cancelReceiptAction } from '@/actions/receipts/cancel-receipt.action';
+import { historialReceiptsAction } from '@/actions/receipts/create-receipt.action';
+
+const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
+  const valueA = rowA.getValue(columnId) as string;
+  const valueB = rowB.getValue(columnId) as string;
+  return valueA.toLowerCase().localeCompare(valueB.toLowerCase());
+};
 
 export const renterColumns: ColumnDef<Customer>[] = [
   {
@@ -42,11 +50,13 @@ export const renterColumns: ColumnDef<Customer>[] = [
         {row.original.lastName}
       </div>
     ),
+    sortingFn: customSort,
   },
   {
     accessorKey: 'firstName',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Nombre" />,
     cell: ({ row }) => <div className="font-medium text-sm sm:text-base">{row.original.firstName}</div>,
+    sortingFn: customSort,
   },
   {
     accessorKey: 'numberOfVehicles',
@@ -56,6 +66,7 @@ export const renterColumns: ColumnDef<Customer>[] = [
         {row.original.numberOfVehicles}
       </div>
     ),
+    sortingFn: customSort,
   },
   {
     id: 'paymentSummary',
@@ -100,9 +111,9 @@ export const renterColumns: ColumnDef<Customer>[] = [
           await generateReceipt(updatedCustomer, "Expensas correspondientes", { paymentType: selectedPaymentType });
       
           toast.success("Recibo generado y enviado a la impresora.");
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error al imprimir el recibo:", error);
-          toast.error("Error al enviar el recibo a la impresora.");
+          toast.error(error?.message || "Error al enviar el recibo a la impresora.");
         } finally {
           setOpenPrintDialog(false);
           setSelectedPaymentType(null); // Limpiar el estado después de imprimir
@@ -121,9 +132,14 @@ export const renterColumns: ColumnDef<Customer>[] = [
             return;
           }
       
-          await historialReceipts(customer.id, {paymentType: selectedPaymentType});
+          const result = await historialReceiptsAction(customer.id, {paymentType: selectedPaymentType});
+          if (result.error) {
+            toast.error(result.error.message); // Aquí mostramos el mensaje del error procesado
+          } else {
+            toast.success("Pago registrado exitosamente.");
+          }
       
-          toast.success("Pago registrado exitosamente.");
+          
         } catch (error) {
           console.error("Error al registrar el pago:", error);
           toast.error("Error al registrar el pago.");
@@ -132,7 +148,6 @@ export const renterColumns: ColumnDef<Customer>[] = [
           setSelectedPaymentType(null); // Limpiar el estado después de imprimir
         }
       };
-
       return (
         <>
           <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
@@ -185,14 +200,18 @@ export const renterColumns: ColumnDef<Customer>[] = [
                   <DialogFooter>
                     <Button variant="outline" onClick={() => setOpenCancelDialog(false)}>Cancelar</Button>
                     <Button
-                      onClick={() => {
-                        cancelReceipt(customer.id);
+                      onClick={async () => {
+                        const result = await cancelReceiptAction(customer.id);
+                        if (result.error) {
+                          toast.error(result.error.message); // Aquí mostramos el mensaje del error procesado
+                        } else {
+                          toast.success('Recibo cancelado exitosamente');
+                        }
                         setOpenCancelDialog(false);
                         setOpenDropdown(false);
-                        toast.success('Recibo cancelado exitosamente');
                       }}
-                    >
-                      Confirmar
+                      >
+                      Cancelar Recibo
                     </Button>
                   </DialogFooter>
                 </DialogContent>

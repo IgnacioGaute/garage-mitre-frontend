@@ -17,15 +17,20 @@ import { ticketColumns } from './tickets/ticket-columns';
 import UpdateAmountCustomerCard from './update-amount-customers/update-amount-customer-card';
 import { useSession } from 'next-auth/react';
 import { Interest } from '@/types/interest.type';
+import { ParkingTypeTable } from './parking-type/parking-types-table';
+import { parkingTypeColumns } from './parking-type/parking-type-columns';
+import { ParkingType } from '@/types/parking-type';
 
 export function AdminAccordion({
   users,
   tickets,
-  interests
+  interests,
+  parkingTypes
 }: {
   users: User[];
   tickets: Ticket[];
   interests: Interest[];
+  parkingTypes : ParkingType[]
 }) {
   const session = useSession();
   
@@ -119,6 +124,17 @@ export function AdminAccordion({
               </AccordionTrigger>
               <AccordionContent className="pt-2 sm:pt-4 flex-grow flex flex-col">
                 <UpdateAmountCustomerCard className="h-full" />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          <Accordion className="w-full h-full flex flex-col" type="multiple">
+            <AccordionItem value="otherPayment" className="flex flex-col h-full">
+              <AccordionTrigger className="text-base sm:text-lg font-semibold w-full flex justify-between items-center">
+                <span>Gestionar Tipo de Estacionamientos</span>
+              </AccordionTrigger>
+              <AccordionContent className="pt-2 sm:pt-4 flex-grow flex flex-col">
+                <ParkingTypeTable columns={parkingTypeColumns} data={parkingTypes} />
               </AccordionContent>
             </AccordionItem>
           </Accordion>

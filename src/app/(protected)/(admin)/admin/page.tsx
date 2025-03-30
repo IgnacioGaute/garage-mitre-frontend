@@ -1,7 +1,7 @@
 import { Settings } from 'lucide-react';
 import { AdminAccordion } from './components/admin-accordion';
 import { getUsers } from '@/services/users.service';
-import { getinterests } from '@/services/customers.service';
+import { getinterests, getParkingTypes } from '@/services/customers.service';
 import { Interest } from '@/types/interest.type';
 import { getTickets } from '@/services/tickets.service';
 import { date } from 'zod';
@@ -10,6 +10,8 @@ export default async function FAQPage() {
   const users = await getUsers();
   const tickets = await getTickets();
   const interests = await getinterests();
+  const parkingTypes = await getParkingTypes();
+
 
   return (
     <div className="container mx-auto px-4 py-4 sm:p-6">
@@ -24,7 +26,7 @@ export default async function FAQPage() {
           </p>
         </div>
       </div>
-      <AdminAccordion users={users?.data || []} tickets={tickets?.data || []} interests={Array.isArray(interests) ? interests : []}/>
+      <AdminAccordion users={users?.data || []} tickets={tickets?.data || []} interests={Array.isArray(interests) ? interests : []} parkingTypes={parkingTypes?.data || []}/>
     </div>
   );
 }

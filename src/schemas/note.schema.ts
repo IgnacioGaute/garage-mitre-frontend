@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const noteSchema = z.object({
-  description: z.string().min(2, 'La descripcion debe tener al menos 2 caracteres').max(255, 'Máximo 255 caracteres')
+  description: z.string().min(2, 'La descripcion debe tener al menos 2 caracteres').max(650, 'Máximo 650 caracteres')
 });
 
 export type NoteSchemaType = z.infer<typeof noteSchema>;

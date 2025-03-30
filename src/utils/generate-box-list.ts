@@ -24,6 +24,8 @@ export default async function generateBoxList(boxList: any, userName: string): P
 
     const renters = validReceipts.filter(receipt => receipt.customer?.customerType === 'RENTER');
     const owners = validReceipts.filter(receipt => receipt.customer?.customerType === 'OWNER');
+    const privates = validReceipts.filter(receipt => receipt.customer?.customerType === 'PRIVATE');
+
 
     const pdfDoc = await PDFDocument.create();
     let page = pdfDoc.addPage([600, 800]);
@@ -220,6 +222,7 @@ export default async function generateBoxList(boxList: any, userName: string): P
     addDataSection('Total de Tickets Vehiculos (Días)', ticketDays, ticket => [ticket.description, ticket.price.toString(), ticket.dateNow, '']);
     addDataSectionReceipt('Total de Recibo pago Facturas', renters, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, receipt.dateNow, receipt.paymentType === 'TRANSFER' ? 'TRASFERENCIA' : 'EFECTIVO']);
     addDataSectionReceipt('Total de Recibo pago Expensas', owners, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, receipt.dateNow, receipt.paymentType === 'TRANSFER' ? 'TRASFERENCIA' : 'EFECTIVO']);
+    addDataSectionReceipt('Total de Recibo pago Facturas (Privado)', privates, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, receipt.dateNow, receipt.paymentType === 'TRANSFER' ? 'TRASFERENCIA' : 'EFECTIVO']);
     addDataSectionExpense('Total Gastos', otherPaymentsRegistration, payment => [payment.description, payment.price.toString(), payment.dateNow, '']);
 
     const drawSectionTotal = (title: string, total: number) => {

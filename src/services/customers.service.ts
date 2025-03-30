@@ -10,6 +10,8 @@ import { getAuthHeaders } from "@/lib/auth";
 import { AmountCustomerSchemaType } from "@/schemas/amount-customer.schema";
 import { AmountCustomer } from "@/types/amount-customer.type";
 import { ReceiptSchemaType } from "@/schemas/receipt.schema";
+import { ParkingType } from "@/types/parking-type";
+import { ParkingTypeSchemaType, UpdateParkingTypeSchemaType } from "@/schemas/parking-type.schema";
 
 
 
@@ -68,19 +70,25 @@ export const createCustomer = async (
       });
   
       const data = await response.json();
-  
+
       if (response.ok) {
         revalidateTag(getCacheTag('customers', 'all'));
         return data as Customer;
       } else {
-        console.error('Error en la respuesta:', data);
-        return null;
+        console.error(data);
+        return {
+          error: {
+            code: data.code || 'UNKNOWN_ERROR',
+            message: data.message || 'Error desconocido'
+          },
+        };
       }
     } catch (error) {
       console.error('Error en create customers:', error);
       return null;
     }
   };
+
 
   export const updateCustomer = async (
     id: string,
@@ -128,11 +136,15 @@ export const createCustomer = async (
     }
   };
 
+  type ReceiptResponse =
+  | { receiptNumber: string; success?: true } // respuesta exitosa
+  | { error: { code: string; message: string }; success?: false }; // error
 
+  
   export const historialReceipts = async (
     customerId: string,
     values: ReceiptSchemaType
-  ) => {
+  ): Promise<ReceiptResponse> => {
     try {
       const response = await fetch(`${BASE_URL}/receipts/customers/${customerId}`, {
         method: 'PATCH',
@@ -141,19 +153,36 @@ export const createCustomer = async (
         },
         body: JSON.stringify(values),
       });
+  
       const data = await response.json();
   
       if (response.ok) {
-        return data
+        return {
+          receiptNumber: data.receiptNumber, // asegurate que tu backend devuelva esto
+          success: true,
+        };
       } else {
         console.error(data);
-        return null;
+        return {
+          error: {
+            code: data.code || 'UNKNOWN_ERROR',
+            message: data.message || 'Error desconocido',
+          },
+          success: false,
+        };
       }
     } catch (error) {
       console.error(error);
-      return null;
+      return {
+        error: {
+          code: 'NETWORK_ERROR',
+          message: 'Ocurrió un error al conectar con el servidor.',
+        },
+        success: false,
+      };
     }
   };
+  
 
   export const cancelReceipt = async (
     customerId: string
@@ -171,8 +200,44 @@ export const createCustomer = async (
         return data
       } else {
         console.error(data);
+        return {
+          error: {
+            code: data.code || 'UNKNOWN_ERROR',
+            message: data.message || 'Error desconocido'
+          },
+        };
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+  export const numberGeneratorForAllCustomer = async (
+    customerId: string
+  ) => {
+    try {
+      const response = await fetch(`${BASE_URL}/receipts/numberGenerator/${customerId}`, {
+        method: 'PATCH',
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      // Evitá parsear si no hay contenido
+      let data = null;
+      const text = await response.text();
+      if (text) {
+        data = JSON.parse(text);
+      }
+      
+      if (response.ok) {
+        return data;
+      } else {
+        console.error(data);
         return null;
       }
+      
     } catch (error) {
       console.error(error);
       return null;
@@ -248,3 +313,97 @@ export const createCustomer = async (
       return null;
     }
   };
+
+  export const getParkingTypes = async (authToken?: string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/customers/parking/parkingTypes`, {
+        headers: await getAuthHeaders(authToken),
+        next: {
+          tags: [getCacheTag('parkingTypes', 'all')],
+        },
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        return data as PaginatedResponse<ParkingType>;
+      } else {
+        console.error(data);
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+export const createParkingType = async (
+    values: ParkingTypeSchemaType, authToken?: string
+  ) => {
+    try {
+      const response = await fetch(`${BASE_URL}/customers/parking/parkingTypes`, {
+        method: 'POST',
+        headers: await getAuthHeaders(authToken),
+        body: JSON.stringify(values),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        revalidateTag(getCacheTag('parkingTypes', 'all'));
+        return data as ParkingType;
+      } else {
+        console.error('Error en la respuesta:', data);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error en create parkingTypes:', error);
+      return null;
+    }
+  };
+
+  export const updateParkingType = async (
+    id: string,
+    values: Partial<UpdateParkingTypeSchemaType>, authToken?: string
+  ) => {
+    try {
+      const response = await fetch(`${BASE_URL}/customers/parking/parkingTypes/${id}`, {
+        method: 'PATCH',
+        headers: await getAuthHeaders(authToken),
+        body: JSON.stringify(values),
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        revalidateTag(getCacheTag('parkingTypes', 'all'));
+        return data as ParkingType;
+      } else {
+        console.error(data);
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+  
+  export const deleteParkingType = async (id: string, authToken?: string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/customers/parking/parkingTypes/${id}`, {
+        headers: await getAuthHeaders(authToken),
+        method: 'DELETE',
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        revalidateTag(getCacheTag('parkingTypes', 'all'));
+        return data;
+      } else {
+        console.error(data);
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+

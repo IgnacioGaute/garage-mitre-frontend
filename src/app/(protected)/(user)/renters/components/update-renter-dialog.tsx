@@ -28,7 +28,8 @@ import {
   UpdateCustomerSchemaType,
 } from '@/schemas/customer.schema';
 import { X } from 'lucide-react';
-import { PARKING_TYPE } from '@/types/vehicle.type';
+import { PARKING_TYPE } from '@/types/parking-type';
+
 
 export function UpdateRenterDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
@@ -160,6 +161,24 @@ export function UpdateRenterDialog({ customer }: { customer: Customer }) {
                     </FormItem>
                   )}
                 />
+                              <FormField
+                control={form.control}
+                name="documentNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Número de documento</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        disabled={isPending}
+                        placeholder="Escriba número de documento"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
                 <FormField
                   control={form.control}
                   name="numberOfVehicles"

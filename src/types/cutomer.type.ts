@@ -15,7 +15,8 @@ export type Customer = {
     address: string; 
     documentNumber: number;
     numberOfVehicles: number;
-    startDate: Date | null;  
+    startDate: Date | null; 
+    previusStartDate: Date | null;  
     customerType: CustomerType;
     deletedAt: Date;
     createdAt: Date;

@@ -28,7 +28,6 @@ import {
   UpdateCustomerSchemaType,
 } from '@/schemas/customer.schema';
 import { X } from 'lucide-react';
-import { PARKING_TYPE } from '@/types/vehicle.type';
 
 export function UpdatePrivateParkingDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
@@ -45,7 +44,7 @@ export function UpdatePrivateParkingDialog({ customer }: { customer: Customer })
       documentNumber: customer.documentNumber ?? 0,
       numberOfVehicles: customer.numberOfVehicles ?? 0,
       customerType: customer.customerType ?? 'PRIVATE',
-      vehicles: customer.vehicles ?? [],
+      vehicles: customer.vehicles ?? []
     },
   });
 
@@ -64,8 +63,7 @@ export function UpdatePrivateParkingDialog({ customer }: { customer: Customer })
         () => ({
           licensePlate: '',
           vehicleBrand: '',
-          amount: 0,
-          parkingType: PARKING_TYPE[0]
+          amount: 0
         })
       );
       replace([...currentVehicles, ...vehiclesToAdd]);
@@ -159,6 +157,24 @@ export function UpdatePrivateParkingDialog({ customer }: { customer: Customer })
                     </FormItem>
                   )}
                 />
+                            <FormField
+              control={form.control}
+              name="documentNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Número de documento</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      disabled={isPending}
+                      placeholder="Escriba número de documento"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
                 <FormField
                   control={form.control}
                   name="numberOfVehicles"
@@ -211,24 +227,24 @@ export function UpdatePrivateParkingDialog({ customer }: { customer: Customer })
         </FormItem>
       )}
     />
-    <FormField
-      control={form.control}
-      name={`vehicles.${index}.amount`}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Monto del vehículo {index + 1}</FormLabel>
-          <FormControl>
-            <Input
-              type="number"
-              disabled={isPending}
-              placeholder="Escriba el monto"
-              {...field}
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+      <FormField
+        control={form.control}
+        name={`vehicles.${index}.amount`}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Monto del vehículo {index + 1}</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                disabled={isPending}
+                placeholder="Escriba el monto"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     <button
       type="button"
       className="absolute top-2 right-2 hover:text-red-700"

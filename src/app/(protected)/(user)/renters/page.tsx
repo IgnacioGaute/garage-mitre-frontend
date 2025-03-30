@@ -5,6 +5,7 @@ import { renterColumns } from './components/renter-columns';
 import { getCustomers } from '@/services/customers.service';
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
 import GenerateReceiptsButton from '../components/all-receipts-button';
+import { ExportCustomersExcel } from '../components/export-customers-excel';
 
 
 export default async function RenterPage() {
@@ -24,6 +25,7 @@ export default async function RenterPage() {
       <div className="mb-4">
         <GenerateReceiptsButton customers={customers?.data || []} />
       </div>
+       <ExportCustomersExcel customers={customers?.data || []} />
       <RentersTable
         columns={renterColumns}
         data={customers?.data || []}

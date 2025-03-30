@@ -38,11 +38,13 @@ export const noteColumns: ColumnDef<Note>[] = [
   {
     accessorKey: 'description',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Descripcion" />
+      <DataTableColumnHeader column={column} title="Descripción" />
     ),
-    cell: ({ row }) => (
-      <div className="min-w-[100px] text-sm">{row.getValue('description')}</div>
-    ),
+    cell: ({ row }) => {
+      const description = row.getValue('description') as string; // Aseguramos que description es de tipo string
+      const truncatedDescription = description.length > 3 ? description.slice(0, 3) + "..." : description;
+      return <div className="min-w-[100px] text-sm">{truncatedDescription}</div>;
+    },
   },
   {
     accessorFn: (row) => row.user?.email,

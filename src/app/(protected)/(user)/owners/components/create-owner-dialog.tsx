@@ -23,7 +23,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { toast } from 'sonner';
 import { createCustomerAction } from '@/actions/customers/create-customer.action';
 import { customerSchema, CustomerSchemaType } from '@/schemas/customer.schema';
-import { PARKING_TYPE } from '@/types/vehicle.type';
+import { PARKING_TYPE, ParkingType } from '@/types/parking-type';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 
@@ -46,6 +46,7 @@ export function CreateOwnerDialog() {
       vehicles: [],
     },
   });
+  
 
   const { fields, append, remove, replace } = useFieldArray({
     control: form.control,
@@ -60,10 +61,8 @@ export function CreateOwnerDialog() {
       const vehiclesToAdd = Array.from(
         { length: numberOfVehicles - currentVehicles.length },
         () => ({
-          licensePlate: '',
-          vehicleBrand: '',
-          amount: 0,
-          parkingType: PARKING_TYPE[0]
+          garageNumber: 0,
+          parking: PARKING_TYPE[1]
         })
       );
       append(vehiclesToAdd);
@@ -77,21 +76,28 @@ export function CreateOwnerDialog() {
     setPhase('vehicles');
   };
   
-
   const handleVehiclesSubmit = (values: CustomerSchemaType) => {
-    startTransition(() => {
-      createCustomerAction(values).then((data) => {
-        if (!data || data.error) {
-          toast.error(data.error);
-        } else {
-          toast.success('Propietario y vehículos creados exitosamente');
-          form.reset();
-          setOpen(false);
-          setPhase('customer');
-        }
-      });
+
+    startTransition(async () => {
+      const data = await createCustomerAction(values); // Se almacena el resultado de la acción en 'data'
+  
+      if (!data || data.error) {
+        // Verifica si data.error es un string o un objeto antes de acceder a 'message'
+        const errorMessage = typeof data.error === 'string' 
+          ? data.error // Si el error es solo un string, mostramos ese mensaje
+          : data.error.message; // Si el error es un objeto, accedemos a 'message'
+  
+        toast.error(errorMessage); // Mostramos el mensaje de error
+      } else {
+        toast.success('Propietario y vehículos creados exitosamente');
+        form.reset();
+        setOpen(false);
+        setPhase('customer');
+      }
     });
   };
+  
+  
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -215,74 +221,54 @@ export function CreateOwnerDialog() {
                   <div key={field.id} className="space-y-2">
                     <FormField
                       control={form.control}
-                      name={`vehicles.${index}.licensePlate`}
+                      name={`vehicles.${index}.garageNumber`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Placa del vehículo {index + 1}</FormLabel>
+                          <FormLabel>Número de Cochera</FormLabel>
                           <FormControl>
-                            <Input disabled={isPending} placeholder="Escriba la placa" {...field} />
+                          <Input
+                          type="number"
+                          disabled={isPending}
+                          min={1}
+                          placeholder="Escriba número de Cochera"
+                          {...field}
+                        />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name={`vehicles.${index}.vehicleBrand`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Marca del vehículo {index + 1}</FormLabel>
-                          <FormControl>
-                            <Input disabled={isPending} placeholder="Escriba la marca" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`vehicles.${index}.parkingType`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tipo de Estacionamiento</FormLabel>
-                          <FormControl>
-                            <Select
-                              disabled={isPending}
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecciona un tipo" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="EXPENSES_1">Expensas 1</SelectItem>
-                                <SelectItem value="EXPENSES_2">Expensas 2</SelectItem>
-                                <SelectItem value="EXPENSES_3">Expensas 3</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`vehicles.${index}.amount`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Monto del vehículo {index + 1}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              disabled={isPending}
-                              placeholder="Escriba el monto"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+            <FormField
+              control={form.control}
+              name={`vehicles.${index}.parking`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Vehículo</FormLabel>
+                  <FormControl>
+                    <Select
+                      disabled={isPending}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      <SelectItem value="EXPENSES_1">Expensas 1</SelectItem>
+                        <SelectItem value="EXPENSES_2">Expensas 2</SelectItem>
+                        <SelectItem value="EXPENSES_ZOM_1">Expensas salon 1</SelectItem>
+                        <SelectItem value="EXPENSES_ZOM_2">Expensas salon 2</SelectItem>
+                        <SelectItem value="EXPENSES_ZOM_3">Expensas salon 3</SelectItem>
+                        <SelectItem value="EXPENSES_RICARDO_AZNAR">Expensas Ricado Aznar</SelectItem>
+                        <SelectItem value="EXPENSES_ADOLFO_FONTELA">Expensas Adolfo Fontela</SelectItem>
+                        <SelectItem value="EXPENSES_NIDIA_FONTELA">Expensas Nidia Fontela</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
                     <div className='p-5'>
                     <Separator/>
                     </div>

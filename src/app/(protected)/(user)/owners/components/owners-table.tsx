@@ -26,26 +26,31 @@ import { Input } from '@/components/ui/input';
 import { DataTableViewOptions } from '@/components/ui/data-table-view-options';
 import { CreateOwnerDialog } from './create-owner-dialog';
 import { useSession } from 'next-auth/react';
+import { ParkingType } from '@/types/parking-type';
 
 
 
 interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[];
+    columns: (parkingTypes: ParkingType[]) => ColumnDef<TData, TValue>[];
     data: TData[];
+    parkingTypes: ParkingType[];
   }
 
 export function OwnersTable<TData, TValue>({
   columns,
-  data
+  data,
+  parkingTypes
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'lastName', desc: false }, // Ordenamiento ascendente por apellido (lastName)
+  ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const session = useSession();
   
 
   const table = useReactTable({
     data,
-    columns,
+    columns: columns(parkingTypes),
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
@@ -60,6 +65,7 @@ export function OwnersTable<TData, TValue>({
       pagination: {
         pageSize: 20,
       },
+      sorting: [{ id: 'lastName', desc: false }],
     },
   });
 
@@ -79,7 +85,7 @@ export function OwnersTable<TData, TValue>({
           <DataTableViewOptions table={table} />
           {session.data?.user.role === 'ADMIN' && (
               <>
-              < CreateOwnerDialog />
+              < CreateOwnerDialog/>
               </>
             )}     
         </div>

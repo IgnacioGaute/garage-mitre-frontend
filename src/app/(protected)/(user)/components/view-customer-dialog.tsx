@@ -13,16 +13,19 @@ import { Customer } from '@/types/cutomer.type';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-// Función para mapear los valores de parkingType a textos legibles
-const parkingTypeLabels: Record<string, string> = {
-  ONE_TYPE: 'Tipo Único',
-  EXPENSES_1: 'Expensas 1',
-  EXPENSES_2: 'Expensas 2',
-  EXPENSES_3: 'Expensas 3',
-};
 
 export function ViewCustomerDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
+  const parkingTypeMap: Record<string, string> = {
+    EXPENSES_1: 'Expensas 1',
+    EXPENSES_2: 'Expensas 2',
+    EXPENSES_ZOM_1: 'Expensas salon 1',
+    EXPENSES_ZOM_2: 'Expensas salon 2',
+    EXPENSES_ZOM_3: 'Expensas salon 3',
+    EXPENSES_RICARDO_AZNAR: 'Expensas Ricardo Aznar',
+    EXPENSES_ADOLFO_FONTELA: 'Expensas Adolfo Fontela',
+    EXPENSES_NIDIA_FONTELA: 'Expensas Nidia Fontela',
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -55,8 +58,14 @@ export function ViewCustomerDialog({ customer }: { customer: Customer }) {
             <Table>
               <TableHeader>
                 <TableRow>
+                  {customer.customerType === 'OWNER'?(
+                  <TableHead>Número de Cochera</TableHead>
+                  ):(
                   <TableHead>Placa</TableHead>
-                  <TableHead>Marca</TableHead>
+                  )}
+                  {customer.customerType !== 'OWNER' && (
+                    <TableHead>Marca</TableHead>
+                  )}
                   <TableHead>Monto</TableHead>
                   <TableHead>Tipo de Estacionamiento</TableHead>
                 </TableRow>
@@ -64,10 +73,20 @@ export function ViewCustomerDialog({ customer }: { customer: Customer }) {
               <TableBody>
                 {customer.vehicles.map((vehicle, index) => (
                   <TableRow key={index}>
-                    <TableCell>{vehicle.licensePlate}</TableCell>
+                    {vehicle.licensePlate === "" || null ?(
+                    <TableCell>{vehicle.garageNumber}</TableCell>
+                    ):(
+                      <TableCell>{vehicle.licensePlate}</TableCell>
+                    )}
+                     {customer.customerType !== 'OWNER' && (
                     <TableCell>{vehicle.vehicleBrand}</TableCell>
+                  )}
                     <TableCell>${vehicle.amount}</TableCell>
-                    <TableCell>{parkingTypeLabels[vehicle.parkingType]}</TableCell>
+                    {vehicle.parkingType !== null ? (
+                      <TableCell>{parkingTypeMap[vehicle.parkingType.parkingType] || vehicle.parkingType.parkingType}</TableCell>
+                    ): (
+                      <TableCell>Alquiler</TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

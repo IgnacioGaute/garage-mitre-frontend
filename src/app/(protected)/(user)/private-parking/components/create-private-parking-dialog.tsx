@@ -60,7 +60,6 @@ export function CreatePrivateParkingDialog() {
           licensePlate: '',
           vehicleBrand: '',
           amount: 0,
-          parkingType: PARKING_TYPE[0]
         })
       );
       append(vehiclesToAdd);

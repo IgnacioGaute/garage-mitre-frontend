@@ -24,26 +24,20 @@ import { DataTablePagination } from '@/components/ui/data-table-pagination';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { DataTableViewOptions } from '@/components/ui/data-table-view-options';
-import { CreatePrivateParkingDialog } from './create-private-parking-dialog';
-import { useSession } from 'next-auth/react';
-
-
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { CreateParkingTypeDialog } from './create-parking-type-dialog';
 
 interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[];
-    data: TData[];
-  }
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+}
 
-export function PrivateParkingTable<TData, TValue>({
+export function ParkingTypeTable<TData, TValue>({
   columns,
-  data
+  data,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: 'lastName', desc: false }, // Ordenamiento ascendente por apellido (lastName)
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const session = useSession();
-  
 
   const table = useReactTable({
     data,
@@ -62,39 +56,32 @@ export function PrivateParkingTable<TData, TValue>({
       pagination: {
         pageSize: 20,
       },
-      sorting: [{ id: 'lastName', desc: false }],
     },
   });
 
   return (
-    <div className="flex flex-col space-y-4 sm:space-y-6 pt-4">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-0">
+    <div className="flex flex-col space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <Input
-          placeholder="Filtrar por nombre..."
-          value={(table.getColumn('firstName')?.getFilterValue() as string) ?? ''}
+          placeholder="Filtrar por tipos..."
+          value={(table.getColumn('parkingType')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn('firstName')?.setFilterValue(event.target.value)
+            table.getColumn('parkingType')?.setFilterValue(event.target.value)
           }
           className="w-full sm:max-w-sm rounded-xl bg-secondary border-white"
         />
 
-        <div className="flex items-center justify-between sm:justify-end gap-4 sm:flex-1">
-          <DataTableViewOptions table={table} />
-          {session.data?.user.role === 'ADMIN' && (
-              <>
-              < CreatePrivateParkingDialog />
-              </>
-            )}
-        </div>
+        <DataTableViewOptions table={table} />
+        <CreateParkingTypeDialog />
       </div>
-      <div className="rounded-xl border overflow-x-auto">
+      <ScrollArea className="rounded-xl border bg-background">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="whitespace-nowrap">
+                    <TableHead key={header.id} className="first:pl-4 last:pr-4">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -115,7 +102,7 @@ export function PrivateParkingTable<TData, TValue>({
                   data-state={row.getIsSelected() && 'selected'}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="whitespace-nowrap">
+                    <TableCell key={cell.id} className="first:pl-4 last:pr-4">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
@@ -128,7 +115,7 @@ export function PrivateParkingTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center text-sm sm:text-base"
+                  className="h-24 text-center"
                 >
                   No hay resultados para mostrar.
                 </TableCell>
@@ -136,7 +123,8 @@ export function PrivateParkingTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
-      </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
       <DataTablePagination table={table} />
     </div>
   );

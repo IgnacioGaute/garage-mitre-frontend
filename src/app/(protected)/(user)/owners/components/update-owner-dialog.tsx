@@ -29,6 +29,10 @@ import {
 } from '@/schemas/customer.schema';
 import { X } from 'lucide-react';
 import { PARKING_TYPE } from '@/types/vehicle.type';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ParkingType } from '@/types/parking-type';
+import { Separator } from '@/components/ui/separator';
+
 
 export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
@@ -45,7 +49,10 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
       documentNumber: customer.documentNumber ?? 0,
       numberOfVehicles: customer.numberOfVehicles ?? 0,
       customerType: customer.customerType ?? 'OWNER',
-      vehicles: customer.vehicles ?? [],
+      vehicles: customer.vehicles?.map((vehicle) => ({
+        ...vehicle,
+        parking: vehicle.parkingType?.parkingType ?? PARKING_TYPE[0], // Aseguramos que el parking se asigna correctamente
+      })) ?? [],
     },
   });
 
@@ -53,28 +60,31 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
     control: form.control,
     name: 'vehicles',
   });
-
   const handleCustomerSubmit = (values: Partial<UpdateCustomerSchemaType>) => {
     const numberOfVehicles = values.numberOfVehicles ?? 0;
     const currentVehicles = form.getValues('vehicles') ?? [];
-
+  
+    // Si el número de vehículos es mayor, añadimos vehículos nuevos con los valores por defecto
     if (currentVehicles.length < numberOfVehicles) {
       const vehiclesToAdd = Array.from(
         { length: numberOfVehicles - currentVehicles.length },
-        () => ({
+        (_, index) => ({
+          garageNumber: currentVehicles[index].garageNumber || 0,
           licensePlate: '',
           vehicleBrand: '',
-          amount: 0,
-          parkingType: PARKING_TYPE[0]
+          parking: currentVehicles[index].parking, // Establecer el valor predeterminado del parking
         })
       );
+      // Aquí estamos asegurándonos de que los valores de parking de los vehículos existentes se mantengan
       replace([...currentVehicles, ...vehiclesToAdd]);
     } else if (currentVehicles.length > numberOfVehicles) {
+      // Si hay menos vehículos, eliminamos los vehículos extra
       replace(currentVehicles.slice(0, numberOfVehicles));
     }
-
+  
     setPhase('vehicles');
   };
+  
 
   const handleVehiclesSubmit = (values: Partial<UpdateCustomerSchemaType>) => {
     setIsPending(true);
@@ -83,9 +93,9 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
         toast.error(data.error ?? 'Error desconocido');
       } else {
         toast.success('Propietario y vehículos actualizados exitosamente');
-        form.reset();
         setOpen(false);
         setPhase('customer');
+        form.reset();
       }
       setIsPending(false);
     });
@@ -113,11 +123,12 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
 
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(
+             onSubmit={form.handleSubmit(
               phase === 'customer' ? handleCustomerSubmit : handleVehiclesSubmit
             )}
             className="space-y-4"
           >
+            {/* Formulario de Cliente */}
             {phase === 'customer' && (
               <>
                 <FormField
@@ -161,6 +172,37 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
                 />
                 <FormField
                   control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Dirección</FormLabel>
+                      <FormControl>
+                        <Input disabled={isPending} placeholder="Escriba Dirección" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="documentNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Número de documento</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          disabled={isPending}
+                          placeholder="Escriba número de documento"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="numberOfVehicles"
                   render={({ field }) => (
                     <FormItem>
@@ -181,69 +223,66 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
               </>
             )}
 
+            {/* Formulario de Vehículos */}
             {phase === 'vehicles' && (
               <>
-{fields.map((field, index) => (
-  <div key={field.id} className="space-y-2 relative border p-4 rounded-md">
-    <FormField
-      control={form.control}
-      name={`vehicles.${index}.licensePlate`}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Placa del vehículo {index + 1}</FormLabel>
-          <FormControl>
-            <Input disabled={isPending} placeholder="Escriba la placa" {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <FormField
-      control={form.control}
-      name={`vehicles.${index}.vehicleBrand`}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Marca del vehículo {index + 1}</FormLabel>
-          <FormControl>
-            <Input disabled={isPending} placeholder="Escriba la marca" {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <FormField
-      control={form.control}
-      name={`vehicles.${index}.amount`}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Monto del vehículo {index + 1}</FormLabel>
-          <FormControl>
-            <Input
-              type="number"
-              disabled={isPending}
-              placeholder="Escriba el monto"
-              {...field}
+                {fields.map((field, index) => (
+                  <div key={field.id} className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name={`vehicles.${index}.garageNumber`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Número de Cochera</FormLabel>
+                          <FormControl>
+                          <Input
+                          type="number"
+                          disabled={isPending}
+                          min={1}
+                          placeholder="Escriba número de Cochera"
+                          {...field}
+                        />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+            <FormField
+              control={form.control}
+              name={`vehicles.${index}.parking`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Vehículo</FormLabel>
+                  <FormControl>
+                    <Select
+                      disabled={isPending}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      <SelectItem value="EXPENSES_1">Expensas 1</SelectItem>
+                        <SelectItem value="EXPENSES_2">Expensas 2</SelectItem>
+                        <SelectItem value="EXPENSES_ZOM_1">Expensas salon 1</SelectItem>
+                        <SelectItem value="EXPENSES_ZOM_2">Expensas salon 2</SelectItem>
+                        <SelectItem value="EXPENSES_ZOM_3">Expensas salon 3</SelectItem>
+                        <SelectItem value="EXPENSES_RICARDO_AZNAR">Expensas Ricado Aznar</SelectItem>
+                        <SelectItem value="EXPENSES_ADOLFO_FONTELA">Expensas Adolfo Fontela</SelectItem>
+                        <SelectItem value="EXPENSES_NIDIA_FONTELA">Expensas Nidia Fontela</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <button
-      type="button"
-      className="absolute top-2 right-2 hover:text-red-700"
-      onClick={() => {
-        // Eliminar el vehículo del array
-        remove(index);
-        // Actualizar el número de vehículos
-        form.setValue('numberOfVehicles', fields.length - 1);
-      }}
-    >
-      <X className="w-5 h-5" /> {/* Ícono de cruz */}
-    </button>
-  </div>
-))}
-
+                    <div className='p-5'>
+                    <Separator/>
+                    </div>
+                  </div>
+                ))}
               </>
             )}
 
