@@ -26,10 +26,12 @@ export default function GenerateReceiptsButton({ customers }: GenerateReceiptsBu
 
   return (
     <Button
-      onClick={handleGenerateAllReceipts}
-      className="bg-primary text-white hover:bg-primary/90"
-    >
-      Generar Recibos para Todos
-    </Button>
+    variant="ghost"
+    className="w-full justify-start"
+    size="sm"
+    onClick={handleGenerateAllReceipts}
+  >
+    Generar Recibos
+  </Button>
   );
 }

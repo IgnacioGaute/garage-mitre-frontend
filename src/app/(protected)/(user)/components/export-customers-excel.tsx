@@ -43,8 +43,13 @@ export const ExportCustomersExcel = ({ customers }: Props) => {
   };
 
   return (
-    <Button onClick={handleExport}>
-      Exportar Excel de Clientes
-    </Button>
+    <Button
+    variant="ghost"
+    className="w-full justify-start"
+    size="sm"
+    onClick={handleExport}
+  >
+    Exportar Excel
+  </Button>
   );
 };

@@ -6,6 +6,7 @@ import GenerateReceiptsButton from '../components/all-receipts-button';
 import { PrivateParkingTable } from './components/private-parking-table';
 import { PrivateParkingColumns } from './components/private-parking-columns';
 import { ExportCustomersExcel } from '../components/export-customers-excel';
+import { DropdownMenuAction } from '../components/drop-menu-actions';
 
 
 export default async function PrivateParkingPage() {
@@ -23,9 +24,8 @@ export default async function PrivateParkingPage() {
         </div>
       </div>
       <div className="mb-4">
-        <GenerateReceiptsButton customers={customers?.data || []} />
+        <DropdownMenuAction customers={customers?.data || []} />
       </div>
-        <ExportCustomersExcel customers={customers?.data || []} />
       <PrivateParkingTable
         columns={PrivateParkingColumns}
         data={customers?.data || []}

@@ -6,6 +6,7 @@ import { OwnerColumns } from './components/owner-columns';
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
 import GenerateReceiptsButton from '../components/all-receipts-button';
 import { ExportCustomersExcel } from '../components/export-customers-excel';
+import { DropdownMenuAction } from '../components/drop-menu-actions';
 
 
 export default async function OwnerPage() {
@@ -25,9 +26,8 @@ export default async function OwnerPage() {
         </div>
       </div>
       <div className="mb-4">
-        <GenerateReceiptsButton customers={customers?.data || []} />
+        <DropdownMenuAction customers={customers?.data || []} />
       </div>
-      <ExportCustomersExcel customers={customers?.data || []} />
       <OwnersTable
         columns={OwnerColumns}
         data={customers?.data || []}
