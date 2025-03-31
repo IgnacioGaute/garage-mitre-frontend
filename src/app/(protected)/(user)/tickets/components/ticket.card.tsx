@@ -54,7 +54,7 @@ export default function CardTicket({
           latestRegistration.ticket?.vehicleType ? (
             <CardContent>
               <p className="p-3"><strong>Descripción:</strong> {latestRegistration.description}</p>
-              <p className="p-3"><strong>Día de entrada:</strong> {formatDate(latestRegistration.entryDay)}</p>
+              <p className="p-3"><strong>Día de entrada:</strong> {latestRegistration.entryDay}</p>
               <p className="p-3"><strong>Horario de entrada:</strong> {latestRegistration.entryTime}</p>
               <p className="p-3">
                 <strong>
@@ -67,7 +67,7 @@ export default function CardTicket({
           ) : (
             <CardContent>
               <p className="p-3"><strong>Precio:</strong> ${latestRegistration.price}</p>
-              <p className="p-3"><strong>Día de salida:</strong> {formatDate(latestRegistration.departureDay)}</p>
+              <p className="p-3"><strong>Día de salida:</strong> {latestRegistration.departureDay}</p>
               <p className="p-3"><strong>Horario de entrada:</strong> {latestRegistration.entryTime}</p>
               <p className="p-3"><strong>Horario de salida:</strong> {latestRegistration.departureTime}</p>
             </CardContent>
