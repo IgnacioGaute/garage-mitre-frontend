@@ -13,6 +13,7 @@ import { Customer } from '@/types/cutomer.type';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Note } from '@/types/note.type';
+import { Separator } from '@/components/ui/separator';
 
 
 export function ViewNoteDialog({ note }: { note: Note }) {
@@ -30,9 +31,8 @@ export function ViewNoteDialog({ note }: { note: Note }) {
         <DialogHeader className="items-center">
           <DialogTitle>Aviso</DialogTitle>
         </DialogHeader>
-  
+
         <Card className="p-4 space-y-3 text-sm sm:text-base w-full max-h-[80vh] overflow-y-auto">
-          <CardHeader>Descripcion</CardHeader>
           <CardContent className="p-4 space-y-3 text-sm sm:text-base w-full max-h-[20vh] overflow-y-auto">
             <p className="break-words">{note.description}</p>
           </CardContent>
