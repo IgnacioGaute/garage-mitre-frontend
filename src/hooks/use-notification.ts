@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useRouter } from 'next/navigation';
 
-const socket = io('http://localhost:3030', {
+const socket = io('https://garage-mitre-backend-production.up.railway.app', {
   transports: ['websocket'],
   reconnection: true,
   reconnectionAttempts: 5,
