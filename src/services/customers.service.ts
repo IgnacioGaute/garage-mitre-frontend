@@ -23,7 +23,7 @@ export const getCustomers = async (customer: CustomerType, authToken?: string) =
       const response = await fetch(`${BASE_URL}/customers/customer/${customer}`, {
         headers: await getAuthHeaders(authToken),
         next: {
-          tags: [getCacheTag('customers', 'all')],
+          tags: [getCacheTag('customers', 'all'),getCacheTag('receipts', 'all')],
         },
       });
       const data = await response.json();
@@ -44,6 +44,9 @@ export const getCustomers = async (customer: CustomerType, authToken?: string) =
     try {
       const response = await fetch(`${BASE_URL}/customers/${customerId}`, {
         headers: await getAuthHeaders(authToken),
+        next: {
+          tags: [getCacheTag('customers', 'single', customerId),getCacheTag('receipts', 'all')],
+        },
       });
       const data = await response.json();
   

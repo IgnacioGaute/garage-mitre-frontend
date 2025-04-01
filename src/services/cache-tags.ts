@@ -3,6 +3,7 @@ export type ServiceName =
   | 'renters'
   | 'owners'
   | 'customers'
+  | 'receipts'
   | 'users'
   | 'interests'
   | 'notes'
@@ -21,6 +22,10 @@ export const CACHE_TAGS = {
   },
   customers: {
     all: 'customers',
+    single: (customerId: string) => `customer-${customerId}`,
+  },
+  receipts: {
+    all: 'receipts',
   },
   users: {
     all: 'users',

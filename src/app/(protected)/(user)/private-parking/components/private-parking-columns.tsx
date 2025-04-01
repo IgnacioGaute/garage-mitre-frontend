@@ -103,7 +103,7 @@ export const PrivateParkingColumns: ColumnDef<Customer>[] = [
             return;
           }
       
-          await generateReceipt(updatedCustomer, "Expensas correspondientes", { paymentType: selectedPaymentType });
+          await generateReceipt(updatedCustomer, "Expensas correspondientes", { paymentType: selectedPaymentType, print: true });
       
           toast.success("Recibo generado y enviado a la impresora.");
         } catch (error: any) {
@@ -127,7 +127,7 @@ export const PrivateParkingColumns: ColumnDef<Customer>[] = [
             return;
           }
       
-          const result = await historialReceiptsAction(customer.id, {paymentType: selectedPaymentType});
+          const result = await historialReceiptsAction(customer.id, {paymentType: selectedPaymentType, print: false});
           if (result.error) {
             toast.error(result.error.message); // Aquí mostramos el mensaje del error procesado
           } else {

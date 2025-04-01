@@ -132,9 +132,7 @@ export const updateUser = async (
   try {
     const response = await fetch(`${BASE_URL}/users/${id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await getAuthHeaders(authToken),
       body: JSON.stringify(user),
     });
 
@@ -162,9 +160,7 @@ export const deleteUser = async (id: string, authToken?: string) => {
   try {
     const response = await fetch(`${BASE_URL}/users/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await getAuthHeaders(authToken),
     });
 
     const data = await response.json();
@@ -191,9 +187,7 @@ export const updatePassword = async (
   try {
     const response = await fetch(`${BASE_URL}/users/${id}/password`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await getAuthHeaders(authToken),
       body: JSON.stringify(values),
     });
     const data = await response.json();

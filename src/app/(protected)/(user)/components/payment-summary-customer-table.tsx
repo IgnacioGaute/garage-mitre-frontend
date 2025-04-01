@@ -38,24 +38,30 @@ export function PaymentSummaryTable({ customer, children }: PaymentSummaryTableP
 
   const totalPages = Math.ceil(receipts.length / pageSize);
 
+  const [updatedCustomer, setUpdatedCustomer] = useState<Customer | null>(null);
+
   useEffect(() => {
     if (open) {
       startTransition(async () => {
         try {
           const updatedOwner = await getCustomerById(customer.id, session?.token);
-          const updatedReceipts = updatedOwner?.receipts || [];
-
-          setReceipts(updatedReceipts);
-
-          // ✅ Al abrir el modal, se va a la última página
-          const newTotalPages = Math.ceil(updatedReceipts.length / pageSize);
-          setCurrentPage(newTotalPages > 0 ? newTotalPages : 1);
+          if (updatedOwner) {
+            setUpdatedCustomer(updatedOwner); // ✅ Guardamos el customer actualizado
+            setReceipts(updatedOwner.receipts || []);
+  
+            // ✅ Al abrir el modal, se va a la última página
+            const newTotalPages = Math.ceil(updatedOwner.receipts.length / pageSize);
+            setCurrentPage(newTotalPages > 0 ? newTotalPages : 1);
+          }
         } catch (error) {
           console.error('Error fetching owner receipts:', error);
         }
       });
     }
   }, [open, customer.id]);
+  
+  // Usamos `updatedCustomer` si está disponible, de lo contrario usamos `customer`
+  const activeCustomer = updatedCustomer || customer;
 
   const paginatedReceipts = receipts.slice(
     (currentPage - 1) * pageSize,
@@ -99,19 +105,20 @@ export function PaymentSummaryTable({ customer, children }: PaymentSummaryTableP
                   </TableCell>
                   <TableCell>
                     {receiptOwner.status === 'PENDING'
-                      ? customer.startDate
-                        ? new Date(
-                            new Date(customer.startDate).getTime() +
-                              new Date().getTimezoneOffset() * 60000
-                          ).toLocaleDateString()
-                        : 'Sin fecha'
-                      : customer.previusStartDate
+                    ? activeCustomer.startDate
                       ? new Date(
-                          new Date(customer.previusStartDate).getTime() +
+                          new Date(activeCustomer.startDate).getTime() +
                             new Date().getTimezoneOffset() * 60000
                         ).toLocaleDateString()
-                      : 'Sin fecha'}
-                  </TableCell>
+                      : 'Sin fecha'
+                    : activeCustomer.previusStartDate
+                    ? new Date(
+                        new Date(activeCustomer.previusStartDate).getTime() +
+                          new Date().getTimezoneOffset() * 60000
+                      ).toLocaleDateString()
+                    : 'Sin fecha'}
+                </TableCell>
+
 
                   <TableCell>
                     {receiptOwner.paymentDate &&
