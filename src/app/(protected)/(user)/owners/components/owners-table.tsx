@@ -73,10 +73,10 @@ export function OwnersTable<TData, TValue>({
     <div className="flex flex-col space-y-4 sm:space-y-6 pt-4">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-0">
         <Input
-          placeholder="Filtrar por nombre..."
-          value={(table.getColumn('firstName')?.getFilterValue() as string) ?? ''}
+          placeholder="Filtrar por apellido..."
+          value={(table.getColumn('lastName')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn('firstName')?.setFilterValue(event.target.value)
+            table.getColumn('lastName')?.setFilterValue(event.target.value)
           }
           className="w-full sm:max-w-sm rounded-xl bg-secondary border-white"
         />

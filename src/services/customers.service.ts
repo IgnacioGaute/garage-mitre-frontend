@@ -29,7 +29,7 @@ export const getCustomers = async (customer: CustomerType, authToken?: string) =
       const data = await response.json();
   
       if (response.ok) {
-        return data as PaginatedResponse<Customer>;
+        return data as Customer[]
       } else {
         console.error(data);
         return null;

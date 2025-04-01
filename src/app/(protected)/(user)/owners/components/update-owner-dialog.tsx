@@ -69,7 +69,7 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
       const vehiclesToAdd = Array.from(
         { length: numberOfVehicles - currentVehicles.length },
         (_, index) => ({
-          garageNumber: currentVehicles[index].garageNumber || 0,
+          garageNumber: currentVehicles[index].garageNumber || '',
           licensePlate: '',
           vehicleBrand: '',
           parking: currentVehicles[index].parking, // Establecer el valor predeterminado del parking
@@ -235,13 +235,7 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
                         <FormItem>
                           <FormLabel>Número de Cochera</FormLabel>
                           <FormControl>
-                          <Input
-                          type="number"
-                          disabled={isPending}
-                          min={1}
-                          placeholder="Escriba número de Cochera"
-                          {...field}
-                        />
+                          <Input disabled={isPending} placeholder="Numero de cochera" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

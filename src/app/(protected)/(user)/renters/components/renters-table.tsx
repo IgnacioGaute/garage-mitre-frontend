@@ -25,24 +25,17 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { DataTableViewOptions } from '@/components/ui/data-table-view-options';
 import { CreateRenterDialog } from './create-renter-dialog';
-import { useSession } from 'next-auth/react';
-
-
-
 interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[];
-    data: TData[];
-  }
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+}
 
 export function RentersTable<TData, TValue>({
   columns,
-  data
+  data,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: 'lastName', desc: false }, // Ordenamiento ascendente por apellido (lastName)
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const session = useSession();
 
   const table = useReactTable({
     data,
@@ -61,7 +54,6 @@ export function RentersTable<TData, TValue>({
       pagination: {
         pageSize: 20,
       },
-      sorting: [{ id: 'lastName', desc: false }],
     },
   });
 
@@ -69,21 +61,17 @@ export function RentersTable<TData, TValue>({
     <div className="flex flex-col space-y-4 sm:space-y-6 pt-4">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-0">
         <Input
-          placeholder="Filtrar por nombre..."
-          value={(table.getColumn('firstName')?.getFilterValue() as string) ?? ''}
+          placeholder="Filtrar por apellido..."
+          value={(table.getColumn('lastName')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn('firstName')?.setFilterValue(event.target.value)
+            table.getColumn('lastName')?.setFilterValue(event.target.value)
           }
           className="w-full sm:max-w-sm rounded-xl bg-secondary border-white"
         />
 
         <div className="flex items-center justify-between sm:justify-end gap-4 sm:flex-1">
           <DataTableViewOptions table={table} />
-          {session.data?.user.role === 'ADMIN' && (
-              <>
-               < CreateRenterDialog />
-              </>
-            )}
+          <CreateRenterDialog />
         </div>
       </div>
       <div className="rounded-xl border overflow-x-auto">

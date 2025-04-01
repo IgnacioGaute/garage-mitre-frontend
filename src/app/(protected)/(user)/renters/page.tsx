@@ -4,8 +4,6 @@ import { RentersTable } from './components/renters-table';
 import { renterColumns } from './components/renter-columns';
 import { getCustomers } from '@/services/customers.service';
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
-import GenerateReceiptsButton from '../components/all-receipts-button';
-import { ExportCustomersExcel } from '../components/export-customers-excel';
 import { DropdownMenuAction } from '../components/drop-menu-actions';
 
 
@@ -24,11 +22,11 @@ export default async function RenterPage() {
         </div>
       </div>
       <div className="mb-4">
-        <DropdownMenuAction customers={customers?.data || []} />
+        <DropdownMenuAction customers={customers || []} />
       </div>
       <RentersTable
         columns={renterColumns}
-        data={customers?.data || []}
+        data={customers|| []}
       />
     </div>
   );

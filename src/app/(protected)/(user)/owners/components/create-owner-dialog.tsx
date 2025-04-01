@@ -61,7 +61,7 @@ export function CreateOwnerDialog() {
       const vehiclesToAdd = Array.from(
         { length: numberOfVehicles - currentVehicles.length },
         () => ({
-          garageNumber: 0,
+          garageNumber: '',
           parking: PARKING_TYPE[1]
         })
       );
@@ -226,13 +226,7 @@ export function CreateOwnerDialog() {
                         <FormItem>
                           <FormLabel>Número de Cochera</FormLabel>
                           <FormControl>
-                          <Input
-                          type="number"
-                          disabled={isPending}
-                          min={1}
-                          placeholder="Escriba número de Cochera"
-                          {...field}
-                        />
+                          <Input disabled={isPending} placeholder="Numero de cochera" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

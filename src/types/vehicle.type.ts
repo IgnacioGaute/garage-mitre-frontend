@@ -9,7 +9,7 @@ export type Parking = (typeof PARKING_TYPE)[number];
 export type Vehicle = {
     id: string;
     licensePlate: string;
-    garageNumber: number;
+    garageNumber: string;
     vehicleBrand: string;
     amount: number;
     parking: Parking;
