@@ -24,11 +24,11 @@ export default async function PrivateParkingPage() {
         </div>
       </div>
       <div className="mb-4">
-        <DropdownMenuAction customers={customers?.data || []} />
+        <DropdownMenuAction customers={customers || []} />
       </div>
       <PrivateParkingTable
         columns={PrivateParkingColumns}
-        data={customers?.data || []}
+        data={customers || []}
       />
     </div>
   );

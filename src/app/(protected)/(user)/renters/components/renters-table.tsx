@@ -34,7 +34,9 @@ export function RentersTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'lastName', desc: false }, // Ordenamiento ascendente por apellido (lastName)
+  ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
@@ -54,6 +56,7 @@ export function RentersTable<TData, TValue>({
       pagination: {
         pageSize: 20,
       },
+      sorting: [{ id: 'lastName', desc: false }],
     },
   });
 
