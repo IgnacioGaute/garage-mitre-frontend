@@ -50,7 +50,7 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
       numberOfVehicles: customer.numberOfVehicles ?? 0,
       customerType: customer.customerType ?? 'OWNER',
       vehicles: customer.vehicles?.map((vehicle) => ({
-        ...vehicle,
+        garageNumber: vehicle.garageNumber ?? "",
         parking: vehicle.parkingType?.parkingType ?? PARKING_TYPE[0], // Aseguramos que el parking se asigna correctamente
       })) ?? [],
     },
@@ -70,8 +70,6 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
         { length: numberOfVehicles - currentVehicles.length },
         (_, index) => ({
           garageNumber: currentVehicles[index].garageNumber || '',
-          licensePlate: '',
-          vehicleBrand: '',
           parking: currentVehicles[index].parking, // Establecer el valor predeterminado del parking
         })
       );

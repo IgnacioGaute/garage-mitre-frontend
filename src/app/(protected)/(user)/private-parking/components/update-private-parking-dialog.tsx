@@ -44,7 +44,11 @@ export function UpdatePrivateParkingDialog({ customer }: { customer: Customer })
       documentNumber: customer.documentNumber ?? 0,
       numberOfVehicles: customer.numberOfVehicles ?? 0,
       customerType: customer.customerType ?? 'PRIVATE',
-      vehicles: customer.vehicles ?? []
+      vehicles: customer.vehicles?.map((vehicle) => ({
+        licensePlate: vehicle.licensePlate ?? "",
+        vehicleBrand: vehicle.vehicleBrand ?? "",
+        amount: vehicle.amount ?? 0,
+      })) ?? [],
     },
   });
 

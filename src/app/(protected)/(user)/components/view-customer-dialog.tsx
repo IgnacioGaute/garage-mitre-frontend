@@ -73,7 +73,7 @@ export function ViewCustomerDialog({ customer }: { customer: Customer }) {
               <TableBody>
                 {customer.vehicles.map((vehicle, index) => (
                   <TableRow key={index}>
-                    {vehicle.licensePlate === "" || null ?(
+                    {vehicle.licensePlate === null ?(
                     <TableCell>{vehicle.garageNumber}</TableCell>
                     ):(
                       <TableCell>{vehicle.licensePlate}</TableCell>

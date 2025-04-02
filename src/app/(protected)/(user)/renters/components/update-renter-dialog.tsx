@@ -46,7 +46,11 @@ export function UpdateRenterDialog({ customer }: { customer: Customer }) {
       documentNumber: customer.documentNumber ?? 0,
       numberOfVehicles: customer.numberOfVehicles ?? 0,
       customerType: customer.customerType ?? 'RENTER',
-      vehicles: customer.vehicles ?? [],
+      vehicles: customer.vehicles?.map((vehicle) => ({
+        licensePlate: vehicle.licensePlate ?? "",
+        vehicleBrand: vehicle.vehicleBrand ?? "",
+        amount: vehicle.amount ?? 0,
+      })) ?? [],
     },
   });
 

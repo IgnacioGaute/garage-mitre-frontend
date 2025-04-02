@@ -17,6 +17,7 @@ export type Receipt = {
     lastInterestApplied: Date | null; 
     interestPercentage: number;
     paymentDate: string | null;
+    startDate: string | null;
     dateNow: string | null;
     boxList: BoxList;
     customer: Customer;

@@ -12,6 +12,7 @@ import { AmountCustomer } from "@/types/amount-customer.type";
 import { ReceiptSchemaType } from "@/schemas/receipt.schema";
 import { ParkingType } from "@/types/parking-type";
 import { ParkingTypeSchemaType, UpdateParkingTypeSchemaType } from "@/schemas/parking-type.schema";
+import { Receipt } from "@/types/receipt.type";
 
 
 
@@ -215,6 +216,35 @@ export const createCustomer = async (
       return null;
     }
   };
+
+  export const findAllPendingReceipts = async (
+    customer: CustomerType
+  ) => {
+    try {
+      const response = await fetch(`${BASE_URL}/receipts/${customer}`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        return data as Receipt[]
+      } else {
+        console.error(data);
+        return {
+          error: {
+            code: data.code || 'UNKNOWN_ERROR',
+            message: data.message || 'Error desconocido'
+          },
+        };
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
 
   export const numberGeneratorForAllCustomer = async (
     customerId: string
