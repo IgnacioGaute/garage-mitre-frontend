@@ -14,7 +14,7 @@ export default async function ProtectedLayout({
 
   return (
     <SessionProvider session={session}>
-      <div className="flex flex-col w-full h-[100dvh] overflow-hidden">
+      <div className="flex flex-col w-full overflow-hidden">
         {children}
       </div>
     </SessionProvider>

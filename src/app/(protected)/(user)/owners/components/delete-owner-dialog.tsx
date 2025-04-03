@@ -76,7 +76,7 @@ export function DeleteOwnerDialog({ customer }: { customer: Customer }) {
           <DialogHeader>
             <DialogTitle>Eliminar Propietario</DialogTitle>
             <DialogDescription>
-              Ingrese {DELETE_OWNER_TEXT} para confirmar.
+              Ingrese {DELETE_OWNER_TEXT} para confirmar.Se eliminara de forma permanente.
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>

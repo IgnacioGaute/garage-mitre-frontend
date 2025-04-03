@@ -7,18 +7,18 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { User } from '@/types/user.type';
-import { UsersTable } from './users/users-table';
-import { userColumns } from './users/user-columns';
-import CardInterest from './interests/create-interest-card';
-import CardOtherPayment from './other-payments/create-other-payment-card';
+import { UsersTable } from '../users/components/users-table';
+import { userColumns } from '../users/components/user-columns';
+import CardInterest from '../interests/components/create-interest-card';
+import CardOtherPayment from '../other-payments/components/create-other-payment-card';
 import { Ticket } from '@/types/ticket.type';
-import { TicketsTable } from './tickets/tickets-table';
-import { ticketColumns } from './tickets/ticket-columns';
-import UpdateAmountCustomerCard from './update-amount-customers/update-amount-customer-card';
+import { TicketsTable } from '../tickets/components/tickets-table';
+import { ticketColumns } from '../tickets/components/ticket-columns';
+import UpdateAmountCustomerCard from '../update-amount-customers/components/update-amount-customer-card';
 import { useSession } from 'next-auth/react';
 import { Interest } from '@/types/interest.type';
-import { ParkingTypeTable } from './parking-type/parking-types-table';
-import { parkingTypeColumns } from './parking-type/parking-type-columns';
+import { ParkingTypeTable } from '../parking-type/components/parking-types-table';
+import { parkingTypeColumns } from '../parking-type/components/parking-type-columns';
 import { ParkingType } from '@/types/parking-type';
 
 export function AdminAccordion({

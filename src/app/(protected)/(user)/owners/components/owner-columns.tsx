@@ -27,8 +27,12 @@ import { PaymentTypeReceiptDialog } from '../../components/payment-type-receipt-
 import { ParkingType } from '@/types/parking-type';
 import { cancelReceiptAction } from '@/actions/receipts/cancel-receipt.action';
 import { historialReceiptsAction } from '@/actions/receipts/create-receipt.action';
+import { SoftDeleteOwnerDialog } from './soft-delete-owner-dialog';
+import { RestoredOwnerDialog } from './restored-owner-dialog';
 
 const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
+  if (rowA.original.deletedAt && !rowB.original.deletedAt) return 1;
+  if (!rowA.original.deletedAt && rowB.original.deletedAt) return -1;
   const valueA = rowA.getValue(columnId) as string;
   const valueB = rowB.getValue(columnId) as string;
   return valueA.toLowerCase().localeCompare(valueB.toLowerCase());
@@ -38,7 +42,11 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
     accessorKey: 'lastName',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Apellido" />,
     cell: ({ row }) => (
-      <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
+      <div
+      className={`text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate ${
+        row.original.deletedAt ? 'text-gray-500 opacity-60' : ''
+      }`}
+    >
         {row.original.lastName}
       </div>
     ),
@@ -47,13 +55,21 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
   {
     accessorKey: 'firstName',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Nombre" />,
-    cell: ({ row }) => <div className="font-medium text-sm sm:text-base">{row.original.firstName}</div>,
+    cell: ({ row }) =>       <div
+    className={`text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate ${
+      row.original.deletedAt ? 'text-gray-500 opacity-60' : ''
+    }`}
+  >{row.original.firstName}</div>,
   },
   {
     accessorKey: 'numberOfVehicles',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Número de vehículos" />,
     cell: ({ row }) => (
-      <div className="text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate">
+      <div
+      className={`text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate ${
+        row.original.deletedAt ? 'text-gray-500 opacity-60' : ''
+      }`}
+    >
         {row.original.numberOfVehicles}
       </div>
     ),
@@ -62,13 +78,18 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
   
   {
     id: 'paymentSummary',
-    cell: ({ row }) => (
-      <PaymentSummaryTable customer={row.original}>
-        <span className="text-gray-500 hover:underline cursor-pointer">
-          Ver Resumen
-        </span>
-      </PaymentSummaryTable>
-    ),
+    cell: ({ row }) => {
+      const customer = row.original;
+  
+      // Si el cliente está eliminado, no se muestra el resumen de pago
+      if (customer.deletedAt !== null) return null;
+  
+      return (
+        <PaymentSummaryTable customer={customer}>
+          <span className="text-gray-500 hover:underline cursor-pointer">Ver Resumen</span>
+        </PaymentSummaryTable>
+      );
+    },
   },
   
   {
@@ -159,59 +180,68 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
               {session.data?.user.role === 'ADMIN' && (
                 <>
                   <DropdownMenuSeparator />
-                  <UpdateOwnerDialog customer={customer}/>
-                  <DeleteOwnerDialog customer={customer} />
+                  {customer.deletedAt === null ?(
+                    <>
+                    <UpdateOwnerDialog customer={customer}/>
+                    <SoftDeleteOwnerDialog customer={customer} />
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={handlePrint}>
+                      Imprimir Recibo
+                    </DropdownMenuItem>
+
+                    <Dialog open={openPrintDialog} onOpenChange={setOpenPrintDialog}>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>¿Está seguro?</DialogTitle>
+                        <DialogDescription>Se generará e imprimirá un recibo para este propietario.</DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setOpenPrintDialog(false)}>Cancelar</Button>
+                        <Button onClick={handleConfirmPrint}>Imprimir y Registrar Pago</Button>
+                        <Button onClick={handleConfirm}>Registrar Pago</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+
+
+                    <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>
+                      <DialogTrigger asChild>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Cancelar Recibo</DropdownMenuItem>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>¿Está seguro?</DialogTitle>
+                          <DialogDescription>Se eliminará el último recibo del propietario y el anterior se marcará como "pendiente".</DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setOpenCancelDialog(false)}>Cancelar</Button>
+                          <Button
+                            onClick={async () => {
+                              const result = await cancelReceiptAction(customer.id);
+                              if (result.error) {
+                                toast.error(result.error.message); // Aquí mostramos el mensaje del error procesado
+                              } else {
+                                toast.success('Recibo cancelado exitosamente');
+                              }
+                              setOpenCancelDialog(false);
+                              setOpenDropdown(false);
+                            }}
+                            >
+                            Cancelar Recibo
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                    </>
+                  ):(
+                    <>
+                    <DeleteOwnerDialog customer={customer} />  
+                    <RestoredOwnerDialog customer={customer} />
+                    </>
+                  )}
                 </>
               )}            
               <DropdownMenuSeparator />
 
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={handlePrint}>
-                Imprimir Recibo
-              </DropdownMenuItem>
-
-              <Dialog open={openPrintDialog} onOpenChange={setOpenPrintDialog}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>¿Está seguro?</DialogTitle>
-                  <DialogDescription>Se generará e imprimirá un recibo para este propietario.</DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setOpenPrintDialog(false)}>Cancelar</Button>
-                  <Button onClick={handleConfirmPrint}>Imprimir y Registrar Pago</Button>
-                  <Button onClick={handleConfirm}>Registrar Pago</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-
-              <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>
-                <DialogTrigger asChild>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Cancelar Recibo</DropdownMenuItem>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>¿Está seguro?</DialogTitle>
-                    <DialogDescription>Se eliminará el último recibo del propietario y el anterior se marcará como "pendiente".</DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpenCancelDialog(false)}>Cancelar</Button>
-                    <Button
-                      onClick={async () => {
-                        const result = await cancelReceiptAction(customer.id);
-                        if (result.error) {
-                          toast.error(result.error.message); // Aquí mostramos el mensaje del error procesado
-                        } else {
-                          toast.success('Recibo cancelado exitosamente');
-                        }
-                        setOpenCancelDialog(false);
-                        setOpenDropdown(false);
-                      }}
-                      >
-                      Cancelar Recibo
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
             </DropdownMenuContent>
           </DropdownMenu>
 

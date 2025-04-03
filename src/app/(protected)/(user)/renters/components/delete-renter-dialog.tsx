@@ -76,7 +76,7 @@ export function DeleteRenterDialog({ customer }: { customer: Customer }) {
           <DialogHeader>
             <DialogTitle>Eliminar Inquilino</DialogTitle>
             <DialogDescription>
-              Ingrese {DELETE_RENTER_TEXT} para confirmar.
+              Ingrese {DELETE_RENTER_TEXT} para confirmar.Se eliminara de forma permanente.
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>

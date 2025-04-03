@@ -83,7 +83,7 @@ export function ViewCustomerDialog({ customer }: { customer: Customer }) {
                   )}
                     <TableCell>${vehicle.amount}</TableCell>
                     {vehicle.parkingType !== null ? (
-                      <TableCell>{parkingTypeMap[vehicle.parkingType.parkingType] || vehicle.parkingType.parkingType}</TableCell>
+                      <TableCell>{parkingTypeMap[vehicle.parkingType?.parkingType] || vehicle.parkingType?.parkingType}</TableCell>
                     ): (
                       <TableCell>Alquiler</TableCell>
                     )}

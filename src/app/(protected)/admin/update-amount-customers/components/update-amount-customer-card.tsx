@@ -61,7 +61,7 @@ export default function UpdateAmountCustomerCard({ className }: { className?: st
     };
 
     return (
-        <Card className={`w-full h-full min-h-full flex flex-col ${className}`}>
+        <Card className={`w-3/5 h-full flex flex-col ${className} mx-auto my-auto flex justify-center`}>
             <CardHeader>
                 <CardTitle>Gestionar Monto de los clientes</CardTitle>
                 <CardDescription>Elegir tipo de cliente y si el monto va a ser negativo o positivo</CardDescription>

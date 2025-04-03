@@ -6,13 +6,17 @@ import { NavUser } from './nav-user';
 
 interface AppNavbarProps {
   children: ReactNode;
+  sidebar?: ReactNode;
 }
 
-export async function AppNavbar({ children }: AppNavbarProps) {
+export async function AppNavbar({ children, sidebar }: AppNavbarProps) {
   const user = await currentUser();
 
   return (
     <>
+    {user?.role === 'ADMIN' && (
+      <div className="hidden md:block">{sidebar}</div>
+    )}
       <SidebarInset className="flex flex-col">
         <header className="relative flex h-14 items-center gap-2 border-b shadow-sm px-6">
           <div className="flex items-center w-full justify-between">

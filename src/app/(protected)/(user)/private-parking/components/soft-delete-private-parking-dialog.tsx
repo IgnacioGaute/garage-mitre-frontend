@@ -22,13 +22,14 @@ import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { deleteCustomerAction } from '@/actions/customers/delete-customer.action';
-import { deleteCustomerSchema, DeleteCustomerSchemaType } from '@/schemas/customer.schema';
 import { Customer } from '@/types/cutomer.type';
+import { deleteCustomerSchema, DeleteCustomerSchemaType } from '@/schemas/customer.schema';
+import { deleteCustomerAction } from '@/actions/customers/delete-customer.action';
+import { softDeleteCustomerAction } from '@/actions/customers/soft-delete-customer.action';
 
 const DELETE_PRIVATE_PARKING_TEXT = 'Eliminar Estacionamiento Privado';
 
-export function DeletePrivateParkingDialog({ customer }: { customer: Customer }) {
+export function SoftDeletePrivateParkingDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -46,7 +47,7 @@ export function DeletePrivateParkingDialog({ customer }: { customer: Customer })
     }
 
     startTransition(() => {
-      deleteCustomerAction(customer.id).then((data) => {
+      softDeleteCustomerAction(customer.id).then((data) => {
         if (!data || data.error) {
           toast.error(data.error);
         } else {
@@ -68,7 +69,7 @@ export function DeletePrivateParkingDialog({ customer }: { customer: Customer })
             size="sm"
             onClick={() => setOpen(true)}
           >
-            Eliminar
+            Eliminar Estacionamiento Privado
           </Button>
         </DialogTrigger>
 

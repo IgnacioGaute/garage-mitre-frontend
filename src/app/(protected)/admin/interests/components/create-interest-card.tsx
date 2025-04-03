@@ -9,65 +9,72 @@ import {
 import { useTransition, useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { interestSchema, InterestSchemaType } from "@/schemas/interest-schema";
 import { toast } from "sonner";
+import { createInterestAction } from "@/actions/customers/create-interest.action";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { otherPaymentSchema, OtherPaymentSchemaType } from "@/schemas/other-payment.schema";
-import { createOtherPaymentAction } from "@/actions/other-payment/create-other-payment.action";
+import { ArrowUp } from "lucide-react";
+import { Interest } from "@/types/interest.type";
 
-export default function CardOtherPayment({ className }: { className?: string }) {
+export default function CardInterest({ className, interests }: { className?: string, interests : Interest[] }) {
     const [error, setError] = useState<string | undefined>('');
     const [success, setSuccess] = useState<string | undefined>('');
     const [isPending, startTransition] = useTransition();
+    
 
-    const form = useForm<OtherPaymentSchemaType>({
-        resolver: zodResolver(otherPaymentSchema),
+    const form = useForm<InterestSchemaType>({
+        resolver: zodResolver(interestSchema),
         defaultValues: {
-            description: "",
-            price: 0
+            interestOwner: interests?.[0]?.interestOwner || 0,
+            interestRenter: interests?.[0]?.interestRenter || 0
         },
     });
 
-    const onSubmit = (values: OtherPaymentSchemaType) => {
+    const onSubmit = (values: InterestSchemaType) => {
         setError(undefined);
         setSuccess(undefined);
 
         startTransition(() => {
-            createOtherPaymentAction(values)
+            createInterestAction(values)
                 .then((data) => {
                     if (data.error) {
                         setError(data.error);
                         toast.error(data.error);
                     } else {
                         setSuccess(data.success);
-                        toast.success('Pago creado exitosamente');
+                        toast.success('Intereses creados exitosamente');
                     }
                 })
                 .catch((error) => {
                     console.error(error);
-                    setError('Error al crear pago');
+                    setError('Error al crear intereses');
                     toast.error(error.message || 'Error desconocido');
                 });
         });
     };
 
     return (
-        <Card className={`w-full h-full min-h-full flex flex-col ${className}`}>
+        <Card className={`w-3/5 h-full flex flex-col ${className} mx-auto my-auto flex justify-center`}>
             <CardHeader>
-                <CardTitle>Otros Pagos</CardTitle>
-                <CardDescription>Registra gastos adicionales</CardDescription>
+                <CardTitle>Gestionar intereses de los inquilinos y propietarios</CardTitle>
+                <CardDescription>El número de intereses que escribas se suma cada 10 días. El interes se aplica a los clientes que se excedan de los 10 dias despues del dia 1 de cada mes.</CardDescription>
             </CardHeader>
-            <CardContent className="flex-grow">
+            <CardContent className="flex-grow h-full">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 flex flex-col h-full">
                         <FormField
                             control={form.control}
-                            name="description"
+                            name="interestOwner"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="flex items-center gap-2">
-                                        Descripcion del pago 
+                                        Intereses Propietarios 
+                                        <span className="text-green-600 flex items-center gap-1">
+                                            {interests?.[0]?.interestOwner }
+                                            <ArrowUp className="w-4 h-4 text-green-600" />
+                                        </span>
                                     </FormLabel>
                                     <FormControl>
                                         <Input disabled={isPending} {...field} />
@@ -78,11 +85,15 @@ export default function CardOtherPayment({ className }: { className?: string }) 
                         />
                         <FormField
                             control={form.control}
-                            name="price"
+                            name="interestRenter"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="flex items-center gap-2">
-                                        Monto 
+                                        Intereses Inquilinos 
+                                        <span className="text-green-600 flex items-center gap-1">
+                                            {interests?.[0]?.interestRenter}
+                                            <ArrowUp className="w-4 h-4 text-green-600" />
+                                        </span>
                                     </FormLabel>
                                     <FormControl>
                                         <Input disabled={isPending} {...field} />
@@ -92,8 +103,8 @@ export default function CardOtherPayment({ className }: { className?: string }) 
                             )}
                         />
                         <div className="flex-grow"></div> 
-                        <Button className="w-full" type="submit" disabled={isPending}>
-                            Crear Pago
+                        <Button className="w-full mt-auto" type="submit" disabled={isPending}>
+                            Guardar cambios
                         </Button>
                     </form>
                 </Form>

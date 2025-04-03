@@ -140,6 +140,48 @@ export const createCustomer = async (
     }
   };
 
+  export const softDeleteCustomer = async (id: string, authToken?: string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/customers/softDelete/${id}`, {
+        headers: await getAuthHeaders(authToken),
+        method: 'DELETE',
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        revalidateTag(getCacheTag('customers', 'all'));
+        return data;
+      } else {
+        console.error(data);
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+  export const restoredCustomer = async (id: string, authToken?: string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/customers/restoredCustomer/${id}`, {
+        headers: await getAuthHeaders(authToken),
+        method: 'PATCH',
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        revalidateTag(getCacheTag('customers', 'all'));
+        return data;
+      } else {
+        console.error(data);
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
   type ReceiptResponse =
   | { receiptNumber: string; success?: true } // respuesta exitosa
   | { error: { code: string; message: string }; success?: false }; // error

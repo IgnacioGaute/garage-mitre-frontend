@@ -22,31 +22,31 @@ import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { deleteCustomerAction } from '@/actions/customers/delete-customer.action';
-import { deleteCustomerSchema, DeleteCustomerSchemaType } from '@/schemas/customer.schema';
 import { Customer } from '@/types/cutomer.type';
+import { deleteCustomerSchema, DeleteCustomerSchemaType, RestoredCustomerSchemaType, restoredCustomerSchema } from '@/schemas/customer.schema';
+import { restoredCustomerAction } from '@/actions/customers/restored-customer.action';
 
-const DELETE_PRIVATE_PARKING_TEXT = 'Eliminar Estacionamiento Privado';
+const RESTORED_RENTER_TEXT = 'Restaurar Inquilino';
 
-export function DeletePrivateParkingDialog({ customer }: { customer: Customer }) {
+export function RestoredRenterDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<DeleteCustomerSchemaType>({
-    resolver: zodResolver(deleteCustomerSchema),
+  const form = useForm<RestoredCustomerSchemaType>({
+    resolver: zodResolver(restoredCustomerSchema),
     defaultValues: {
       confirmation: '',
     },
   });
 
-  const onSubmit = (values: DeleteCustomerSchemaType) => {
-    if (values.confirmation !== DELETE_PRIVATE_PARKING_TEXT) {
+  const onSubmit = (values: RestoredCustomerSchemaType) => {
+    if (values.confirmation !== RESTORED_RENTER_TEXT) {
       toast.error('Los detalles de confirmación no coinciden.');
       return;
     }
 
     startTransition(() => {
-      deleteCustomerAction(customer.id).then((data) => {
+      restoredCustomerAction(customer.id).then((data) => {
         if (!data || data.error) {
           toast.error(data.error);
         } else {
@@ -68,15 +68,15 @@ export function DeletePrivateParkingDialog({ customer }: { customer: Customer })
             size="sm"
             onClick={() => setOpen(true)}
           >
-            Eliminar
+            Restaurar Inquilino
           </Button>
         </DialogTrigger>
 
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Eliminar Estacionamiento Privado</DialogTitle>
+            <DialogTitle>Restaurar Inquilino</DialogTitle>
             <DialogDescription>
-              Ingrese {DELETE_PRIVATE_PARKING_TEXT} para confirmar.
+              Ingrese {RESTORED_RENTER_TEXT} para confirmar.
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -90,7 +90,7 @@ export function DeletePrivateParkingDialog({ customer }: { customer: Customer })
                     <FormControl>
                       <Input
                         disabled={isPending}
-                        placeholder={DELETE_PRIVATE_PARKING_TEXT}
+                        placeholder={RESTORED_RENTER_TEXT}
                         {...field}
                       />
                     </FormControl>
@@ -113,7 +113,7 @@ export function DeletePrivateParkingDialog({ customer }: { customer: Customer })
                   size="sm"
                   disabled={isPending}
                 >
-                  Eliminar
+                  Restaurar
                 </Button>
               </div>
             </form>

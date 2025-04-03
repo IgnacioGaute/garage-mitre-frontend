@@ -134,7 +134,7 @@ export function NavUser({
                   <DropdownMenuSeparator />
                 </>
                 <>
-                  <Link href={'/admin'}>
+                <Link href={userNav.role === 'ADMIN' ? '/admin/users' : '/admin/other-payments'}>
                     <DropdownMenuGroup>
                       <DropdownMenuItem className="cursor-pointer flex items-center gap-2">
                         <Shield />

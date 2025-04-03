@@ -34,3 +34,8 @@ export const deleteCustomerSchema = z.object({
   confirmation: z.string().min(0, 'Ingrese la confirmación "Eliminar Cliente"'),
 });
 export type DeleteCustomerSchemaType = z.infer<typeof deleteCustomerSchema>;
+
+export const restoredCustomerSchema = z.object({
+  confirmation: z.string().min(0, 'Ingrese la confirmación "Restaurar Cliente"'),
+});
+export type RestoredCustomerSchemaType = z.infer<typeof restoredCustomerSchema>;
