@@ -36,6 +36,7 @@ import { cancelReceiptAction } from '@/actions/receipts/cancel-receipt.action';
 import { historialReceiptsAction } from '@/actions/receipts/create-receipt.action';
 import { SoftDeleteRenterDialog } from './soft-delete-renter-dialog';
 import { RestoredRenterDialog } from './restored-renter-dialog';
+import { PaymentSummaryCell } from '../../components/automatic-open-summary';
 
 const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
   if (rowA.original.deletedAt && !rowB.original.deletedAt) return 1;
@@ -88,17 +89,16 @@ export const renterColumns: ColumnDef<Customer>[] = [
     id: 'paymentSummary',
     cell: ({ row }) => {
       const customer = row.original;
-  
-      // Si el cliente está eliminado, no se muestra el resumen de pago
-      if (customer.deletedAt !== null) return null;
-  
       return (
-        <PaymentSummaryTable customer={customer}>
-          <span className="text-gray-500 hover:underline cursor-pointer">Ver Resumen</span>
-        </PaymentSummaryTable>
+        <PaymentSummaryCell
+          key={`${customer.id}-${customer.lastName}`} // 👈 esto fuerza el remount
+          customer={customer}
+        />
       );
     },
   },
+  
+  
   
   {
     id: "actions",

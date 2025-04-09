@@ -11,6 +11,7 @@ import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { toast } from 'sonner';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -54,7 +55,7 @@ export const ExportCustomersExcel = ({ customers }: Props) => {
         "Monto Inicial": latestReceipt?.startAmount || "N/A",
         "Monto Actual": latestReceipt?.price || "N/A",
         "Fecha de Inicio": customer.previusStartDate || customer.startDate || "N/A",
-        "Fecha de Pago": latestReceipt?.dateNow || "N/A",
+        "Fecha de Pago": latestReceipt?.paymentDate || "N/A",
       };
     }).filter(Boolean);
 
@@ -112,16 +113,19 @@ export const ExportCustomersExcel = ({ customers }: Props) => {
                 <SelectValue placeholder="Selecciona un mes" />
               </SelectTrigger>
               <SelectContent>
-                {Array.from({ length: dayjs().month() + 1 }, (_, i) => {
-                  const monthNumber = (i + 1).toString().padStart(2, "0"); // Asegura formato MM
-                  return (
-                    <SelectItem key={monthNumber} value={monthNumber}>
-                      {dayjs().month(i).format("MMMM")}
-                    </SelectItem>
-                  );
-                })}
+                <ScrollArea className="h-48"> {/* Puedes ajustar la altura */}
+                  {Array.from({ length: 12 }, (_, i) => {
+                    const monthNumber = (i + 1).toString().padStart(2, "0"); // Formato MM
+                    return (
+                      <SelectItem key={monthNumber} value={monthNumber}>
+                        {dayjs().month(i).format("MMMM")}
+                      </SelectItem>
+                    );
+                  })}
+                </ScrollArea>
               </SelectContent>
             </Select>
+
 
             {/* Select de Tipo de Exportación */}
             <Select onValueChange={setExportType} defaultValue={exportType}>

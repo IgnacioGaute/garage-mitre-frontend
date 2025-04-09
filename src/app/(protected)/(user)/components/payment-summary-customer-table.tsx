@@ -26,9 +26,10 @@ import { Button } from '@/components/ui/button';
 interface PaymentSummaryTableProps {
   customer: Customer;
   children?: ReactNode;
+  autoOpen? : boolean
 }
 
-export function PaymentSummaryTable({ customer, children }: PaymentSummaryTableProps) {
+export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSummaryTableProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [receipts, setReceipts] = useState(customer.receipts || []);
@@ -39,6 +40,14 @@ export function PaymentSummaryTable({ customer, children }: PaymentSummaryTableP
   const totalPages = Math.ceil(receipts.length / pageSize);
 
   const [updatedCustomer, setUpdatedCustomer] = useState<Customer | null>(null);
+
+  useEffect(() => {
+    if (autoOpen) {
+      setOpen(false); // Reinicia
+      setTimeout(() => setOpen(true), 100); // Reabre después de un delay
+    }
+  }, [autoOpen]);
+  
 
   useEffect(() => {
     if (open) {
@@ -78,7 +87,7 @@ export function PaymentSummaryTable({ customer, children }: PaymentSummaryTableP
 
       <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-2xl sm:max-w-2xl">
         <DialogHeader className="items-center">
-          <DialogTitle>Resumen de Pagos Recientes</DialogTitle>
+          <DialogTitle>Resumen de Pagos Recientes de {customer.firstName} {customer.lastName}</DialogTitle>
         </DialogHeader>
 
         <Table>

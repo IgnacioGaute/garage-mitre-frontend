@@ -1,6 +1,7 @@
 import { AppNavbar } from "@/components/navegation/app-navbar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { cookies } from "next/headers";
+import { NotificationSidebar } from "./components/notifications-sidebar";
 
 
 export default async function UserLayout({

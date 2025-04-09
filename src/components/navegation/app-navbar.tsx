@@ -1,8 +1,10 @@
+
 import { SidebarInset } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { ReactNode } from 'react';
 import { currentUser } from '@/lib/auth';
 import { NavUser } from './nav-user';
+import { NotificationSidebar } from '@/app/(protected)/(user)/components/notifications-sidebar';
 
 interface AppNavbarProps {
   children: ReactNode;
@@ -28,8 +30,10 @@ export async function AppNavbar({ children, sidebar }: AppNavbarProps) {
                   <span className="text-white text-lg font-semibold">MITRE</span>
                 </div>
              </Link>
-
             <div className="flex items-center gap-6">
+              <div>
+             <NotificationSidebar/>
+              </div>
               <NavUser
                 userNav={{
                   avatar: user?.image ?? '',
