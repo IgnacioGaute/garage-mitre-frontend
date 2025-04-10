@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import {
@@ -29,6 +29,7 @@ import { cancelReceiptAction } from '@/actions/receipts/cancel-receipt.action';
 import { historialReceiptsAction } from '@/actions/receipts/create-receipt.action';
 import { SoftDeleteOwnerDialog } from './soft-delete-owner-dialog';
 import { RestoredOwnerDialog } from './restored-owner-dialog';
+import { PaymentSummaryCell } from '../../components/automatic-open-summary';
 
 const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
   if (rowA.original.deletedAt && !rowB.original.deletedAt) return 1;
@@ -80,17 +81,18 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
     id: 'paymentSummary',
     cell: ({ row }) => {
       const customer = row.original;
+      const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+      const lastName = searchParams?.get('lastName') || '';
+      const showSummary = searchParams?.get('showSummary') || '';
   
-      // Si el cliente está eliminado, no se muestra el resumen de pago
-      if (customer.deletedAt !== null) return null;
+      // 👉 clave única por customer + lastName + showSummary para forzar montaje
+      const key = `${customer.id}-${lastName}-${showSummary}`;
   
-      return (
-        <PaymentSummaryTable customer={customer}>
-          <span className="text-gray-500 hover:underline cursor-pointer">Ver Resumen</span>
-        </PaymentSummaryTable>
-      );
+      return <PaymentSummaryCell key={key} customer={customer} />;
     },
   },
+  
+  
   
   {
     id: 'actions',

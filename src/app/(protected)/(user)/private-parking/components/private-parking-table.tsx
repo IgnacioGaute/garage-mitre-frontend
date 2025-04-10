@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { DataTableViewOptions } from '@/components/ui/data-table-view-options';
 import { CreatePrivateParkingDialog } from './create-private-parking-dialog';
 import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 
 
 
@@ -38,10 +39,14 @@ export function PrivateParkingTable<TData, TValue>({
   columns,
   data
 }: DataTableProps<TData, TValue>) {
+  const searchParams = useSearchParams();
+  const lastNameQuery = searchParams.get('lastName') || '';
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'lastName', desc: false }, // Ordenamiento ascendente por apellido (lastName)
   ]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
+    lastNameQuery ? [{ id: 'lastName', value: lastNameQuery }] : []
+  );
   const session = useSession();
   
 
