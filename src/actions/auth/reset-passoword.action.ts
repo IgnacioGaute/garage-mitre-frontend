@@ -1,5 +1,6 @@
 'use server';
 
+import { sendPasswordResetEmail } from '@/lib/email';
 import {
   resetPasswordSchema,
   ResetPasswordSchemaType,
@@ -41,6 +42,11 @@ export async function resetPasswordAction(values: ResetPasswordSchemaType) {
         error: 'Error al generar el token de reseteo',
       };
     }
+
+    await sendPasswordResetEmail({
+      email: passwordResetToken.email,
+      token: passwordResetToken.token,
+    });
 
     return {
       success: 'Email de recuperación enviado. Revisa tu bandeja de entrada.',

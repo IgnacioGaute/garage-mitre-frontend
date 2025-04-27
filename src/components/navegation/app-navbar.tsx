@@ -8,16 +8,19 @@ import { NotificationSidebar } from '@/app/(protected)/(user)/components/notific
 
 interface AppNavbarProps {
   children: ReactNode;
-  sidebar?: ReactNode;
+  adminSidebar?: ReactNode;
+  userSidebar?: ReactNode;
 }
 
-export async function AppNavbar({ children, sidebar }: AppNavbarProps) {
+export async function AppNavbar({ children, adminSidebar, userSidebar }: AppNavbarProps) {
   const user = await currentUser();
 
   return (
     <>
-    {user?.role === 'ADMIN' && (
-      <div className="hidden md:block">{sidebar}</div>
+    {user?.role === 'ADMIN' ? (
+      <div className="hidden md:block">{adminSidebar}</div>
+    ):(
+      <div className="hidden md:block">{userSidebar}</div>
     )}
       <SidebarInset className="flex flex-col">
         <header className="relative flex h-14 items-center gap-2 border-b shadow-sm px-6">

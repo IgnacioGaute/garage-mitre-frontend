@@ -14,6 +14,7 @@ import { MoreHorizontal, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 import GenerateReceiptsButton from './all-receipts-button';
 import { ExportCustomersExcel } from './export-customers-excel';
+import { ExportGarageNumberExcel } from './export-garage-number-excel';
 
 export function DropdownMenuAction({customers} : {customers: Customer[]}){
     const [openDropdown, setOpenDropdown] = useState(false);
@@ -32,6 +33,7 @@ export function DropdownMenuAction({customers} : {customers: Customer[]}){
               <DropdownMenuSeparator />
                 <GenerateReceiptsButton customers={customers} />
                 <ExportCustomersExcel customers={customers} />
+                <ExportGarageNumberExcel customers={customers}/>
             </>       
         </DropdownMenuContent>
       </DropdownMenu>

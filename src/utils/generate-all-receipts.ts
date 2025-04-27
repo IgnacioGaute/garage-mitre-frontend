@@ -39,7 +39,6 @@ export async function generateAllReceipts(customers: Customer[]) {
     
       // 📌 Datos del cliente
       const customerName = `${customer.lastName} ${customer.firstName} `;
-      const customerAddress = customer.address;
       const today = new Date().toLocaleDateString();
       const vehicles = customer.vehicles;
       const pendingPrice = customer.receipts.find((r) => r.status === 'PENDING')?.price || 0;
@@ -58,7 +57,6 @@ export async function generateAllReceipts(customers: Customer[]) {
         x: 60, y: 470, size: fontSize, color: textColor
       });
       firstPage.drawText(customerName, { x: 100, y: 705, size: fontSize, color: textColor });
-      firstPage.drawText(customerAddress, { x: 100, y: 675, size: fontSize, color: textColor });
       firstPage.drawText(today, { x: 450, y: 775, size: fontSize, color: textColor });
     
       let yPosition = 590;
@@ -92,7 +90,6 @@ export async function generateAllReceipts(customers: Customer[]) {
         x: 60, y: 62, size: fontSize, color: textColor
       });
       firstPage.drawText(customerName, { x: 100, y: 295, size: fontSize, color: textColor });
-      firstPage.drawText(customerAddress, { x: 100, y: 265, size: fontSize, color: textColor });
       firstPage.drawText(today, { x: 450, y: 370, size: fontSize, color: textColor });
     
       let yPosition_ = 180; // Empezamos en la posición y inicial

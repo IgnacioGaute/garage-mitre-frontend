@@ -12,30 +12,46 @@ import { Button } from '@/components/ui/button';
 import { Customer } from '@/types/cutomer.type';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
+import { Eye, X } from 'lucide-react';
 
 export function ViewCustomerDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
+
   const parkingTypeMap: Record<string, string> = {
     EXPENSES_1: 'Expensas 1',
     EXPENSES_2: 'Expensas 2',
-    EXPENSES_ZOM_1: 'Expensas salon 1',
-    EXPENSES_ZOM_2: 'Expensas salon 2',
-    EXPENSES_ZOM_3: 'Expensas salon 3',
+    EXPENSES_ZOM_1: 'Expensas salón 1',
+    EXPENSES_ZOM_2: 'Expensas salón 2',
+    EXPENSES_ZOM_3: 'Expensas salón 3',
     EXPENSES_RICARDO_AZNAR: 'Expensas Ricardo Aznar',
     EXPENSES_ADOLFO_FONTELA: 'Expensas Adolfo Fontela',
     EXPENSES_NIDIA_FONTELA: 'Expensas Nidia Fontela',
   };
 
+  // Combina vehículos propios y rentados
+  const vehiclesToDisplay = [
+    ...customer.vehicles,
+    ...(customer.vehicleRenters?.map((vehicleRenter) => ({
+      id: vehicleRenter.vehicle?.id ?? null,
+      garageNumber: vehicleRenter.garageNumber,
+      amount: vehicleRenter.amount,
+      parkingType: vehicleRenter.vehicle?.parkingType ?? null,
+      rent: true,
+      customer: vehicleRenter.vehicle?.customer ?? null,
+    })) ?? [])
+  ];
+
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-      <Button variant="ghost" className="w-full justify-start" size="sm">
+        <Button variant="ghost" className="w-full justify-start" size="sm">
+        <Eye className="w-4 h-4" />
           Ver Detalles
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-lg sm:max-w-xl">
+      <DialogContent className="max-h-[100vh] sm:max-h-[150vh] overflow-y-auto w-full max-w-3xl sm:max-w-3xl">
         <DialogHeader className="items-center">
           <DialogTitle>Información del Cliente</DialogTitle>
         </DialogHeader>
@@ -43,10 +59,8 @@ export function ViewCustomerDialog({ customer }: { customer: Customer }) {
         {/* Datos del Cliente */}
         <Card>
           <CardContent className="p-4 space-y-3 text-sm sm:text-base">
-            <p><strong>Nombre:</strong> {customer.firstName} {customer.lastName}</p>
-            <p><strong>Email:</strong> {customer.email}</p>
-            <p><strong>Dirección:</strong> {customer.address}</p>
-            <p><strong>Documento:</strong> {customer.documentNumber}</p>
+            <p><strong>Nombre y Apellido:</strong> {customer.firstName} {customer.lastName}</p>
+            <p><strong>Celular:</strong> {customer.phone}</p>
             <p><strong>Número de Vehículos:</strong> {customer.numberOfVehicles}</p>
           </CardContent>
         </Card>
@@ -54,41 +68,50 @@ export function ViewCustomerDialog({ customer }: { customer: Customer }) {
         {/* Sección de Vehículos */}
         <div className="mt-4">
           <h3 className="text-lg font-semibold">Vehículos Registrados</h3>
-          {customer.vehicles && customer.vehicles.length > 0 ? (
+          {vehiclesToDisplay && vehiclesToDisplay.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
-                  {customer.customerType === 'OWNER'?(
                   <TableHead>Número de Cochera</TableHead>
-                  ):(
-                  <TableHead>Placa</TableHead>
-                  )}
                   {customer.customerType !== 'OWNER' && (
-                    <TableHead>Marca</TableHead>
+                    <TableHead>Propietario</TableHead>
                   )}
-                  <TableHead>Monto</TableHead>
-                  <TableHead>Tipo de Estacionamiento</TableHead>
+                 <TableHead>Monto</TableHead>
+                 <TableHead>Tipo de Estacionamiento</TableHead>
+                  {customer.customerType === 'OWNER' && (
+                    <TableHead>¿Usa cochera para alquilar?</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {customer.vehicles.map((vehicle, index) => (
-                  <TableRow key={index}>
-                    {vehicle.licensePlate === null ?(
-                    <TableCell>{vehicle.garageNumber}</TableCell>
-                    ):(
-                      <TableCell>{vehicle.licensePlate}</TableCell>
-                    )}
-                     {customer.customerType !== 'OWNER' && (
-                    <TableCell>{vehicle.vehicleBrand}</TableCell>
-                  )}
-                    <TableCell>${vehicle.amount}</TableCell>
-                    {vehicle.parkingType !== null ? (
+                {vehiclesToDisplay.map((vehicle, index) => {
+                  return (
+                    <TableRow key={index}>
+                      <TableCell>{vehicle.garageNumber}</TableCell>
+
+                      {/* Mostrar propietario si es RENTER */}
+                      {customer.customerType !== 'OWNER' && (
+                        <TableCell>
+                          {vehicle.customer
+                            ? `${vehicle.customer.firstName} ${vehicle.customer.lastName}`
+                            : 'Garage Mitre'}
+                        </TableCell>
+                      )}
+
+                      <TableCell>${vehicle.amount}</TableCell>
+                      {vehicle.parkingType !== null ? (
                       <TableCell>{parkingTypeMap[vehicle.parkingType?.parkingType] || vehicle.parkingType?.parkingType}</TableCell>
                     ): (
                       <TableCell>Alquiler</TableCell>
                     )}
-                  </TableRow>
-                ))}
+
+                      {/* Mostrar "¿Usa cochera para alquilar?" si es OWNER */}
+                      {customer.customerType === 'OWNER' && (
+                        <TableCell>{vehicle.rent ? 'Sí' : 'No'}</TableCell>
+                      )}
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           ) : (

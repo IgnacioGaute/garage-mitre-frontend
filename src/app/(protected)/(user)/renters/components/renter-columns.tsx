@@ -37,6 +37,7 @@ import { historialReceiptsAction } from '@/actions/receipts/create-receipt.actio
 import { SoftDeleteRenterDialog } from './soft-delete-renter-dialog';
 import { RestoredRenterDialog } from './restored-renter-dialog';
 import { PaymentSummaryCell } from '../../components/automatic-open-summary';
+import { Vehicle } from '@/types/vehicle.type';
 
 const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
   if (rowA.original.deletedAt && !rowB.original.deletedAt) return 1;
@@ -46,7 +47,7 @@ const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
   return valueA.toLowerCase().localeCompare(valueB.toLowerCase());
 };
 
-export const renterColumns: ColumnDef<Customer>[] = [
+export const renterColumns = (customerRenters: Vehicle[]): ColumnDef<Customer>[] => [
   {
     accessorKey: 'lastName',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Apellido" />,
@@ -189,7 +190,7 @@ export const renterColumns: ColumnDef<Customer>[] = [
                   <DropdownMenuSeparator />
                   {customer.deletedAt === null ? (
                     <>
-                    <UpdateRenterDialog customer={customer} />
+                    <UpdateRenterDialog customer={customer} customersRenters={customerRenters} />
                     <SoftDeleteRenterDialog customer={customer} />
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={handlePrint}>

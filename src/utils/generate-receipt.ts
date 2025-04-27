@@ -65,11 +65,6 @@ export default async function generateReceipt(customer: any, description: string
         x: 320, y: 705, size: fontSize, color: textColor
       }
     );
-    
-
-    firstPage.drawText(`${customer.address}`, {
-      x: 100, y: 675, size: fontSize, color: textColor
-    });
 
     // 🟢 Fecha de impresión en "IMPRESO EL"
     const today = new Date().toLocaleDateString();
@@ -122,11 +117,6 @@ export default async function generateReceipt(customer: any, description: string
         x: 320, y: 295, size: fontSize, color: textColor
       }
     );
-    
-
-    firstPage.drawText(`${customer.address}`, {
-      x: 100, y: 265, size: fontSize, color: textColor
-    });
 
     firstPage.drawText(`${today}`, {
       x: 450, y: 370, size: fontSize, color: textColor

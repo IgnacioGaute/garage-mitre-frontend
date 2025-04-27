@@ -85,7 +85,7 @@ export const ExportCustomersExcel = ({ customers }: Props) => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
           <Button variant="ghost" className="w-full justify-start" size="sm" onClick={() => setIsDialogOpen(true)}>
-            Exportar Excel
+            Exportar Excel Clientes
           </Button>
         </DialogTrigger>
         <DialogContent>

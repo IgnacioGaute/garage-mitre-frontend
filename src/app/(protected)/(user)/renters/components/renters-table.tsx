@@ -26,15 +26,19 @@ import { Input } from '@/components/ui/input';
 import { DataTableViewOptions } from '@/components/ui/data-table-view-options';
 import { CreateRenterDialog } from './create-renter-dialog';
 import { useSearchParams } from 'next/navigation';
+import { Customer } from '@/types/cutomer.type';
+import { Vehicle } from '@/types/vehicle.type';
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
+  columns: (customersRenters: Vehicle[]) =>  ColumnDef<TData, TValue>[];
   data: TData[];
+  customersRenters: Vehicle[];
 }
 
 export function RentersTable<TData, TValue>({
   columns,
   data,
+  customersRenters
 }: DataTableProps<TData, TValue>) {
     const searchParams = useSearchParams();
     const lastNameQuery = searchParams.get('lastName') || '';
@@ -47,7 +51,7 @@ export function RentersTable<TData, TValue>({
 
   const table = useReactTable({
     data,
-    columns,
+    columns: columns(customersRenters),
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
@@ -80,7 +84,7 @@ export function RentersTable<TData, TValue>({
 
         <div className="flex items-center justify-between sm:justify-end gap-4 sm:flex-1">
           <DataTableViewOptions table={table} />
-          <CreateRenterDialog />
+          <CreateRenterDialog customersRenters={customersRenters}/>
         </div>
       </div>
       <div className="rounded-xl border overflow-x-auto">

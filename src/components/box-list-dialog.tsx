@@ -54,7 +54,7 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
     if (boxData) {
       try {
         console.log(boxData)
-        const success = await generateBoxList(boxData, session?.user.username || '');
+        const success = await generateBoxList(boxData, session?.user.email || '');
 
 
         if (success) {

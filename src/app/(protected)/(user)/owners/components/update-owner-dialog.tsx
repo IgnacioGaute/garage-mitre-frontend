@@ -27,11 +27,12 @@ import {
   updateCustomerSchema,
   UpdateCustomerSchemaType,
 } from '@/schemas/customer.schema';
-import { X } from 'lucide-react';
+import { Edit, X } from 'lucide-react';
 import { PARKING_TYPE } from '@/types/vehicle.type';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ParkingType } from '@/types/parking-type';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 
 
 export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
@@ -44,14 +45,16 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
     defaultValues: {
       firstName: customer.firstName ?? '',
       lastName: customer.lastName ?? '',
-      email: customer.email ?? '',
-      address: customer.address ?? '',
-      documentNumber: customer.documentNumber ?? 0,
+      phone: customer.phone ?? '',
       numberOfVehicles: customer.numberOfVehicles ?? 0,
+      comments: customer.comments ?? "",
       customerType: customer.customerType ?? 'OWNER',
       vehicles: customer.vehicles?.map((vehicle) => ({
+        id:vehicle.id ?? "",
         garageNumber: vehicle.garageNumber ?? "",
-        parking: vehicle.parkingType?.parkingType ?? PARKING_TYPE[0], // Aseguramos que el parking se asigna correctamente
+        parking: vehicle.parkingType?.parkingType ?? PARKING_TYPE[0],
+        rent: vehicle.rent ,
+        amountRenter: vehicle.amountRenter || 0
       })) ?? [],
     },
   });
@@ -69,8 +72,11 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
       const vehiclesToAdd = Array.from(
         { length: numberOfVehicles - currentVehicles.length },
         (_, index) => ({
+          id: currentVehicles[index].id || "",
+          rent: currentVehicles[index].rent || false,
           garageNumber: currentVehicles[index].garageNumber || '',
-          parking: currentVehicles[index].parking, // Establecer el valor predeterminado del parking
+          parking: currentVehicles[index].parking, 
+          amountRenter: currentVehicles[index].amountRenter || 0
         })
       );
       // Aquí estamos asegurándonos de que los valores de parking de los vehículos existentes se mantengan
@@ -84,20 +90,27 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
   };
   
 
-  const handleVehiclesSubmit = (values: Partial<UpdateCustomerSchemaType>) => {
+  const handleVehiclesSubmit = async (values: Partial<UpdateCustomerSchemaType>) => {
+    console.log(values)
     setIsPending(true);
-    updateCustomerAction(customer.id, values).then((data) => {
+    try {
+      const data = await updateCustomerAction(customer.id, values);
+  
       if (!data || data.error) {
-        toast.error(data.error ?? 'Error desconocido');
+        toast.error(data?.error?.message ?? 'Error desconocido');
       } else {
         toast.success('Propietario y vehículos actualizados exitosamente');
         setOpen(false);
         setPhase('customer');
         form.reset();
       }
+    } catch (error) {
+      toast.error('Error inesperado');
+    } finally {
       setIsPending(false);
-    });
+    }
   };
+  
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -108,6 +121,7 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
           size="sm"
           onClick={() => setOpen(true)}
         >
+          <Edit className="w-4 h-4" />
           Editar Propietario
         </Button>
       </DialogTrigger>
@@ -157,41 +171,14 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
                 />
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input disabled={isPending} placeholder="Escriba Email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Dirección</FormLabel>
-                      <FormControl>
-                        <Input disabled={isPending} placeholder="Escriba Dirección" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="documentNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Número de documento</FormLabel>
+                      <FormLabel>Número de Celular</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
                           disabled={isPending}
-                          placeholder="Escriba número de documento"
+                          placeholder="Escriba número de celular"
                           {...field}
                         />
                       </FormControl>
@@ -213,6 +200,19 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
                           placeholder="Escriba número de vehículos"
                           {...field}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="comments"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Comentario</FormLabel>
+                      <FormControl>
+                        <Textarea disabled={isPending} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -270,6 +270,51 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
                 </FormItem>
               )}
             />
+                <FormField
+                  control={form.control}
+                  name={`vehicles.${index}.rent`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>¿Este propietario usa esta cochera para alquilar?</FormLabel>
+                      <FormControl>
+                      <Select
+                      disabled={isPending}
+                      onValueChange={(value) => field.onChange(value === 'true')}
+                      value={field.value?.toString()}
+                    >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona una opción" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Sí</SelectItem>
+                            <SelectItem value="false">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {form.watch(`vehicles.${index}.rent`) === true && (
+                <FormField
+                control={form.control}
+                name={`vehicles.${index}.amountRenter`}
+                render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Monto de Alquiler</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Ingrese el monto"
+                      disabled={isPending}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+                )}
+                />
+                )}
                     <div className='p-5'>
                     <Separator/>
                     </div>

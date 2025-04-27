@@ -13,6 +13,7 @@ import { ReceiptSchemaType } from "@/schemas/receipt.schema";
 import { ParkingType } from "@/types/parking-type";
 import { ParkingTypeSchemaType, UpdateParkingTypeSchemaType } from "@/schemas/parking-type.schema";
 import { Receipt } from "@/types/receipt.type";
+import { Vehicle } from "@/types/vehicle.type";
 
 
 
@@ -109,9 +110,14 @@ export const createCustomer = async (
       if (response.ok) {
         revalidateTag(getCacheTag('customers', 'all'));
         return data as Customer;
-      } else {
+      }  else {
         console.error(data);
-        return null;
+        return {
+          error: {
+            code: data.code || 'UNKNOWN_ERROR',
+            message: data.message || 'Error desconocido'
+          },
+        };
       }
     } catch (error) {
       console.error(error);
@@ -472,6 +478,28 @@ export const createParkingType = async (
       if (response.ok) {
         revalidateTag(getCacheTag('parkingTypes', 'all'));
         return data;
+      } else {
+        console.error(data);
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+  export const getCustomerVehicleRenter= async (authToken?: string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/customers/vehicleRenter`, {
+        headers: await getAuthHeaders(authToken),
+        next: {
+          tags: [getCacheTag('customers', 'all')],
+        },
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        return data as Vehicle[]
       } else {
         console.error(data);
         return null;

@@ -140,9 +140,9 @@ export default async function generateBoxList(boxList: any, userName: string): P
           const parsedPrice = Number(price); // Asegurar que price es un número
     
           // Calcular los subtotales por tipo de pago
-          if (paymentType === "TRASFERENCIA") {
+          if (paymentType === "TR") {
             transferTotal += parsedPrice;
-          } else if (paymentType === "EFECTIVO") {
+          } else if (paymentType === "EF") {
             cashTotal += parsedPrice;
           }
 
@@ -154,7 +154,7 @@ export default async function generateBoxList(boxList: any, userName: string): P
           );
           
           // Mostrar el precio con signo negativo si es TRANSFER
-          const priceText = paymentType === "TRASFERENCIA" ? `- ${formatNumber(parsedPrice)}` : `  ${formatNumber(parsedPrice)}`;
+          const priceText = paymentType === "TR" ? `- ${formatNumber(parsedPrice)}` : `  ${formatNumber(parsedPrice)}`;
           page.drawText(priceText, { x: 300, y: yPosition, size: fontSize, font });
     
           yPosition -= 10;
@@ -220,9 +220,9 @@ export default async function generateBoxList(boxList: any, userName: string): P
     
     addDataSection('Total de Tickets Vehiculos', tickets, ticket => [ticket.description, ticket.price.toString(), ticket.dateNow, '']);
     addDataSection('Total de Tickets Vehiculos (Días)', ticketDays, ticket => [ticket.description, ticket.price.toString(), ticket.dateNow, '']);
-    addDataSectionReceipt('Total de Recibo pago Facturas', renters, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, receipt.dateNow, receipt.paymentType === 'TRANSFER' ? 'TRASFERENCIA' : 'EFECTIVO']);
-    addDataSectionReceipt('Total de Recibo pago Expensas', owners, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, receipt.dateNow, receipt.paymentType === 'TRANSFER' ? 'TRASFERENCIA' : 'EFECTIVO']);
-    addDataSectionReceipt('Total de Recibo pago Facturas (Privado)', privates, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, receipt.dateNow, receipt.paymentType === 'TRANSFER' ? 'TRASFERENCIA' : 'EFECTIVO']);
+    addDataSectionReceipt('Total de Recibo pago Facturas', renters, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, receipt.dateNow, receipt.paymentType === 'TRANSFER' ? 'TR' : 'EF']);
+    addDataSectionReceipt('Total de Recibo pago Expensas', owners, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, receipt.dateNow, receipt.paymentType === 'TRANSFER' ? 'TR' : 'EF']);
+    addDataSectionReceipt('Total de Recibo pago Facturas (Privado)', privates, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, receipt.dateNow, receipt.paymentType === 'TRANSFER' ? 'TR' : 'EF']);
     addDataSectionExpense('Total Gastos', otherPaymentsRegistration, payment => [payment.description, payment.price.toString(), payment.dateNow, '']);
 
     const drawSectionTotal = (title: string, total: number) => {
