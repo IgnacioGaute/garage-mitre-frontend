@@ -25,7 +25,7 @@ export default function CardOtherPayment({ className }: { className?: string }) 
         resolver: zodResolver(otherPaymentSchema),
         defaultValues: {
             description: "",
-            price: 0
+            price: undefined
         },
     });
 

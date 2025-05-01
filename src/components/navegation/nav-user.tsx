@@ -87,9 +87,9 @@ export function NavUser({
               align="center"
               sideOffset={8}
             >
-
-
-              <NavigationMenuDemo setIsExpanded={setIsExpanded} />
+              {userNav.role === 'ADMIN' && (
+                <NavigationMenuDemo setIsExpanded={setIsExpanded} />
+              )}
               <DropdownMenuSeparator />
 
               <Link href={'/tickets'}>
@@ -109,7 +109,7 @@ export function NavUser({
                   className="cursor-pointer flex items-center gap-2"
                 >
                   <Box />
-                  Lista de caja
+                  Planilla de caja
                 </DropdownMenuItem>
               </DropdownMenuGroup>
 

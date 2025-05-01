@@ -43,21 +43,24 @@ export function CreateParkingTypeDialog() {
     setError(undefined);
     setSuccess(undefined);
 
-    startTransition(() => {
-      createParkingTypeAction(values)
-        .then((data) => {
-          setError(data.error);
-          setSuccess(data.success);
-          toast.success('Tipo de Estacionamiento creado exitosamente');
-          setOpen(false);
-        })
-        .catch((error) => {
-          console.error(error);
-          setError('Error al crear Tipo de Estacionamiento');
-          toast.error(error);
-        });
+    startTransition(async () => {
+      const data = await createParkingTypeAction(values); // Se almacena el resultado de la acción en 'data'
+    
+      if (!data || data.error) {
+        // Verifica si data.error es un string o un objeto antes de acceder a 'message'
+        const errorMessage = typeof data.error === 'string' 
+          ? data.error // Si el error es solo un string, mostramos ese mensaje
+          : data.error.message; // Si el error es un objeto, accedemos a 'message'
+  
+        toast.error(errorMessage); // Mostramos el mensaje de error
+      } else {
+        toast.success('Tipo de Estacionamiento creado exitosamente');
+        form.reset();
+        setOpen(false);
+      }
     });
   };
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

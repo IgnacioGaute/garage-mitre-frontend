@@ -21,6 +21,14 @@ export interface CustomerError {
             errorMessage =
             error.message
             break;
+            case 'PARKING_TYPE_ALREDY_EXIST':
+              errorMessage =
+              error.message
+              break;
+              case 'FOREIGN_KEY_VIOLATION':
+                errorMessage =
+                error.message
+                break;
       default:
         errorMessage = error.message || 'Error desconocido.';
     }

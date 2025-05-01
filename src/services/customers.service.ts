@@ -138,7 +138,12 @@ export const createCustomer = async (
         return data;
       } else {
         console.error(data);
-        return null;
+        return {
+          error: {
+            code: data.code || 'UNKNOWN_ERROR',
+            message: data.message || 'Error desconocido'
+          },
+        };
       }
     } catch (error) {
       console.error(error);
@@ -189,7 +194,7 @@ export const createCustomer = async (
   };
 
   type ReceiptResponse =
-  | { receiptNumber: string; success?: true } // respuesta exitosa
+  | { receiptNumber: string; success?: true; barcode: string } // respuesta exitosa
   | { error: { code: string; message: string }; success?: false }; // error
 
   
@@ -212,6 +217,7 @@ export const createCustomer = async (
         return {
           receiptNumber: data.receiptNumber, // asegurate que tu backend devuelva esto
           success: true,
+          barcode: data.barcode
         };
       } else {
         console.error(data);
@@ -287,38 +293,6 @@ export const createCustomer = async (
           },
         };
       }
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  };
-
-
-  export const numberGeneratorForAllCustomer = async (
-    customerId: string
-  ) => {
-    try {
-      const response = await fetch(`${BASE_URL}/receipts/numberGenerator/${customerId}`, {
-        method: 'PATCH',
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      
-      // Evitá parsear si no hay contenido
-      let data = null;
-      const text = await response.text();
-      if (text) {
-        data = JSON.parse(text);
-      }
-      
-      if (response.ok) {
-        return data;
-      } else {
-        console.error(data);
-        return null;
-      }
-      
     } catch (error) {
       console.error(error);
       return null;
@@ -433,8 +407,13 @@ export const createParkingType = async (
         revalidateTag(getCacheTag('parkingTypes', 'all'));
         return data as ParkingType;
       } else {
-        console.error('Error en la respuesta:', data);
-        return null;
+        console.error(data);
+        return {
+          error: {
+            code: data.code || 'UNKNOWN_ERROR',
+            message: data.message || 'Error desconocido'
+          },
+        };
       }
     } catch (error) {
       console.error('Error en create parkingTypes:', error);

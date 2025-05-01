@@ -72,11 +72,10 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
       const vehiclesToAdd = Array.from(
         { length: numberOfVehicles - currentVehicles.length },
         (_, index) => ({
-          id: currentVehicles[index].id || "",
-          rent: currentVehicles[index].rent || false,
-          garageNumber: currentVehicles[index].garageNumber || '',
-          parking: currentVehicles[index].parking, 
-          amountRenter: currentVehicles[index].amountRenter || 0
+          rent: false,
+          garageNumber:  '',
+          parking: PARKING_TYPE[1], 
+          amountRenter: 0
         })
       );
       // Aquí estamos asegurándonos de que los valores de parking de los vehículos existentes se mantengan

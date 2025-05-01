@@ -188,13 +188,10 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
                     <SoftDeleteOwnerDialog customer={customer} />
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={handlePrint}>
-                      <Button
-                          variant="ghost"
-                          className="w-full justify-start  p-1"
-                          size="sm">
-                            <Printer className="w-4 h-4" />
-                      Imprimir Recibo
-                      </Button>
+                    <div className='flex pl-1 mb-1 gap-2'>
+                    <Printer className="w-4 h-4" />
+                    Imprimir Recibo
+                    </div>
                     </DropdownMenuItem>
 
                     <Dialog open={openPrintDialog} onOpenChange={setOpenPrintDialog}>
@@ -218,16 +215,12 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
 
                     <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>
                       <DialogTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start p-1"
-                          size="sm">
-                            <Ban className=" w-4 h-4" />
-                      Cancelar Recibo
-                      </Button>
-                          
-                          </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <div className='flex pl-1 gap-2'>
+                        <Ban className="w-4 h-4" />
+                        Cancelar Recibo
+                        </div>
+                    </DropdownMenuItem>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>

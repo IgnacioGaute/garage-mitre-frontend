@@ -53,9 +53,9 @@ export function UpdateTicketDialog({ ticket }: { ticket: Ticket }) {
   const form = useForm<UpdateTicketSchemaType>({
     resolver: zodResolver(updateTicketSchema),
     defaultValues: {
-      codeBar: '',
-      dayPrice: 0,
-      nightPrice: 0,
+      codeBar: ticket.codeBar,
+      dayPrice: ticket.dayPrice,
+      nightPrice: ticket.nightPrice,
       vehicleType: 'AUTO',
     },
   });

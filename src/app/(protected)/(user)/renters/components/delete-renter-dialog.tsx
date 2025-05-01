@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { Customer } from '@/types/cutomer.type';
 import { deleteCustomerSchema, DeleteCustomerSchemaType } from '@/schemas/customer.schema';
 import { deleteCustomerAction } from '@/actions/customers/delete-customer.action';
+import { Trash } from 'lucide-react';
 
 const DELETE_RENTER_TEXT = 'Eliminar Inquilino';
 
@@ -45,16 +46,16 @@ export function DeleteRenterDialog({ customer }: { customer: Customer }) {
       return;
     }
 
-    startTransition(() => {
-      deleteCustomerAction(customer.id).then((data) => {
-        if (!data || data.error) {
-          toast.error(data.error);
-        } else {
-          toast.success(data.success);
-          form.reset();
-          setOpen(false);
-        }
-      });
+    startTransition(async () => {
+      const data = await deleteCustomerAction(customer.id);
+    
+      if ('error' in data) {
+        toast.error(data.error.message);
+      } else {
+        toast.success('Propietario y vehículos eliminados exitosamente');
+        form.reset();
+        setOpen(false);
+      }
     });
   };
 
@@ -68,6 +69,7 @@ export function DeleteRenterDialog({ customer }: { customer: Customer }) {
             size="sm"
             onClick={() => setOpen(true)}
           >
+            <Trash className="w-4 h-4" />
             Eliminar Inquilino
           </Button>
         </DialogTrigger>

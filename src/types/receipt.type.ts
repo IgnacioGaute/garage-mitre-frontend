@@ -11,14 +11,20 @@ export type Receipt = {
     id: string;
     status: PaymentStatusType;
     paymentType: PaymentType;
-    receiptNumber: number;
+    receiptNumber: string;
     price: number;
     startAmount: number;
     lastInterestApplied: Date | null; 
     interestPercentage: number;
     paymentDate: string | null;
+    barcode: string | null;
     startDate: string | null;
     dateNow: string | null;
     boxList: BoxList;
     customer: Customer;
+}
+
+export type ScannerReceipt ={
+    paymentType: PaymentType
+    codeBar: string;
 }

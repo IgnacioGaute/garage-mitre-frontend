@@ -26,6 +26,7 @@ import { Customer } from '@/types/cutomer.type';
 import { deleteCustomerSchema, DeleteCustomerSchemaType } from '@/schemas/customer.schema';
 import { deleteCustomerAction } from '@/actions/customers/delete-customer.action';
 import { softDeleteCustomerAction } from '@/actions/customers/soft-delete-customer.action';
+import { Trash } from 'lucide-react';
 
 const DELETE_RENTER_TEXT = 'Eliminar Inquilino';
 
@@ -69,6 +70,7 @@ export function SoftDeleteRenterDialog({ customer }: { customer: Customer }) {
             size="sm"
             onClick={() => setOpen(true)}
           >
+            <Trash className="w-4 h-4" />
             Eliminar Inquilino
           </Button>
         </DialogTrigger>

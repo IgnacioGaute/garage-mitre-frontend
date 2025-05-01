@@ -14,22 +14,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Eye, X } from 'lucide-react';
 
-export function ViewCustomerDialog({ customer }: { customer: Customer }) {
+export function ViewCustomerRenterDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
 
-  const parkingTypeMap: Record<string, string> = {
-    EXPENSES_1: 'Expensas 1',
-    EXPENSES_2: 'Expensas 2',
-    EXPENSES_ZOM_1: 'Expensas salón 1',
-    EXPENSES_ZOM_2: 'Expensas salón 2',
-    EXPENSES_ZOM_3: 'Expensas salón 3',
-    EXPENSES_RICARDO_AZNAR: 'Expensas Ricardo Aznar',
-    EXPENSES_ADOLFO_FONTELA: 'Expensas Adolfo Fontela',
-    EXPENSES_NIDIA_FONTELA: 'Expensas Nidia Fontela',
-  };
+
 
   // Combina vehículos propios y rentados
-  const vehiclesToDisplay = customer.vehicles;
+  const vehiclesToDisplay = customer.vehicleRenters;
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -39,7 +30,7 @@ export function ViewCustomerDialog({ customer }: { customer: Customer }) {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-h-[100vh] sm:max-h-[150vh] overflow-y-auto w-full max-w-3xl sm:max-w-3xl">
+      <DialogContent className="max-h-[100vh] sm:max-h-[150vh] overflow-y-auto w-full max-w-2xl sm:max-w-3xl">
         <DialogHeader className="items-center">
           <DialogTitle>Información del Cliente</DialogTitle>
         </DialogHeader>
@@ -61,42 +52,26 @@ export function ViewCustomerDialog({ customer }: { customer: Customer }) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Número de Cochera</TableHead>
-                  {customer.customerType !== 'OWNER' && (
-                    <TableHead>Propietario</TableHead>
-                  )}
+                  <TableHead>Propietario</TableHead>
                  <TableHead>Monto</TableHead>
-                 <TableHead>Tipo de Estacionamiento</TableHead>
-                  {customer.customerType === 'OWNER' && (
-                    <TableHead>¿Usa cochera para alquilar?</TableHead>
-                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {vehiclesToDisplay.map((vehicle, index) => {
+                {vehiclesToDisplay.map((vehicleRenter, index) => {
                   return (
                     <TableRow key={index}>
-                      <TableCell>{vehicle.garageNumber}</TableCell>
+                      <TableCell>{vehicleRenter.garageNumber}</TableCell>
 
                       {/* Mostrar propietario si es RENTER */}
                       {customer.customerType !== 'OWNER' && (
                         <TableCell>
-                          {vehicle.customer
-                            ? `${vehicle.customer.firstName} ${vehicle.customer.lastName}`
+                          {vehicleRenter.vehicle
+                            ? `${vehicleRenter.vehicle.customer.firstName} ${vehicleRenter.vehicle.customer.lastName}`
                             : 'Garage Mitre'}
                         </TableCell>
                       )}
 
-                      <TableCell>${vehicle.amount}</TableCell>
-                      {vehicle.parkingType !== null ? (
-                      <TableCell>{parkingTypeMap[vehicle.parkingType?.parkingType] || vehicle.parkingType?.parkingType}</TableCell>
-                    ): (
-                      <TableCell>Alquiler</TableCell>
-                    )}
-
-                      {/* Mostrar "¿Usa cochera para alquilar?" si es OWNER */}
-                      {customer.customerType === 'OWNER' && (
-                        <TableCell>{vehicle.rent ? 'Sí' : 'No'}</TableCell>
-                      )}
+                      <TableCell>${vehicleRenter.amount}</TableCell>
                     </TableRow>
                   );
                 })}

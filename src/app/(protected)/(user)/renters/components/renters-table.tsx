@@ -64,10 +64,11 @@ export function RentersTable<TData, TValue>({
     },
     initialState: {
       pagination: {
-        pageSize: 20,
+        pageSize: 10,
       },
       sorting: [{ id: 'lastName', desc: false }],
     },
+    autoResetPageIndex: false,
   });
 
   return (

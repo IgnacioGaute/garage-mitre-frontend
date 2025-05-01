@@ -35,6 +35,7 @@ export function CreateRenterDialog({ customersRenters } : { customersRenters:Veh
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [phase, setPhase] = useState<'customer' | 'vehicleRenters'>('customer');
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string | undefined>();
 
   const form = useForm<CustomerSchemaType>({
     resolver: zodResolver(customerSchema),
@@ -83,7 +84,6 @@ export function CreateRenterDialog({ customersRenters } : { customersRenters:Veh
   
 
   const handleVehiclesSubmit = (values: CustomerSchemaType) => {
-    console.log(values)
 
     startTransition(async () => {
       const data = await createCustomerAction(values); // Se almacena el resultado de la acción en 'data'
@@ -239,96 +239,110 @@ export function CreateRenterDialog({ customersRenters } : { customersRenters:Veh
   const selectedVehicleId = form.watch(`vehicleRenters.${index}.owner`);
   const allSelectedIds = (form.watch('vehicleRenters') ?? [])
   .map((v: any, i: number) => i !== index ? v.owner : null)
-  .filter((id: string | null) => id && id !== 'GARAGE_MITRE');
+  .filter((id: string | null) => id && id !== 'JOSE_RICARDO_AZNAR'||'CARLOS_ALBERTO_AZNAR'||'NIDIA_ROSA_MARIA_FONTELA'||'ADOLFO_RAUL_FONTELA');
 
   const selectedVehicleIds = form.watch('vehicleRenters')?.map((v: any) => v.owner) ?? [];
   const availableVehicles = getAvailableVehicles(selectedVehicleIds);
   const selectedVehicle = customersRenters.find(v => v.id === selectedVehicleId);
-
+  const manualOwners = [
+    'JOSE_RICARDO_AZNAR',
+    'CARLOS_ALBERTO_AZNAR',
+    'NIDIA_ROSA_MARIA_FONTELA',
+    'ADOLFO_RAUL_FONTELA',
+  ];
+  const isManualOwner = manualOwners.includes(selectedVehicleId || '');
 
   return (
     <div key={field.id} className="space-y-2">
-      <FormField
-        control={form.control}
-        name={`vehicleRenters.${index}.owner`}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>¿A qué propietario alquila la cochera?</FormLabel>
-            <div>
-              <Select
-                disabled={isPending}
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar propietario" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-  {/* Mostrar siempre Garage Mitre */}
-                  <SelectItem value="GARAGE_MITRE">Garage Mitre</SelectItem>
+<FormField
+  control={form.control}
+  name={`vehicleRenters.${index}.owner`}
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>¿A qué propietario alquila la cochera?</FormLabel>
+      <div>
+        <Select
+          disabled={isPending}
+          value={field.value}
+          onValueChange={(value) => {
+            field.onChange(value);
+            setSelectedVehicleId(value); // ACTUALIZA el valor seleccionado
+          }}
+        >
+          <FormControl>
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar propietario" />
+            </SelectTrigger>
+          </FormControl>
+          <SelectContent>
+            {/* Propietarios manuales */}
+            <SelectItem value="JOSE_RICARDO_AZNAR">José Ricardo Aznar</SelectItem>
+            <SelectItem value="CARLOS_ALBERTO_AZNAR">Carlos Alberto Aznar</SelectItem>
+            <SelectItem value="NIDIA_ROSA_MARIA_FONTELA">Nidia Rosa Maria Fontela</SelectItem>
+            <SelectItem value="ADOLFO_RAUL_FONTELA">Aldo Raúl Fontela</SelectItem>
 
-                  {/* Filtrar para evitar duplicados entre los otros vehículos */}
-                  {availableVehicles
-                    .filter(vehicle => !allSelectedIds.includes(vehicle.id)) // No filtra GARAGE_MITRE porque no está en customersRenters
-                    .map(vehicle => (
-                      <SelectItem key={vehicle.id} value={vehicle.id}>
-                        {vehicle.customer.firstName} {vehicle.customer.lastName} ({vehicle.garageNumber})
-                      </SelectItem>
-                    ))}
-                </SelectContent>
+            {/* Separador visual */}
+            <div className="px-3 py-1 text-xs text-muted-foreground">Vehículos registrados de terceros</div>
 
-              </Select>
-              <FormMessage />
-            </div>
-          </FormItem>
-        )}
-      />
+            {/* Vehículos disponibles */}
+            {availableVehicles
+              .filter(vehicle => !allSelectedIds.includes(vehicle.id))
+              .map(vehicle => (
+                <SelectItem key={vehicle.id} value={vehicle.id}>
+                  {vehicle.customer.firstName} {vehicle.customer.lastName} ({vehicle.garageNumber})
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+        <FormMessage />
+      </div>
+    </FormItem>
+  )}
+/>
 
-      {selectedVehicleId === 'GARAGE_MITRE' ? (
-        <>
-          <FormField
-            control={form.control}
-            name={`vehicleRenters.${index}.garageNumber`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Número de Cochera</FormLabel>
-                <FormControl>
-                  <Input disabled={isPending} placeholder="Número de cochera" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name={`vehicleRenters.${index}.amount`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Monto del vehículo {index + 1}</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    disabled={isPending}
-                    placeholder="Escriba el monto"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </>
-      ) : selectedVehicle && (
-        <Card>
-          <div className="p-2 text-sm">
-            <p className='pb-5'>Cochera: {selectedVehicle.garageNumber}</p>
-            <p>Monto: ${selectedVehicle.amountRenter}</p>
-          </div>
-        </Card>
+{/* MOSTRAR CAMPOS según el tipo de selección */}
+{isManualOwner ? (
+  <>
+    <FormField
+      control={form.control}
+      name={`vehicleRenters.${index}.garageNumber`}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Número de Cochera</FormLabel>
+          <FormControl>
+            <Input disabled={isPending} placeholder="Número de cochera" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
       )}
-
+    />
+    <FormField
+      control={form.control}
+      name={`vehicleRenters.${index}.amount`}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Monto del vehículo {index + 1}</FormLabel>
+          <FormControl>
+            <Input
+              type="number"
+              disabled={isPending}
+              placeholder="Escriba el monto"
+              {...field}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  </>
+) : selectedVehicle && (
+  <Card>
+    <div className="p-2 text-sm">
+      <p className="pb-5">Cochera: {selectedVehicle.garageNumber}</p>
+      <p>Monto: ${selectedVehicle.amountRenter}</p>
+    </div>
+  </Card>
+)}
       <div className='pb-5 pt-5'>
         <Separator />
       </div>

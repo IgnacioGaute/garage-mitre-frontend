@@ -35,7 +35,7 @@ export async function AppNavbar({ children, adminSidebar, userSidebar }: AppNavb
              </Link>
             <div className="flex items-center gap-6">
               <div>
-             <NotificationSidebar/>
+             {/* <NotificationSidebar/> */}
               </div>
               <NavUser
                 userNav={{

@@ -27,7 +27,7 @@ export function DropdownMenuAction({customers} : {customers: Customer[]}){
             <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-40">
+        <DropdownMenuContent align="end" className="w-50">
           <DropdownMenuLabel className="text-sm sm:text-base">Acciones</DropdownMenuLabel>
             <>
               <DropdownMenuSeparator />

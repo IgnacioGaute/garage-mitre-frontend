@@ -35,8 +35,8 @@ export function CreateTicketDialog() {
     resolver: zodResolver(ticketSchema),
     defaultValues: {
       codeBar: '',
-      dayPrice: 0,
-      nightPrice: 0,
+      dayPrice: undefined,
+      nightPrice: undefined,
       vehicleType: 'AUTO',
     },
   });

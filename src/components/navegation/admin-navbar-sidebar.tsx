@@ -40,11 +40,6 @@ export const adminNavItems = [
     icon: <Ticket />,
   },
   {
-    title: 'Gestionar Intereses',
-    url: '/admin/interests',
-    icon: < Wallet/>,
-  },
-  {
     title: 'Tipo de Estacionamiento',
     url: '/admin/parking-type',
     icon: <ParkingCircle />,
