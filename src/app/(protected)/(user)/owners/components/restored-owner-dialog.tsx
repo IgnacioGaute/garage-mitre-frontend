@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { Customer } from '@/types/cutomer.type';
 import { deleteCustomerSchema, DeleteCustomerSchemaType, RestoredCustomerSchemaType, restoredCustomerSchema } from '@/schemas/customer.schema';
 import { restoredCustomerAction } from '@/actions/customers/restored-customer.action';
+import { Rotate3DIcon } from 'lucide-react';
 
 const RESTORED_OWNER_TEXT = 'Restaurar Propietario';
 
@@ -68,6 +69,7 @@ export function RestoredOwnerDialog({ customer }: { customer: Customer }) {
             size="sm"
             onClick={() => setOpen(true)}
           >
+           <Rotate3DIcon className="w-4 h-4" />
             Restaurar Propietario
           </Button>
         </DialogTrigger>

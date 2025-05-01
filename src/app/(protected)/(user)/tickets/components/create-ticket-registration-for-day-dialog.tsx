@@ -24,12 +24,14 @@ import { createTicketRegistrationForDayAction } from "@/actions/tickets/create-t
 
 export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialogOpen: (open: boolean) => void }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [ticketType, setTicketType] = useState<'days' | 'weeks'>('days'); // Estado para manejar el tipo de selección
 
   const form = useForm<TicketRegistrationForDaySchemaType>({
     resolver: zodResolver(ticketRegistrationForDaySchema),
     defaultValues: {
-      hours: 0,
-      price: 0,
+      days: 0,
+      weeks: 0,
+      price: undefined,
     },
   });
 
@@ -49,7 +51,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
           setIsDialogOpen(true);
         }}
       >
-        Crear Ticket Por Día
+        Crear Ticket Por Día/semana
       </p>
 
       <Dialog
@@ -61,45 +63,98 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
       >
         <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
           <DialogHeader className="items-center">
-            <DialogTitle>Crear Ticket Por Día</DialogTitle>
+            <DialogTitle>Crear Ticket Por Día/semana</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="hours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Seleccione la Cantidad de Días</FormLabel>
-                    <FormControl>
-                      <Select
-                        disabled={false}
-                        onValueChange={(value) => field.onChange(Number(value))}
-                        defaultValue={String(field.value) || '24'}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccione horas" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-48 overflow-y-auto">
-                        {[24, 48, 72, 96, 120, 144, 168, 192, 216, 240, 360, 720].map((hours) => (
-                          <SelectItem key={hours} value={String(hours)}>
-                            {hours}hs
-                          </SelectItem>
-                        ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Select para elegir entre Día o Semana */}
+              <FormItem>
+                <FormLabel>Seleccione Tipo de Ticket</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={(value) => setTicketType(value as 'days' | 'weeks')} // Cambia el tipo de ticket
+                    defaultValue={ticketType}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="days">Días</SelectItem>
+                      <SelectItem value="weeks">Semanas</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+
+              {/* Campo para días */}
+              {ticketType === 'days' && (
+                <FormField
+                  control={form.control}
+                  name="days"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Seleccione la Cantidad de Días</FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={(value) => field.onChange(Number(value))}
+                          defaultValue={String(field.value) || '1'}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccione dias" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-48 overflow-y-auto">
+                            {[1, 2, 3, 4, 5, 6].map((days) => (
+                              <SelectItem key={days} value={String(days)}>
+                                {days} dia/s
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {/* Campo para semanas */}
+              {ticketType === 'weeks' && (
+                <FormField
+                  control={form.control}
+                  name="weeks"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Seleccione la Cantidad de Semanas</FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={(value) => field.onChange(Number(value))}
+                          defaultValue={String(field.value) || '1'}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccione semanas" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-48 overflow-y-auto">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((weeks) => (
+                              <SelectItem key={weeks} value={String(weeks)}>
+                                {weeks} semana/s
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Precio de Ticket por Día</FormLabel>
+                    <FormLabel>Precio de Ticket</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>

@@ -6,7 +6,7 @@ import { OtherPayment } from "@/types/other-payment.type";
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
-export const findBoxByDate = async (date: Date, authToken?: string) => {
+export const findBoxByDate = async (date: string, authToken?: string) => {
   try {
 
     const response = await fetch(`${BASE_URL}/box-lists/date/${date}`, {

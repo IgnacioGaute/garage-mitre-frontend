@@ -26,6 +26,7 @@ import { customerSchema, CustomerSchemaType } from '@/schemas/customer.schema';
 import { PARKING_TYPE, ParkingType } from '@/types/parking-type';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 
 
 export function CreateOwnerDialog() {
@@ -38,11 +39,10 @@ export function CreateOwnerDialog() {
     defaultValues: {
       firstName: '',
       lastName: '',
-      email: '',
-      address: '',
-      documentNumber: undefined,
+      phone: '',
       numberOfVehicles: 1,
       customerType: 'OWNER',
+      comments: '',
       vehicles: [],
     },
   });
@@ -55,14 +55,15 @@ export function CreateOwnerDialog() {
 
   const handleCustomerSubmit = (values: CustomerSchemaType) => {
     const numberOfVehicles = values.numberOfVehicles;
-    const currentVehicles = form.getValues('vehicles');
+    const currentVehicles = form.getValues('vehicles') || [];
   
     if (currentVehicles.length < numberOfVehicles) {
       const vehiclesToAdd = Array.from(
         { length: numberOfVehicles - currentVehicles.length },
         () => ({
           garageNumber: '',
-          parking: PARKING_TYPE[1]
+          rent: false,
+          parking: PARKING_TYPE[1],
         })
       );
       append(vehiclesToAdd);
@@ -150,41 +151,14 @@ export function CreateOwnerDialog() {
                 />
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input disabled={isPending} placeholder="Escriba Email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Dirección</FormLabel>
-                      <FormControl>
-                        <Input disabled={isPending} placeholder="Escriba Dirección" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="documentNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Número de documento</FormLabel>
+                      <FormLabel>Número de celular</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
                           disabled={isPending}
-                          placeholder="Escriba número de documento"
+                          placeholder="Escriba número de celular"
                           {...field}
                         />
                       </FormControl>
@@ -206,6 +180,19 @@ export function CreateOwnerDialog() {
                           placeholder="Escriba número de vehículos"
                           {...field}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="comments"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Comentario</FormLabel>
+                      <FormControl>
+                        <Textarea disabled={isPending} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -254,7 +241,7 @@ export function CreateOwnerDialog() {
                         <SelectItem value="EXPENSES_ZOM_2">Expensas salon 2</SelectItem>
                         <SelectItem value="EXPENSES_ZOM_3">Expensas salon 3</SelectItem>
                         <SelectItem value="EXPENSES_RICARDO_AZNAR">Expensas Ricado Aznar</SelectItem>
-                        <SelectItem value="EXPENSES_ADOLFO_FONTELA">Expensas Adolfo Fontela</SelectItem>
+                        <SelectItem value="EXPENSES_ALDO_FONTELA">Expensas Aldo Fontela</SelectItem>
                         <SelectItem value="EXPENSES_NIDIA_FONTELA">Expensas Nidia Fontela</SelectItem>
                       </SelectContent>
                     </Select>
@@ -263,6 +250,52 @@ export function CreateOwnerDialog() {
                 </FormItem>
               )}
             />
+                <FormField
+                  control={form.control}
+                  name={`vehicles.${index}.rent`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>¿Este propietario usa esta cochera para alquilar?</FormLabel>
+                      <FormControl>
+                      <Select
+                      disabled={isPending}
+                      onValueChange={(value) => field.onChange(value === 'true')}
+                      value={field.value?.toString()}
+                    >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona una opción" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Sí</SelectItem>
+                            <SelectItem value="false">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {form.watch(`vehicles.${index}.rent`) === true && (
+                <FormField
+                control={form.control}
+                name={`vehicles.${index}.amountRenter`}
+                render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Monto de Alquiler</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Ingrese el monto"
+                      disabled={isPending}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+                )}
+                />
+                )}
+
                     <div className='p-5'>
                     <Separator/>
                     </div>

@@ -143,12 +143,6 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
                   </TableCell>
                   <TableCell className="text-right relative pr-6">
                     <span className="block pr-5">${receiptOwner.price}</span>
-                    {receiptOwner.interestPercentage !== null && (
-                      <span className="absolute right-0 top-1 text-xs text-green-500 flex items-center space-x-1">
-                        <ArrowUp className="w-3 h-3" />
-                        <span>{receiptOwner.interestPercentage}</span>
-                      </span>
-                    )}
                   </TableCell>
                 </TableRow>
               ))

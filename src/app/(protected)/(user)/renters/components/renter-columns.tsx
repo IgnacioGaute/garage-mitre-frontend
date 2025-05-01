@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ColumnDef, SortingFn } from '@tanstack/react-table';
-import { MoreHorizontal } from 'lucide-react';
+import { Ban, MoreHorizontal, Printer } from 'lucide-react';
 import { UpdateRenterDialog } from './update-renter-dialog';
 import { DeleteRenterDialog } from './delete-renter-dialog';
 import {
@@ -37,6 +37,8 @@ import { historialReceiptsAction } from '@/actions/receipts/create-receipt.actio
 import { SoftDeleteRenterDialog } from './soft-delete-renter-dialog';
 import { RestoredRenterDialog } from './restored-renter-dialog';
 import { PaymentSummaryCell } from '../../components/automatic-open-summary';
+import { Vehicle } from '@/types/vehicle.type';
+import { ViewCustomerRenterDialog } from '../../components/view-customer-renter-dialog';
 
 const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
   if (rowA.original.deletedAt && !rowB.original.deletedAt) return 1;
@@ -46,7 +48,7 @@ const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
   return valueA.toLowerCase().localeCompare(valueB.toLowerCase());
 };
 
-export const renterColumns: ColumnDef<Customer>[] = [
+export const renterColumns = (customerRenters: Vehicle[]): ColumnDef<Customer>[] => [
   {
     accessorKey: 'lastName',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Apellido" />,
@@ -183,17 +185,20 @@ export const renterColumns: ColumnDef<Customer>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel className="text-sm sm:text-base">Acciones</DropdownMenuLabel>
-              <ViewCustomerDialog customer={customer} />
+              <ViewCustomerRenterDialog customer={customer} />
               {session.data?.user.role === 'ADMIN' && (
                 <>
                   <DropdownMenuSeparator />
                   {customer.deletedAt === null ? (
                     <>
-                    <UpdateRenterDialog customer={customer} />
+                    <UpdateRenterDialog customer={customer} customersRenters={customerRenters} />
                     <SoftDeleteRenterDialog customer={customer} />
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={handlePrint}>
+                      <div className='flex pl-1 mb-1 gap-2'>
+                      <Printer className="w-4 h-4" />
                       Imprimir Recibo
+                      </div>
                     </DropdownMenuItem>
 
                     <Dialog open={openPrintDialog} onOpenChange={setOpenPrintDialog}>
@@ -213,7 +218,12 @@ export const renterColumns: ColumnDef<Customer>[] = [
 
                     <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>
                       <DialogTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Cancelar Recibo</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <div className='flex pl-1 gap-2'>
+                        <Ban className="w-4 h-4" />
+                        Cancelar Recibo
+                        </div>
+                          </DropdownMenuItem>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>

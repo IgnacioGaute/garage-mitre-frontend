@@ -8,6 +8,7 @@ export type BoxList = {
     id: string;
     date: Date;
     totalPrice: number;
+    boxNumber: number;
     ticketRegistrations: TicketRegistration[];
     ticketRegistrationForDays: TicketRegistrationForDay[];
     receipts: Receipt[];

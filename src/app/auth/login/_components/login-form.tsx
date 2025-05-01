@@ -108,11 +108,11 @@ export function LoginForm() {
                     </Button>
                   </div>
                 </FormControl>
-                <div className="flex justify-center">
+                {/* <div className="flex justify-center">
                   <Button asChild size="sm" variant="link" className="px-0 font-normal">
                     <Link href="/auth/reset">Olvidaste tu contraseña?</Link>
                   </Button>
-                </div>
+                </div> */}
                 <FormMessage />
               </FormItem>
             )}

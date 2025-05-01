@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ColumnDef, SortingFn } from '@tanstack/react-table';
-import { MoreHorizontal } from 'lucide-react';
+import { Ban, MoreHorizontal, Printer } from 'lucide-react';
 import { UpdateOwnerDialog } from './update-owner-dialog';
 import { DeleteOwnerDialog } from './delete-owner-dialog';
 import { cancelReceipt, getCustomerById, historialReceipts } from '@/services/customers.service';
@@ -186,8 +186,12 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
                     <>
                     <UpdateOwnerDialog customer={customer}/>
                     <SoftDeleteOwnerDialog customer={customer} />
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={handlePrint}>
-                      Imprimir Recibo
+                    <div className='flex pl-1 mb-1 gap-2'>
+                    <Printer className="w-4 h-4" />
+                    Imprimir Recibo
+                    </div>
                     </DropdownMenuItem>
 
                     <Dialog open={openPrintDialog} onOpenChange={setOpenPrintDialog}>
@@ -197,7 +201,11 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
                         <DialogDescription>Se generará e imprimirá un recibo para este propietario.</DialogDescription>
                       </DialogHeader>
                       <DialogFooter>
-                        <Button variant="outline" onClick={() => setOpenPrintDialog(false)}>Cancelar</Button>
+                        <Button 
+                          variant="ghost"
+                          className="w-full justify-start"
+                          size="sm"
+                         onClick={() => setOpenPrintDialog(false)}>Cancelar</Button>
                         <Button onClick={handleConfirmPrint}>Imprimir y Registrar Pago</Button>
                         <Button onClick={handleConfirm}>Registrar Pago</Button>
                       </DialogFooter>
@@ -207,7 +215,12 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
 
                     <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>
                       <DialogTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Cancelar Recibo</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <div className='flex pl-1 gap-2'>
+                        <Ban className="w-4 h-4" />
+                        Cancelar Recibo
+                        </div>
+                    </DropdownMenuItem>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
@@ -227,7 +240,9 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
                               setOpenCancelDialog(false);
                               setOpenDropdown(false);
                             }}
+
                             >
+                              
                             Cancelar Recibo
                           </Button>
                         </DialogFooter>
@@ -242,7 +257,7 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
                   )}
                 </>
               )}            
-              <DropdownMenuSeparator />
+              
 
             </DropdownMenuContent>
           </DropdownMenu>

@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { deleteCustomerAction } from '@/actions/customers/delete-customer.action';
 import { deleteCustomerSchema, DeleteCustomerSchemaType } from '@/schemas/customer.schema';
 import { Customer } from '@/types/cutomer.type';
+import { Trash } from 'lucide-react';
 
 const DELETE_OWNER_TEXT = 'Eliminar Propietario';
 
@@ -45,18 +46,19 @@ export function DeleteOwnerDialog({ customer }: { customer: Customer }) {
       return;
     }
 
-    startTransition(() => {
-      deleteCustomerAction(customer.id).then((data) => {
-        if (!data || data.error) {
-          toast.error(data.error);
-        } else {
-          toast.success(data.success);
-          form.reset();
-          setOpen(false);
-        }
-      });
+    startTransition(async () => {
+      const data = await deleteCustomerAction(customer.id);
+    
+      if ('error' in data) {
+        toast.error(data.error.message);
+      } else {
+        toast.success('Propietario y vehículos eliminados exitosamente');
+        form.reset();
+        setOpen(false);
+      }
     });
   };
+
 
   return (
     <>
@@ -68,6 +70,7 @@ export function DeleteOwnerDialog({ customer }: { customer: Customer }) {
             size="sm"
             onClick={() => setOpen(true)}
           >
+            <Trash className="w-4 h-4" />
             Eliminar Propietario
           </Button>
         </DialogTrigger>

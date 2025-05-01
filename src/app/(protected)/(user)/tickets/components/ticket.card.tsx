@@ -37,8 +37,19 @@ export default function CardTicket({
 
   const latestRegistration = registrations.length > 0 ? registrations[0] : null;
 
-  const formatDate = (date: Date | null): string =>
-    date ? new Date(date).toLocaleDateString("es-AR") : "Sin fecha";
+  const formatDateA = (date: string | Date) => {
+    if (typeof date === "string") {
+      const [year, month, day] = date.split("-");
+      return `${day}/${month}/${year}`; // 🔥 Formato dd/mm/yyyy
+    }
+  
+    // Si es un Date, sí formatearlo normal
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+  
+    return `${day}/${month}/${year}`;
+  };
 
   return (
     <>
@@ -46,15 +57,15 @@ export default function CardTicket({
 
       <Card className="w-200 max-w-md mx-auto mt-8 p-5">
         <CardHeader>
-          <CardTitle>Registro de Tickets</CardTitle>
-          <CardDescription>Escanea el código de barras y registra un ticket por hora</CardDescription>
+          <CardTitle>Registro de Tickets X Hora</CardTitle>
+          <CardDescription>Escanea el código de barras en esta pagina y registra un ticket por hora</CardDescription>
         </CardHeader>
 
         {latestRegistration ? (
           latestRegistration.ticket?.vehicleType ? (
             <CardContent>
               <p className="p-3"><strong>Descripción:</strong> {latestRegistration.description}</p>
-              <p className="p-3"><strong>Día de entrada:</strong> {latestRegistration.entryDay}</p>
+              <p className="p-3"><strong>Día de entrada:</strong> {formatDateA(latestRegistration.entryDay)}</p>
               <p className="p-3"><strong>Horario de entrada:</strong> {latestRegistration.entryTime}</p>
               <p className="p-3">
                 <strong>
@@ -67,7 +78,7 @@ export default function CardTicket({
           ) : (
             <CardContent>
               <p className="p-3"><strong>Precio:</strong> ${latestRegistration.price}</p>
-              <p className="p-3"><strong>Día de salida:</strong> {latestRegistration.departureDay}</p>
+              <p className="p-3"><strong>Día de salida:</strong> {formatDateA(latestRegistration.departureDay)}</p>
               <p className="p-3"><strong>Horario de entrada:</strong> {latestRegistration.entryTime}</p>
               <p className="p-3"><strong>Horario de salida:</strong> {latestRegistration.departureTime}</p>
             </CardContent>

@@ -1,4 +1,5 @@
 import { Receipt } from "./receipt.type";
+import { VehicleRenter } from "./vehicle-renter";
 import { Vehicle } from "./vehicle.type";
 
 
@@ -11,9 +12,9 @@ export type Customer = {
     id: string;
     firstName: string;
     lastName: string;  
-    email: string;
-    address: string; 
-    documentNumber: number;
+    phone: string;
+    comments: string;
+    customerNumber: number;
     numberOfVehicles: number;
     startDate: string | null; 
     previusStartDate: string | null;  
@@ -23,4 +24,5 @@ export type Customer = {
     updatedAt: Date;
     receipts: Receipt[];
     vehicles: Vehicle[];
+    vehicleRenters: VehicleRenter[];
 }

@@ -15,16 +15,38 @@ export default async function generateBoxList(boxList: any, userName: string): P
       throw new Error('No se recibieron datos válidos para generar el PDF.');
     }
 
-    const { ticketRegistrations, receipts, otherPayments, ticketRegistrationForDays, totalPrice, date } = boxList.data;
+    const { ticketRegistrations, receipts, otherPayments, ticketRegistrationForDays, totalPrice, date, boxNumber } = boxList.data;
 
+    
     const tickets = Array.isArray(ticketRegistrations) ? ticketRegistrations : [];
     const ticketDays = Array.isArray(ticketRegistrationForDays) ? ticketRegistrationForDays : [];
     const validReceipts = Array.isArray(receipts) ? receipts : [];
     const otherPaymentsRegistration = Array.isArray(otherPayments) ? otherPayments : [];
+    console.log('VEHICLE', receipts)
 
-    const renters = validReceipts.filter(receipt => receipt.customer?.customerType === 'RENTER');
     const owners = validReceipts.filter(receipt => receipt.customer?.customerType === 'OWNER');
-    const privates = validReceipts.filter(receipt => receipt.customer?.customerType === 'PRIVATE');
+    
+    const renters = validReceipts.filter(receipt => {
+      const customer = receipt.customer;
+      const vehicleRenters = customer?.vehicleRenters;
+    
+      return (
+        customer?.customerType === 'RENTER' &&
+        Array.isArray(vehicleRenters) &&
+        vehicleRenters.some((vehicle: { owner: string }) => vehicle.owner === 'GARAGE_MITRE')
+      );
+    });
+    
+    const privates = validReceipts.filter(receipt => {
+      const customer = receipt.customer;
+      const vehicleRenters = customer?.vehicleRenters;
+    
+      return (
+        customer?.customerType === 'RENTER' &&
+        Array.isArray(vehicleRenters) &&
+        vehicleRenters.some((vehicle: { owner: string }) => vehicle.owner !== 'GARAGE_MITRE')
+      );
+    });
 
 
     const pdfDoc = await PDFDocument.create();
@@ -41,24 +63,39 @@ export default async function generateBoxList(boxList: any, userName: string): P
     };
 
     page.drawText('Garage Mitre', { x: 50, y: yPosition, size: fontSize + 2, font: fontBold });
-    page.drawText('Listado de la Caja', { x: 250, y: yPosition, size: fontSize + 4, font: fontBold });
+    page.drawText('Planilla de Caja', { x: 250, y: yPosition, size: fontSize + 4, font: fontBold });
+    page.drawText(`N° ${boxNumber}`, { x: 410, y: yPosition, size: fontSize + 4, font: fontBold });
+
     yPosition -= 20;
 
     page.drawText(`Usuario: ${userName}`, { x: 50, y: yPosition, size: fontSize, font });
-    const formatDate = (date: Date) => date.toISOString().split('T')[0];
+    const formatDate = (date: Date) => {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses van de 0 a 11
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+    
     const today = formatDate(new Date());
     
     page.drawText(`Impresión: ${today}`, { x: 400, y: yPosition, size: fontSize, font });
     yPosition -= 20;
     const formatDateA = (date: string | Date) => {
       if (typeof date === "string") {
-        return date; // Ya está en formato YYYY-MM-DD
+        const [year, month, day] = date.split("-");
+        return `${day}/${month}/${year}`; // 🔥 Formato dd/mm/yyyy
       }
-      return date.toISOString().split('T')[0];
+    
+      // Si es un Date, sí formatearlo normal
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+    
+      return `${day}/${month}/${year}`;
     };
     
-    const parsedDate = typeof date === "string" ? new Date(date) : date;
-    page.drawText(`Apertura: ${formatDateA(parsedDate)}`, { x: 400, y: yPosition, size: fontSize, font });
+    page.drawText(`Apertura: ${formatDateA(date)}`, { x: 400, y: yPosition, size: fontSize, font });
+    
     yPosition -= 25;
     const drawVerticalLines = (y: number) => {
       const columnPositions = [110, 295, 390];
@@ -68,7 +105,7 @@ export default async function generateBoxList(boxList: any, userName: string): P
     };
 
     page.drawText('Fecha', { x: 50, y: yPosition, size: fontSize, font: fontBold });
-    page.drawText('Fact.C', { x: 150, y: yPosition, size: fontSize, font: fontBold });
+    page.drawText('Descripcion', { x: 150, y: yPosition, size: fontSize, font: fontBold });
     page.drawText('Entradas', { x: 300, y: yPosition, size: fontSize, font: fontBold });
     page.drawText('Saldo', { x: 400, y: yPosition, size: fontSize,font: fontBold });
     yPosition -= 10;
@@ -118,15 +155,14 @@ export default async function generateBoxList(boxList: any, userName: string): P
     const addDataSectionReceipt = (
       title: string,
       items: Receipt[],
-      dataExtractor: (item: any) => [string, number, string, string]
+      dataExtractor: (item: any) => [string, number, string, string, string?]
     ) => {
       let total = 0;
       let cashTotal = 0;
       let transferTotal = 0;
     
       yPosition -= 5;
-      
-
+    
       if (items.length > 0) {
         items.forEach((item) => {
           if (yPosition < 30) {
@@ -134,29 +170,36 @@ export default async function generateBoxList(boxList: any, userName: string): P
             yPosition = height - 80;
           }
     
-          const [desc, priceStr, dateNow, paymentType] = dataExtractor(item);
+          // Usar el extractor para obtener la información, incluyendo el nuevo campo.
+          const [desc, priceStr, dateNow, paymentType, vehicleOwner] = dataExtractor(item);
           const price = Number(priceStr);
-
           const parsedPrice = Number(price); // Asegurar que price es un número
     
           // Calcular los subtotales por tipo de pago
-          if (paymentType === "TRASFERENCIA") {
+          if (paymentType === "TR") {
             transferTotal += parsedPrice;
-          } else if (paymentType === "EFECTIVO") {
+          } else if (paymentType === "EF") {
             cashTotal += parsedPrice;
           }
-
+    
+          // Dibujar la información en el PDF
           page.drawText(`${dateNow}`, { x: 50, y: yPosition, size: fontSize, font });
           page.drawText(`${desc}`, { x: 112, y: yPosition, size: fontSize, font });
           page.drawText(
             paymentType === "" ? `${paymentType}` : `(${paymentType})`,
-            { x: 200, y: yPosition, size: fontSize, font }
+            { x: 185, y: yPosition, size: fontSize, font }
           );
+          if(title === 'Total de Recibo pago Alquiler Terceros'){
+
+            page.drawText(`(${vehicleOwner})`, { x: 210, y: yPosition, size: fontSize, font });
+          }
+
           
           // Mostrar el precio con signo negativo si es TRANSFER
-          const priceText = paymentType === "TRASFERENCIA" ? `- ${formatNumber(parsedPrice)}` : `  ${formatNumber(parsedPrice)}`;
+          const priceText = paymentType === "TR" ? `- ${formatNumber(parsedPrice)}` : `  ${formatNumber(parsedPrice)}`;
           page.drawText(priceText, { x: 300, y: yPosition, size: fontSize, font });
     
+          // Dibujar la línea de separación
           yPosition -= 10;
           page.drawLine({
             start: { x: 50, y: yPosition },
@@ -166,13 +209,11 @@ export default async function generateBoxList(boxList: any, userName: string): P
           });
           drawVerticalLines(yPosition);
           yPosition -= 12;
+    
           total = cashTotal - transferTotal;
         });
-        
-        drawSection(title, total)
-        // Calcular el total correctamente
-
-
+    
+        drawSection(title, total);
       } else {
         page.drawText(`No hay ${title.toLowerCase()} registrados.`, {
           x: 120,
@@ -184,7 +225,6 @@ export default async function generateBoxList(boxList: any, userName: string): P
         drawSection(title, 0);
       }
     };
-
     const addDataSectionExpense = (title: string, items: (OtherPayment)[], dataExtractor: (item: any) => string[]) => {
       const totalExp = items.reduce((sum, item) => sum + item.price, 0);
       const total = -totalExp
@@ -218,12 +258,46 @@ export default async function generateBoxList(boxList: any, userName: string): P
     
     
     
-    addDataSection('Total de Tickets Vehiculos', tickets, ticket => [ticket.description, ticket.price.toString(), ticket.dateNow, '']);
-    addDataSection('Total de Tickets Vehiculos (Días)', ticketDays, ticket => [ticket.description, ticket.price.toString(), ticket.dateNow, '']);
-    addDataSectionReceipt('Total de Recibo pago Facturas', renters, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, receipt.dateNow, receipt.paymentType === 'TRANSFER' ? 'TRASFERENCIA' : 'EFECTIVO']);
-    addDataSectionReceipt('Total de Recibo pago Expensas', owners, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, receipt.dateNow, receipt.paymentType === 'TRANSFER' ? 'TRASFERENCIA' : 'EFECTIVO']);
-    addDataSectionReceipt('Total de Recibo pago Facturas (Privado)', privates, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, receipt.dateNow, receipt.paymentType === 'TRANSFER' ? 'TRASFERENCIA' : 'EFECTIVO']);
-    addDataSectionExpense('Total Gastos', otherPaymentsRegistration, payment => [payment.description, payment.price.toString(), payment.dateNow, '']);
+    
+    addDataSection('Total de Tickets Vehiculos X hora', tickets, ticket => [ticket.description, ticket.price.toString(), formatDateA(ticket.dateNow), '']);
+    addDataSection('Total de Tickets Vehiculos X dia/semana', ticketDays, ticket => [ticket.description, ticket.price.toString(), formatDateA(ticket.dateNow), '']);
+    addDataSectionReceipt(
+      'Total de Recibo pago Alquiler', 
+      renters, 
+      receipt => {
+        const total = receipt.customer.vehicleRenters
+          ?.filter((vehicle: { owner: string }) => vehicle.owner === 'GARAGE_MITRE')
+          .reduce((sum: number, vehicle: { amount: number }) => sum + (vehicle.amount || 0), 0) || 0;
+    
+        return [
+          `${receipt.customer.firstName} ${receipt.customer.lastName}`,
+          total,
+          formatDateA(receipt.dateNow),
+          receipt.paymentType === 'TRANSFER' ? 'TR' : 'EF'
+        ];
+      }
+    );
+    addDataSectionReceipt('Total de Recibo pago Expensas', owners, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, formatDateA(receipt.dateNow), receipt.paymentType === 'TRANSFER' ? 'TR' : 'EF']);
+    addDataSectionReceipt(
+      'Total de Recibo pago Alquiler Terceros',
+      privates,
+      receipt => {
+        const total = receipt.customer.vehicleRenters
+          ?.filter((vehicle: { owner: string }) => vehicle.owner !== 'GARAGE_MITRE')
+          .reduce((sum: number, vehicle: { amount: number }) => sum + (vehicle.amount || 0), 0) || 0;
+    
+        const vehicleOwner = receipt.customer.vehicleRenters?.[0]?.vehicle.customer.firstName + ' ' + receipt.customer.vehicleRenters?.[0]?.vehicle.customer.lastName;
+    
+        return [
+          `${receipt.customer.firstName} ${receipt.customer.lastName}`,
+          total,
+          formatDateA(receipt.dateNow),
+          receipt.paymentType === 'TRANSFER' ? 'TR' : 'EF',
+          vehicleOwner
+        ];
+      }
+    );
+    addDataSectionExpense('Total Gastos', otherPaymentsRegistration, payment => [payment.description, payment.price.toString(), formatDateA(payment.dateNow), '']);
 
     const drawSectionTotal = (title: string, total: number) => {
       const rectWidth = 500; 

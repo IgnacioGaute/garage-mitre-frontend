@@ -28,26 +28,11 @@ import {
 } from '@/components/ui/sidebar';
 import { NavMain } from './nav-main';
 
-export const adminNavItems = [
-  {
-    title: 'Usuarios',
-    url: '/admin/users',
-    icon: <User />,
-  },
+export const userNavItems = [
   {
     title: 'Tickets',
     url: '/admin/tickets',
     icon: <Ticket />,
-  },
-  {
-    title: 'Tipo de Estacionamiento',
-    url: '/admin/parking-type',
-    icon: <ParkingCircle />,
-  },
-  {
-    title: 'Actualizar Montos',
-    url: '/admin/update-amount-customers',
-    icon: <DollarSignIcon />,
   },
   {
     title: 'Registrar Gastos',
@@ -61,7 +46,7 @@ export const adminNavItems = [
   },
 ];
 
-export function AdminNavbarSidebar({
+export function UserNavbarSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -74,7 +59,7 @@ export function AdminNavbarSidebar({
         <SidebarTrigger className="h-9 w-9 rounded-lg hover:bg-gradient-to-r hover:from-primary/20 hover:to-primary/10 hover:text-white transition-all duration-200" />
       </SidebarHeader>
       <SidebarContent className="py-1 bg-gradient-to-r from-background to-background/95">
-        <NavMain items={adminNavItems} />
+        <NavMain items={userNavItems} />
       </SidebarContent>
       <SidebarRail className="after:bg-border after:opacity-50 hover:after:opacity-100 after:transition-opacity" />
     </Sidebar>

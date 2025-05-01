@@ -25,7 +25,8 @@ export async function historialReceiptsAction(customerId: string, values: Receip
       // ✅ Incluir datos importantes (como receiptNumber)
       return {
         success: true,
-        receiptNumber: receipt.receiptNumber
+        receiptNumber: receipt.receiptNumber,
+        barcode: receipt.barcode
         // podés agregar más si el backend los devuelve
       };
     } catch (error: unknown) {

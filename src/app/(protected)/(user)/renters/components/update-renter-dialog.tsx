@@ -27,74 +27,103 @@ import {
   updateCustomerSchema,
   UpdateCustomerSchemaType,
 } from '@/schemas/customer.schema';
-import { X } from 'lucide-react';
+import { Edit, X } from 'lucide-react';
 import { PARKING_TYPE } from '@/types/parking-type';
+import { Textarea } from '@/components/ui/textarea';
+import { Card } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Vehicle } from '@/types/vehicle.type';
 
 
-export function UpdateRenterDialog({ customer }: { customer: Customer }) {
+export function UpdateRenterDialog({ customer, customersRenters }: { customer: Customer, customersRenters:Vehicle[] }) {
   const [open, setOpen] = useState(false);
-  const [phase, setPhase] = useState<'customer' | 'vehicles'>('customer');
+  const [phase, setPhase] = useState<'customer' | 'vehicleRenters'>('customer');
   const [isPending, setIsPending] = useState(false);
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string | undefined>();
+  
 
   const form = useForm<Partial<UpdateCustomerSchemaType>>({
     resolver: zodResolver(updateCustomerSchema),
     defaultValues: {
       firstName: customer.firstName ?? '',
       lastName: customer.lastName ?? '',
-      email: customer.email ?? '',
-      address: customer.address ?? '',
-      documentNumber: customer.documentNumber ?? 0,
+      phone: customer.phone ?? '',
       numberOfVehicles: customer.numberOfVehicles ?? 0,
+      comments: customer.comments ?? "",
       customerType: customer.customerType ?? 'RENTER',
-      vehicles: customer.vehicles?.map((vehicle) => ({
-        licensePlate: vehicle.licensePlate ?? "",
-        vehicleBrand: vehicle.vehicleBrand ?? "",
+      customerNumber: customer.customerNumber || 0,
+      vehicleRenters: customer.vehicleRenters?.map((vehicle) => ({
+        id: vehicle.id ?? "",
+        garageNumber: vehicle.garageNumber ?? "",
         amount: vehicle.amount ?? 0,
+        owner: vehicle.owner ?? ""
       })) ?? [],
     },
   });
+  
+
 
   const { fields, append, remove, replace } = useFieldArray({
     control: form.control,
-    name: 'vehicles',
+    name: 'vehicleRenters',
   });
 
   const handleCustomerSubmit = (values: Partial<UpdateCustomerSchemaType>) => {
     const numberOfVehicles = values.numberOfVehicles ?? 0;
-    const currentVehicles = form.getValues('vehicles') ?? [];
+    const currentVehicles = form.getValues('vehicleRenters') ?? [];
 
     if (currentVehicles.length < numberOfVehicles) {
       const vehiclesToAdd = Array.from(
         { length: numberOfVehicles - currentVehicles.length },
-        () => ({
-          licensePlate: '',
-          vehicleBrand: '',
-          amount: 0,
-          parkingType: PARKING_TYPE[0]
+        (_, index) => ({
+          garageNumber: '',
+          amount:  0,
+          owner: '',
         })
       );
+      // Aquí estamos asegurándonos de que los valores de parking de los vehículos existentes se mantengan
       replace([...currentVehicles, ...vehiclesToAdd]);
     } else if (currentVehicles.length > numberOfVehicles) {
+      // Si hay menos vehículos, eliminamos los vehículos extra
       replace(currentVehicles.slice(0, numberOfVehicles));
     }
 
-    setPhase('vehicles');
+    setPhase('vehicleRenters');
   };
 
-  const handleVehiclesSubmit = (values: Partial<UpdateCustomerSchemaType>) => {
+  const handleVehiclesSubmit = async (values: Partial<UpdateCustomerSchemaType>) => {
+    console.log(values)
     setIsPending(true);
-    updateCustomerAction(customer.id, values).then((data) => {
+    try {
+      const data = await updateCustomerAction(customer.id, values);
+  
       if (!data || data.error) {
-        toast.error(data.error ?? 'Error desconocido');
+        toast.error(data?.error?.message ?? 'Error desconocido');
       } else {
-        toast.success('Inquilino actualizado exitosamente');
-        form.reset();
+        toast.success('Inquilino y vehículos actualizados exitosamente');
         setOpen(false);
         setPhase('customer');
+        form.reset();
       }
+    } catch (error) {
+      toast.error('Error inesperado');
+    } finally {
       setIsPending(false);
-    });
+    }
   };
+  
+
+  const getAvailableVehicles = (selectedOwnerIds: string[]) => {
+  return customersRenters.filter(vehicle => {
+    // Permitir si renterActive es false
+    if (!vehicle.rentActive) return true;
+
+    // Permitir si ya está seleccionado por el cliente actual
+    return selectedOwnerIds.includes(vehicle.id);
+  });
+};
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -105,15 +134,14 @@ export function UpdateRenterDialog({ customer }: { customer: Customer }) {
           size="sm"
           onClick={() => setOpen(true)}
         >
+          <Edit className="w-4 h-4" />
           Editar Inquilino
         </Button>
       </DialogTrigger>
 
       <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
         <DialogHeader className="items-center">
-          <DialogTitle>
-            {phase === 'customer' ? 'Editar Cliente' : 'Editar Vehículos'}
-          </DialogTitle>
+          <DialogTitle>{phase === 'customer' ? 'Editar Cliente' : 'Editar Vehículos'}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -154,35 +182,39 @@ export function UpdateRenterDialog({ customer }: { customer: Customer }) {
                 />
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>Número de celular</FormLabel>
                       <FormControl>
-                        <Input disabled={isPending} placeholder="Escriba Email" {...field} />
+                        <Input
+                          disabled={isPending}
+                          placeholder="Escriba número de celular"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                              <FormField
-                control={form.control}
-                name="documentNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Número de documento</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        disabled={isPending}
-                        placeholder="Escriba número de documento"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+               <FormField
+                  control={form.control}
+                  name="customerNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Número del Cliente</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          disabled={isPending}
+                          placeholder="Escriba número del cliente"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="numberOfVehicles"
@@ -202,78 +234,147 @@ export function UpdateRenterDialog({ customer }: { customer: Customer }) {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="comments"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Comentario</FormLabel>
+                      <FormControl>
+                        <Textarea disabled={isPending} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </>
             )}
 
             {/* Formulario de Vehículos */}
-            {phase === 'vehicles' && (
+            {phase === 'vehicleRenters' && (
               <>
-{fields.map((field, index) => (
-  <div key={field.id} className="space-y-2 relative border p-4 rounded-md">
-    <FormField
-      control={form.control}
-      name={`vehicles.${index}.licensePlate`}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Placa del vehículo {index + 1}</FormLabel>
-          <FormControl>
-            <Input disabled={isPending} placeholder="Escriba la placa" {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <FormField
-      control={form.control}
-      name={`vehicles.${index}.vehicleBrand`}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Marca del vehículo {index + 1}</FormLabel>
-          <FormControl>
-            <Input disabled={isPending} placeholder="Escriba la marca" {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <FormField
-      control={form.control}
-      name={`vehicles.${index}.amount`}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Monto del vehículo {index + 1}</FormLabel>
-          <FormControl>
-            <Input
-              type="number"
-              disabled={isPending}
-              placeholder="Escriba el monto"
-              {...field}
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <button
-      type="button"
-      className="absolute top-2 right-2 hover:text-red-700"
-      onClick={() => {
-        // Eliminar el vehículo del array
-        remove(index);
-        // Actualizar el número de vehículos
-        form.setValue('numberOfVehicles', fields.length - 1);
-      }}
-    >
-      <X className="w-5 h-5" /> {/* Ícono de cruz */}
-    </button>
-  </div>
-))}
+{fields.map((field, index) => {
+   const selectedVehicleId = form.watch(`vehicleRenters.${index}.owner`);
+   const allSelectedIds = (form.watch('vehicleRenters') ?? [])
+   .map((v: any, i: number) => i !== index ? v.owner : null)
+   .filter((id: string | null) => id && id !== 'JOSE_RICARDO_AZNAR'||'CARLOS_ALBERTO_AZNAR'||'NIDIA_ROSA_MARIA_FONTELA'||'ADOLFO_RAUL_FONTELA');
+ 
+   const selectedVehicleIds = form.watch('vehicleRenters')?.map((v: any) => v.owner) ?? [];
+   const availableVehicles = getAvailableVehicles(selectedVehicleIds);
+   const selectedVehicle = customersRenters.find(v => v.id === selectedVehicleId);
+   const manualOwners = [
+     'JOSE_RICARDO_AZNAR',
+     'CARLOS_ALBERTO_AZNAR',
+     'NIDIA_ROSA_MARIA_FONTELA',
+     'ADOLFO_RAUL_FONTELA',
+   ];
+   const isManualOwner = manualOwners.includes(selectedVehicleId || '');
+ 
+   return (
+     <div key={field.id} className="space-y-2">
+ <FormField
+   control={form.control}
+   name={`vehicleRenters.${index}.owner`}
+   render={({ field }) => (
+     <FormItem>
+       <FormLabel>¿A qué propietario alquila la cochera?</FormLabel>
+       <div>
+         <Select
+           disabled={isPending}
+           value={field.value}
+           onValueChange={(value) => {
+             field.onChange(value);
+             setSelectedVehicleId(value); // ACTUALIZA el valor seleccionado
+           }}
+         >
+           <FormControl>
+             <SelectTrigger>
+               <SelectValue placeholder="Seleccionar propietario" />
+             </SelectTrigger>
+           </FormControl>
+           <SelectContent>
+             {/* Propietarios manuales */}
+             <SelectItem value="JOSE_RICARDO_AZNAR">José Ricardo Aznar</SelectItem>
+             <SelectItem value="CARLOS_ALBERTO_AZNAR">Carlos Alberto Aznar</SelectItem>
+             <SelectItem value="NIDIA_ROSA_MARIA_FONTELA">Nidia Rosa Maria Fontela</SelectItem>
+             <SelectItem value="ADOLFO_RAUL_FONTELA">Aldo Raúl Fontela</SelectItem>
+ 
+             {/* Separador visual */}
+             <div className="px-3 py-1 text-xs text-muted-foreground">Vehículos registrados de terceros</div>
+ 
+             {/* Vehículos disponibles */}
+             {availableVehicles
+               .filter(vehicle => !allSelectedIds.includes(vehicle.id))
+               .map(vehicle => (
+                 <SelectItem key={vehicle.id} value={vehicle.id}>
+                   {vehicle.customer.firstName} {vehicle.customer.lastName} ({vehicle.garageNumber})
+                 </SelectItem>
+               ))}
+           </SelectContent>
+         </Select>
+         <FormMessage />
+       </div>
+     </FormItem>
+   )}
+ />
+ 
+ {/* MOSTRAR CAMPOS según el tipo de selección */}
+ {isManualOwner ? (
+   <>
+     <FormField
+       control={form.control}
+       name={`vehicleRenters.${index}.garageNumber`}
+       render={({ field }) => (
+         <FormItem>
+           <FormLabel>Número de Cochera</FormLabel>
+           <FormControl>
+             <Input disabled={isPending} placeholder="Número de cochera" {...field} />
+           </FormControl>
+           <FormMessage />
+         </FormItem>
+       )}
+     />
+     <FormField
+       control={form.control}
+       name={`vehicleRenters.${index}.amount`}
+       render={({ field }) => (
+         <FormItem>
+           <FormLabel>Monto del vehículo {index + 1}</FormLabel>
+           <FormControl>
+             <Input
+               type="number"
+               disabled={isPending}
+               placeholder="Escriba el monto"
+               {...field}
+             />
+           </FormControl>
+           <FormMessage />
+         </FormItem>
+       )}
+     />
+   </>
+ ) : selectedVehicle && (
+   <Card>
+     <div className="p-2 text-sm">
+       <p className="pb-5">Cochera: {selectedVehicle.garageNumber}</p>
+       <p>Monto: ${selectedVehicle.amountRenter}</p>
+     </div>
+   </Card>
+ )}
+
+      <div className='pb-5 pt-5'>
+        <Separator />
+      </div>
+    </div>
+  );
+  
+})}
 
               </>
             )}
 
             <div className="flex items-center justify-end gap-2">
-              {phase === 'vehicles' && (
+              {phase === 'vehicleRenters' && (
                 <Button
                   type="button"
                   variant="outline"

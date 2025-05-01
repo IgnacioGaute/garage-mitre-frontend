@@ -11,6 +11,12 @@ import { findBoxByDate } from '@/services/box-lists.service';
 import generateBoxList from '@/utils/generate-box-list';
 import { useSession } from 'next-auth/react';
 
+import dayjs from 'dayjs';
+import * as utc from 'dayjs/plugin/utc';
+import * as timezone from 'dayjs/plugin/timezone';
+import * as isBetween from 'dayjs/plugin/isBetween'; 
+
+
 interface BoxListDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -24,7 +30,9 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
 
   const fetchData = async (date: Date) => {
     try {
-      const formattedDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const formattedDay = dayjs(date)
+      .tz('America/Argentina/Buenos_Aires')
+      .format('YYYY-MM-DD');
       const boxes = await findBoxByDate(formattedDay, session?.token);
 
       if (!boxes) {
@@ -54,8 +62,7 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
     if (boxData) {
       try {
         console.log(boxData)
-        const success = await generateBoxList(boxData, session?.user.username || '');
-
+        const success = await generateBoxList(boxData, session?.user.email || '');
 
         if (success) {
           console.log("PDF enviado correctamente para impresión.");
@@ -87,6 +94,14 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
               if (day && day <= new Date()) setSelectedDate(day);
             }}
             disabled={(day) => day > new Date()}
+            modifiers={{
+              today: new Date(),
+            }}
+            modifiersClassNames={{
+              today: 'bg-blue-400 text-with font-bold',   // Hoy: fondo azul claro
+              selected: 'bg-accent text-white border border-accent-foreground', // Seleccionado: tu color principal con borde
+            }}
+            className="rounded-lg border shadow-md p-4"
           />
 
           {error && <p className="text-red-500">{error}</p>}
@@ -98,7 +113,7 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
               boxData ? 'bg-accent hover:bg-accent-hover focus:bg-accent-focus' : 'bg-gray-400 cursor-not-allowed'
             }`}
           >
-            Imprimir PDF
+            Imprimir Planilla de caja
           </button>
         </div>
       </DialogContent>
