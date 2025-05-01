@@ -1,7 +1,5 @@
 import { historialReceiptsAction } from '@/actions/receipts/create-receipt.action';
 import { ReceiptSchemaType } from '@/schemas/receipt.schema';
-import { historialReceipts } from '@/services/customers.service';
-import { Parking, ParkingType } from '@/types/parking-type';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { toast } from 'sonner';
 import JsBarcode from 'jsbarcode';
