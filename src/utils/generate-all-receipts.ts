@@ -32,11 +32,14 @@ export async function generateAllReceipts(customers: any[]) {
               pdfFile = '/Garage-Mitre.pdf';
               break;
             default:
-              pdfFile = '/Consorcio-Garage-Mitre'; // fallback
+              pdfFile = '/Consorcio-Garage-Mitre.pdf'; // fallback
               break;
           }
+        }else{
+          pdfFile = '/Consorcio-Garage-Mitre.pdf';
         }
       }
+      
   
       const receiptTypeNames: Record<string, string> = {
         JOSE_RICARDO_AZNAR: 'José Ricardo Aznar',
@@ -48,7 +51,11 @@ export async function generateAllReceipts(customers: any[]) {
       
   
 
-      const existingPdfBytes = await fetch(pdfFile).then((res) => res.arrayBuffer());
+      const response = await fetch(pdfFile);
+      if (!response.ok || !response.headers.get('content-type')?.includes('application/pdf')) {
+        throw new Error(`No se pudo cargar el PDF válido desde: ${pdfFile}`);
+      }
+      const existingPdfBytes = await response.arrayBuffer();
       const customerPdfDoc = await PDFDocument.load(existingPdfBytes);
       const pages = customerPdfDoc.getPages();
 
@@ -58,23 +65,28 @@ export async function generateAllReceipts(customers: any[]) {
       const fontSize = 12;
       const textColor = rgb(0, 0, 0);
 
-      // Crear barcode
-      const canvas = document.createElement('canvas');
-      JsBarcode(canvas, pendingReceipt?.barcode ?? '', {
-        format: 'CODE128',
-        width: 2,
-        height: 40,
-        displayValue: false,
-      });
-      const barcodeDataUrl = canvas.toDataURL('image/png');
-      const base64 = barcodeDataUrl.split(',')[1];
-      const binaryString = atob(base64);
-      const barcodeBytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        barcodeBytes[i] = binaryString.charCodeAt(i);
+      let barcodeImage: any = null;
+      let barcodeDims: any = null;
+      
+      if (pendingReceipt?.barcode) {
+        const canvas = document.createElement('canvas');
+        JsBarcode(canvas, pendingReceipt.barcode, {
+          format: 'CODE128',
+          width: 2,
+          height: 40,
+          displayValue: false,
+        });
+        const barcodeDataUrl = canvas.toDataURL('image/png');
+        const base64 = barcodeDataUrl.split(',')[1];
+        const binaryString = atob(base64);
+        const barcodeBytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          barcodeBytes[i] = binaryString.charCodeAt(i);
+        }
+        barcodeImage = await customerPdfDoc.embedPng(barcodeBytes);
+        barcodeDims = barcodeImage.scale(0.5);
       }
-      const barcodeImage = await customerPdfDoc.embedPng(barcodeBytes);
-      const barcodeDims = barcodeImage.scale(0.5);
+      
 
       const today = new Date().toLocaleDateString();
       const vehicles =
@@ -108,16 +120,19 @@ export async function generateAllReceipts(customers: any[]) {
         };
         
         const renderBarcodeContent = (page: any) => {
-          page.drawImage(barcodeImage, {
-            x: 220,
-            y: 33,
-            width: barcodeDims.width,
-            height: barcodeDims.height,
-          });
-          page.drawText(pendingReceipt?.barcode ?? '', { x: 250, y: 18, size: fontSize, color: textColor });
+          if (barcodeImage && barcodeDims) {
+            page.drawImage(barcodeImage, {
+              x: 220,
+              y: 33,
+              width: barcodeDims.width,
+              height: barcodeDims.height,
+            });
+          }
+        
+          if (pendingReceipt?.barcode) {
+            page.drawText(pendingReceipt.barcode, { x: 250, y: 18, size: fontSize, color: textColor });
+          }
         };
-        
-        
 
         for (let i = 0; i < pages.length; i++) {
           const page = pages[i];

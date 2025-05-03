@@ -31,7 +31,7 @@ export default async function generateReceipt(customer: any, description: string
             pdfFile = '/Garage-Mitre.pdf';
             break;
           default:
-            pdfFile = '/Consorcio-Garage-Mitre'; // fallback
+            pdfFile = '/Consorcio-Garage-Mitre.pdf'; // fallback
             break;
         }
       }
@@ -46,7 +46,11 @@ export default async function generateReceipt(customer: any, description: string
     };
     
 
-    const existingPdfBytes = await fetch(pdfFile).then(res => res.arrayBuffer());
+    const response = await fetch(pdfFile);
+    if (!response.ok || !response.headers.get('content-type')?.includes('application/pdf')) {
+      throw new Error(`No se pudo cargar el PDF válido desde: ${pdfFile}`);
+    }
+    const existingPdfBytes = await response.arrayBuffer();
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
     const pages = pdfDoc.getPages();
     const firstPage = pages[0];
