@@ -18,6 +18,7 @@ export type Receipt = {
     interestPercentage: number;
     paymentDate: string | null;
     barcode: string | null;
+    receiptTypeKey: string;
     startDate: string | null;
     dateNow: string | null;
     boxList: BoxList;

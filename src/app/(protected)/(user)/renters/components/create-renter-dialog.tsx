@@ -279,7 +279,7 @@ export function CreateRenterDialog({ customersRenters } : { customersRenters:Veh
             <SelectItem value="JOSE_RICARDO_AZNAR">José Ricardo Aznar</SelectItem>
             <SelectItem value="CARLOS_ALBERTO_AZNAR">Carlos Alberto Aznar</SelectItem>
             <SelectItem value="NIDIA_ROSA_MARIA_FONTELA">Nidia Rosa Maria Fontela</SelectItem>
-            <SelectItem value="ADOLFO_RAUL_FONTELA">Aldo Raúl Fontela</SelectItem>
+            <SelectItem value="ALDO_RAUL_FONTELA">Aldo Raúl Fontela</SelectItem>
 
             {/* Separador visual */}
             <div className="px-3 py-1 text-xs text-muted-foreground">Vehículos registrados de terceros</div>

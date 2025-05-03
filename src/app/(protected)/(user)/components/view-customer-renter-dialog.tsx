@@ -17,8 +17,14 @@ import { Eye, X } from 'lucide-react';
 export function ViewCustomerRenterDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
 
-
-
+  const pendingReceipt = customer.receipts.find((receipt: any) => receipt.status === "PENDING");
+  const receiptTypeNames: Record<string, string> = {
+    JOSE_RICARDO_AZNAR: 'José Ricardo Aznar',
+    CARLOS_ALBERTO_AZNAR: 'Carlos Alberto Aznar',
+    NIDIA_ROSA_MARIA_FONTELA: 'Nidia Rosa María Fontela',
+    ALDO_RAUL_FONTELA: 'Aldo Raúl Fontela',
+    GARAGE_MITRE: 'Garage Mitre'
+  };
   // Combina vehículos propios y rentados
   const vehiclesToDisplay = customer.vehicleRenters;
   return (
@@ -67,7 +73,9 @@ export function ViewCustomerRenterDialog({ customer }: { customer: Customer }) {
                         <TableCell>
                           {vehicleRenter.vehicle
                             ? `${vehicleRenter.vehicle.customer.firstName} ${vehicleRenter.vehicle.customer.lastName}`
-                            : 'Garage Mitre'}
+                            : pendingReceipt?.receiptTypeKey
+                              ? receiptTypeNames[pendingReceipt.receiptTypeKey] ?? pendingReceipt.receiptTypeKey
+                              : ''}
                         </TableCell>
                       )}
 
