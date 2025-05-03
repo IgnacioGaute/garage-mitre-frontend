@@ -6,11 +6,51 @@ import JsBarcode from 'jsbarcode';
 
 export default async function generateReceipt(customer: any, description: string, value:ReceiptSchemaType): Promise<Uint8Array> {
   try {
-    const pdfFile = customer.customerType === 'OWNER' 
-      ? '/Recibo-Garage-Mitre-Expensas.pdf' 
-      : '/Recibo-Garage-Mitre-Alquiler.pdf';
+    let pdfFile = '/Garage_Mitre.pdf'; // Valor por defecto para renter
 
-    const existingPdfBytes = await fetch(pdfFile).then(res => res.arrayBuffer());
+    if (customer.customerType === 'OWNER') {
+      pdfFile = '/Consorcio-Garage-Mitre.pdf';
+    } else {
+      const pendingReceipt = customer.receipts.find((receipt: any) => receipt.status === "PENDING");
+    
+      if (pendingReceipt) {
+        switch (pendingReceipt.receiptTypeKey) {
+          case 'JOSE_RICARDO_AZNAR':
+            pdfFile = '/José-Ricardo-Aznar.pdf';
+            break;
+          case 'CARLOS_ALBERTO_AZNAR':
+            pdfFile = '/Carlos-Alberto-Aznar.pdf';
+            break;
+          case 'NIDIA_ROSA_MARIA_FONTELA':
+            pdfFile = '/Nidia-Rosa-María-Fontela.pdf';
+            break;
+          case 'ADOLFO_RAUL_FONTELA':
+            pdfFile = '/ADOLFO_RAUL_FONTELA.pdf';
+            break;
+          case 'GARAGE_MITRE':
+            pdfFile = '/Garage-Mitre.pdf';
+            break;
+          default:
+            pdfFile = '/Consorcio-Garage-Mitre.pdf'; // fallback
+            break;
+        }
+      }
+    }
+
+    const receiptTypeNames: Record<string, string> = {
+      JOSE_RICARDO_AZNAR: 'José Ricardo Aznar',
+      CARLOS_ALBERTO_AZNAR: 'Carlos Alberto Aznar',
+      NIDIA_ROSA_MARIA_FONTELA: 'Nidia Rosa María Fontela',
+      ALDO_RAUL_FONTELA: 'Aldo Raúl Fontela',
+      GARAGE_MITRE: 'Garage Mitre'
+    };
+    
+
+    const response = await fetch(pdfFile);
+    if (!response.ok || !response.headers.get('content-type')?.includes('application/pdf')) {
+      throw new Error(`No se pudo cargar el PDF válido desde: ${pdfFile}`);
+    }
+    const existingPdfBytes = await response.arrayBuffer();
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
     const pages = pdfDoc.getPages();
     const firstPage = pages[0];
@@ -89,23 +129,24 @@ firstPage.drawImage(barcodeImage, {
     let yPosition = 220;
     for (const vehicle of vehicles) {
       if(vehicle.parkingType !== null){
+
         const description =
         customer.customerType === 'OWNER'
-        ? `Cochera ${vehicle.garageNumber}`
-        : `Cochera ${vehicle.garageNumber} (${vehicle.vehicle ? `${vehicle.vehicle.customer.lastName} ${vehicle.vehicle.customer.firstName}` : 'Garage Mitre'})`;
+          ? `Cochera ${vehicle.garageNumber}`
+          : `Cochera ${vehicle.garageNumber} (${vehicle.vehicle ? `${vehicle.vehicle.customer.lastName} ${vehicle.vehicle.customer.firstName}` : `${receiptTypeNames[pendingReceipt.receiptTypeKey] || pendingReceipt.receiptTypeKey}`})`;
+      
             // Agregar la tabla (Cantidad, Descripción, Precio)
         firstPage.drawText(`1`, { x: 70, y: yPosition, size: fontSize, color: textColor }); // Cantidad
-        firstPage.drawText(description, { x: 130, y: yPosition, size: fontSize, color: textColor }); // Descripción
-        firstPage.drawText(`$${vehicle.amount}`, { x: 390, y: yPosition, size: fontSize, color: textColor }); // P. Unitario
-        firstPage.drawText(`$${pendingPrice}`, { x: 460, y: yPosition, size: fontSize, color: textColor }); // Total correcto
+        firstPage.drawText(description, { x: 140, y: yPosition, size: fontSize, color: textColor }); // Descripción
+        firstPage.drawText(`$${vehicle.amount}`, { x: 460, y: yPosition, size: fontSize, color: textColor }); // Total correcto
+
         
         yPosition -= 30; // Aumenta el valor de y en cada ciclo (esto asegura que cada fila se dibuje debajo de la anterior)
       }else{
         // Agregar la tabla (Cantidad, Descripción, Precio)
         firstPage.drawText(`1`, { x: 70, y: yPosition, size: fontSize, color: textColor }); // Cantidad
-        firstPage.drawText(description, { x: 130, y: yPosition, size: fontSize, color: textColor }); // Descripción
-        firstPage.drawText(`$${vehicle.amount}`, { x: 390, y: yPosition, size: fontSize, color: textColor }); // P. Unitario
-        firstPage.drawText(`$${pendingPrice}`, { x: 460, y: yPosition, size: fontSize, color: textColor }); // Total correcto
+        firstPage.drawText(description, { x: 140, y: yPosition, size: fontSize, color: textColor }); // Descripción
+        firstPage.drawText(`$${vehicle.amount}`, { x: 460, y: yPosition, size: fontSize, color: textColor }); // Total correcto
         
         yPosition -= 30; // Aumenta el valor de y en cada ciclo (esto asegura que cada fila se dibuje debajo de la anterior)
       }
@@ -136,24 +177,24 @@ firstPage.drawImage(barcodeImage, {
     for (const vehicle of vehicles) {
       if(vehicle.parkingType !== null){
 
-       
         const description =
         customer.customerType === 'OWNER'
-        ? `Cochera ${vehicle.garageNumber}`
-        : `Cochera ${vehicle.garageNumber} (${vehicle.vehicle ? `${vehicle.vehicle.customer.lastName} ${vehicle.vehicle.customer.firstName}` : 'Garage Mitre'})`;
+          ? `Cochera ${vehicle.garageNumber}`
+          : `Cochera ${vehicle.garageNumber} (${vehicle.vehicle ? `${vehicle.vehicle.customer.lastName} ${vehicle.vehicle.customer.firstName}` : `${receiptTypeNames[pendingReceipt.receiptTypeKey] || pendingReceipt.receiptTypeKey}`})`;
+      
 
         secondPage.drawText(`1`, { x: 70, y: yPosition2, size: fontSize, color: textColor }); // Cantidad
-        secondPage.drawText(description, { x: 130, y: yPosition2, size: fontSize, color: textColor }); // Descripción
-        secondPage.drawText(`$${vehicle.amount}`, { x: 390, y: yPosition2, size: fontSize, color: textColor }); // P. Unitario
-        secondPage.drawText(`$${pendingPrice}`, { x: 460, y: yPosition2, size: fontSize, color: textColor }); // Total correcto
+        secondPage.drawText(description, { x: 140, y: yPosition2, size: fontSize, color: textColor }); // Descripción
+        secondPage.drawText(`$${vehicle.amount}`, { x: 460, y: yPosition2, size: fontSize, color: textColor }); // Total correcto
+
         
         yPosition2 -= 30; // Aumenta el valor de y en cada ciclo (esto asegura que cada fila se dibuje debajo de la anterior)
       }else{
         // Agregar la tabla (Cantidad, Descripción, Precio)
         secondPage.drawText(`1`, { x: 70, y: yPosition2, size: fontSize, color: textColor }); // Cantidad
-        secondPage.drawText(description, { x: 130, y: yPosition2, size: fontSize, color: textColor }); // Descripción
-        secondPage.drawText(`$${vehicle.amount}`, { x: 390, y: yPosition2, size: fontSize, color: textColor }); // P. Unitario
-        secondPage.drawText(`$${pendingPrice}`, { x: 460, y: yPosition2, size: fontSize, color: textColor }); // Total correcto
+        secondPage.drawText(description, { x: 140, y: yPosition2, size: fontSize, color: textColor }); // Descripción
+        secondPage.drawText(`$${vehicle.amount}`, { x: 460, y: yPosition2, size: fontSize, color: textColor }); // Total correcto
+
         
         yPosition2 -= 30; // Aumenta el valor de y en cada ciclo (esto asegura que cada fila se dibuje debajo de la anterior)
       }

@@ -22,35 +22,30 @@ export default async function generateBoxList(boxList: any, userName: string): P
     const ticketDays = Array.isArray(ticketRegistrationForDays) ? ticketRegistrationForDays : [];
     const validReceipts = Array.isArray(receipts) ? receipts : [];
     const otherPaymentsRegistration = Array.isArray(otherPayments) ? otherPayments : [];
-    console.log('VEHICLE', receipts)
 
-    const owners = validReceipts.filter(receipt => receipt.customer?.customerType === 'OWNER');
+    const owners = validReceipts.filter(
+      receipt => receipt && receipt.customer?.customerType === 'OWNER'
+    );
+    const renterReceiptTypes = [
+      'JOSE_RICARDO_AZNAR',
+      'CARLOS_ALBERTO_AZNAR',
+      'NIDIA_ROSA_MARIA_FONTELA',
+      'ADOLFO_RAUL_FONTELA'
+    ];
+    
+
     
     const renters = validReceipts.filter(receipt => {
-      const customer = receipt.customer;
-      const vehicleRenters = customer?.vehicleRenters;
-    
-      return (
-        customer?.customerType === 'RENTER' &&
-        Array.isArray(vehicleRenters) &&
-        vehicleRenters.some((vehicle: { owner: string }) => vehicle.owner === 'GARAGE_MITRE')
-      );
+      return renterReceiptTypes.includes(receipt?.receiptTypeKey);
     });
     
     const privates = validReceipts.filter(receipt => {
-      const customer = receipt.customer;
-      const vehicleRenters = customer?.vehicleRenters;
-    
-      return (
-        customer?.customerType === 'RENTER' &&
-        Array.isArray(vehicleRenters) &&
-        vehicleRenters.some((vehicle: { owner: string }) => vehicle.owner !== 'GARAGE_MITRE')
-      );
+      return receipt?.receiptTypeKey === 'GARAGE_MITRE';
     });
-
+    
 
     const pdfDoc = await PDFDocument.create();
-    let page = pdfDoc.addPage([600, 800]);
+    let page = pdfDoc.addPage([595.28, 841.89]);
     const { width, height } = page.getSize();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -189,11 +184,9 @@ export default async function generateBoxList(boxList: any, userName: string): P
             paymentType === "" ? `${paymentType}` : `(${paymentType})`,
             { x: 185, y: yPosition, size: fontSize, font }
           );
-          if(title === 'Total de Recibo pago Alquiler Terceros'){
-
+          if (vehicleOwner) {
             page.drawText(`(${vehicleOwner})`, { x: 210, y: yPosition, size: fontSize, font });
           }
-
           
           // Mostrar el precio con signo negativo si es TRANSFER
           const priceText = paymentType === "TR" ? `- ${formatNumber(parsedPrice)}` : `  ${formatNumber(parsedPrice)}`;
@@ -256,6 +249,12 @@ export default async function generateBoxList(boxList: any, userName: string): P
 
     };
     
+    const receiptTypeNames: Record<string, string> = {
+      JOSE_RICARDO_AZNAR: 'Ricardo Aznar',
+      CARLOS_ALBERTO_AZNAR: 'Carlos Aznar',
+      NIDIA_ROSA_MARIA_FONTELA: 'Nidia Fontela',
+      ADOLFO_RAUL_FONTELA: 'Aldo Fontela',
+    };
     
     
     
@@ -265,15 +264,16 @@ export default async function generateBoxList(boxList: any, userName: string): P
       'Total de Recibo pago Alquiler', 
       renters, 
       receipt => {
-        const total = receipt.customer.vehicleRenters
-          ?.filter((vehicle: { owner: string }) => vehicle.owner === 'GARAGE_MITRE')
-          .reduce((sum: number, vehicle: { amount: number }) => sum + (vehicle.amount || 0), 0) || 0;
+        const total = receipt.price;
+
+        const owner = `${receiptTypeNames[receipt.receiptTypeKey] || receipt.receiptTypeKey}`
     
         return [
           `${receipt.customer.firstName} ${receipt.customer.lastName}`,
           total,
           formatDateA(receipt.dateNow),
-          receipt.paymentType === 'TRANSFER' ? 'TR' : 'EF'
+          receipt.paymentType === 'TRANSFER' ? 'TR' : 'EF',
+          owner
         ];
       }
     );
@@ -282,11 +282,11 @@ export default async function generateBoxList(boxList: any, userName: string): P
       'Total de Recibo pago Alquiler Terceros',
       privates,
       receipt => {
-        const total = receipt.customer.vehicleRenters
-          ?.filter((vehicle: { owner: string }) => vehicle.owner !== 'GARAGE_MITRE')
-          .reduce((sum: number, vehicle: { amount: number }) => sum + (vehicle.amount || 0), 0) || 0;
+        const total = receipt.price;
     
-        const vehicleOwner = receipt.customer.vehicleRenters?.[0]?.vehicle.customer.firstName + ' ' + receipt.customer.vehicleRenters?.[0]?.vehicle.customer.lastName;
+          const vehicleCustomer = receipt.customer.vehicleRenters?.[0]?.vehicle?.customer;
+          const vehicleOwner = vehicleCustomer ? `${vehicleCustomer.firstName} ${vehicleCustomer.lastName}` : '';
+          
     
         return [
           `${receipt.customer.firstName} ${receipt.customer.lastName}`,
