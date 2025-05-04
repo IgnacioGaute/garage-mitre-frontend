@@ -103,13 +103,13 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
       const [openCancelDialog, setOpenCancelDialog] = useState(false);
       const [openDropdown, setOpenDropdown] = useState(false);
       const session = useSession();
-      const [selectedPaymentType, setSelectedPaymentType] = useState<"TRANSFER" | "CASH" | null>(null);
+      const [selectedPaymentType, setSelectedPaymentType] = useState<"TRANSFER" | "CASH" | "CHECK" | null>(null);
       
       const handlePrint = () => {
         setOpenPaymentDialog(true); // Primero abre el diálogo de selección de tipo de pago
       };
       
-      const handleConfirmPayment = async (paymentType: "TRANSFER" | "CASH") => {
+      const handleConfirmPayment = async (paymentType: "TRANSFER" | "CASH" | "CHECK") => {
         setSelectedPaymentType(paymentType);
         setOpenPaymentDialog(false);
         setOpenPrintDialog(true); // Luego abre el diálogo de confirmación de impresión
