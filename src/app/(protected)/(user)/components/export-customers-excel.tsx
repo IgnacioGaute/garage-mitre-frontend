@@ -12,9 +12,11 @@ import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(isSameOrAfter);
 
 interface Props {
   customers: Customer[];
@@ -43,19 +45,23 @@ export const ExportCustomersExcel = ({ customers }: Props) => {
       });
 
       if (!latestReceipt) return null;
-      
-      const hasPaid = latestReceipt?.startDate
-      ? selectedDate.isBefore(dayjs(latestReceipt.startDate).tz("America/Argentina/Buenos_Aires"), "month")
-      : false;
+      const argentinaToday = dayjs().tz('America/Argentina/Buenos_Aires').startOf('day');
+
+      const startDate = latestReceipt?.startDate
+      ? dayjs(latestReceipt.startDate).tz("America/Argentina/Buenos_Aires")
+      : null;
+    
+    const selectedMonthStart = dayjs(`${selectedYear}-${selectedMonth}-01`).tz("America/Argentina/Buenos_Aires");
+    
+    const hasPaid = startDate ? startDate.isSameOrAfter(selectedMonthStart, 'day') : false;
+    
 
       return {
         Apellido: customer.lastName,
         Nombre: customer.firstName,
         "¿Pagó este mes?": hasPaid ? "Si" : "No",
-        "Monto Inicial": latestReceipt?.startAmount || "N/A",
         "Monto Actual": latestReceipt?.price || "N/A",
         "Fecha de Inicio": customer.previusStartDate || customer.startDate || "N/A",
-        "Fecha de Pago": latestReceipt?.paymentDate || "N/A",
       };
     }).filter(Boolean);
 

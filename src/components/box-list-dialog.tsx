@@ -12,9 +12,11 @@ import generateBoxList from '@/utils/generate-box-list';
 import { useSession } from 'next-auth/react';
 
 import dayjs from 'dayjs';
-import * as utc from 'dayjs/plugin/utc';
-import * as timezone from 'dayjs/plugin/timezone';
-import * as isBetween from 'dayjs/plugin/isBetween'; 
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 
 interface BoxListDialogProps {

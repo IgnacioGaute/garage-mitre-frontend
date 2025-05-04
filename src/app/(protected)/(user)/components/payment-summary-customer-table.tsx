@@ -138,7 +138,15 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
                   </TableCell>
                   <TableCell className="font-medium flex items-center space-x-2">
                     {receiptOwner.paymentType && (
-                      <span>{receiptOwner.paymentType === 'TRANSFER' ? 'Transferencia' : 'Efectivo'}</span>
+                      <span>
+                      {receiptOwner.paymentType === 'TRANSFER'
+                        ? 'Transferencia'
+                        : receiptOwner.paymentType === 'CASH'
+                        ? 'Efectivo'
+                        : receiptOwner.paymentType === 'CHECK'
+                        ? 'Cheque'
+                        : 'Desconocido'}
+                    </span>
                     )}
                   </TableCell>
                   <TableCell className="text-right relative pr-6">

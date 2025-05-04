@@ -6,8 +6,6 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const startScanner = async (values: { barCode: string }) => {
   try {
-    console.log("Enviando petición a la API:", values);
-
     const response = await fetch(`${BASE_URL}/scanner/start-scanner`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

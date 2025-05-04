@@ -24,7 +24,7 @@ export function ViewCustomerDialog({ customer }: { customer: Customer }) {
     EXPENSES_ZOM_2: 'Expensas salón 2',
     EXPENSES_ZOM_3: 'Expensas salón 3',
     EXPENSES_RICARDO_AZNAR: 'Expensas Ricardo Aznar',
-    EXPENSES_ADOLFO_FONTELA: 'Expensas Adolfo Fontela',
+    EXPENSES_ALDO_FONTELA: 'Expensas Aldo Fontela',
     EXPENSES_NIDIA_FONTELA: 'Expensas Nidia Fontela',
   };
 

@@ -15,4 +15,8 @@ export type Ticket ={
 
 export type Scanner ={
     codeBar: string;
+    success: boolean;
+    message?: string;
+    type?: 'RECEIPT' | 'TICKET';
+    id: string | null;
 }
