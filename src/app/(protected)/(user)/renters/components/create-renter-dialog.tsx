@@ -239,7 +239,7 @@ export function CreateRenterDialog({ customersRenters } : { customersRenters:Veh
   const selectedVehicleId = form.watch(`vehicleRenters.${index}.owner`);
   const allSelectedIds = (form.watch('vehicleRenters') ?? [])
   .map((v: any, i: number) => i !== index ? v.owner : null)
-  .filter((id: string | null) => id && id !== 'JOSE_RICARDO_AZNAR'||'CARLOS_ALBERTO_AZNAR'||'NIDIA_ROSA_MARIA_FONTELA'||'ADOLFO_RAUL_FONTELA');
+  .filter((id: string | null) => id && id !== 'JOSE_RICARDO_AZNAR'||'CARLOS_ALBERTO_AZNAR'||'NIDIA_ROSA_MARIA_FONTELA'||'ALDO_RAUL_FONTELA');
 
   const selectedVehicleIds = form.watch('vehicleRenters')?.map((v: any) => v.owner) ?? [];
   const availableVehicles = getAvailableVehicles(selectedVehicleIds);
@@ -248,7 +248,7 @@ export function CreateRenterDialog({ customersRenters } : { customersRenters:Veh
     'JOSE_RICARDO_AZNAR',
     'CARLOS_ALBERTO_AZNAR',
     'NIDIA_ROSA_MARIA_FONTELA',
-    'ADOLFO_RAUL_FONTELA',
+    'ALDO_RAUL_FONTELA',
   ];
   const isManualOwner = manualOwners.includes(selectedVehicleId || '');
 

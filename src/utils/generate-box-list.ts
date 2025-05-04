@@ -30,7 +30,7 @@ export default async function generateBoxList(boxList: any, userName: string): P
       'JOSE_RICARDO_AZNAR',
       'CARLOS_ALBERTO_AZNAR',
       'NIDIA_ROSA_MARIA_FONTELA',
-      'ADOLFO_RAUL_FONTELA'
+      'ALDO_RAUL_FONTELA'
     ];
     
 
@@ -173,7 +173,7 @@ export default async function generateBoxList(boxList: any, userName: string): P
           // Calcular los subtotales por tipo de pago
           if (paymentType === "TR") {
             transferTotal += parsedPrice;
-          } else if (paymentType === "EF") {
+          } else if (paymentType === "EF" || paymentType === "CH" ) {
             cashTotal += parsedPrice;
           }
     
@@ -189,7 +189,7 @@ export default async function generateBoxList(boxList: any, userName: string): P
           }
           
           // Mostrar el precio con signo negativo si es TRANSFER
-          const priceText = paymentType === "TR" ? `- ${formatNumber(parsedPrice)}` : `  ${formatNumber(parsedPrice)}`;
+          const priceText = paymentType === "TR" || "CH" ? `- ${formatNumber(parsedPrice)}` : `  ${formatNumber(parsedPrice)}`;
           page.drawText(priceText, { x: 300, y: yPosition, size: fontSize, font });
     
           // Dibujar la línea de separación
@@ -253,7 +253,7 @@ export default async function generateBoxList(boxList: any, userName: string): P
       JOSE_RICARDO_AZNAR: 'Ricardo Aznar',
       CARLOS_ALBERTO_AZNAR: 'Carlos Aznar',
       NIDIA_ROSA_MARIA_FONTELA: 'Nidia Fontela',
-      ADOLFO_RAUL_FONTELA: 'Aldo Fontela',
+      ALDO_RAUL_FONTELA: 'Aldo Fontela',
     };
     
     
@@ -272,12 +272,25 @@ export default async function generateBoxList(boxList: any, userName: string): P
           `${receipt.customer.firstName} ${receipt.customer.lastName}`,
           total,
           formatDateA(receipt.dateNow),
-          receipt.paymentType === 'TRANSFER' ? 'TR' : 'EF',
+          receipt.paymentType === 'TRANSFER'
+          ? 'TR'
+          : receipt.paymentType === 'CASH'
+          ? 'EF'
+          : receipt.paymentType === 'CHECK'
+          ? 'CH'
+          : 'Desconocido',
           owner
         ];
       }
     );
-    addDataSectionReceipt('Total de Recibo pago Expensas', owners, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, formatDateA(receipt.dateNow), receipt.paymentType === 'TRANSFER' ? 'TR' : 'EF']);
+    addDataSectionReceipt('Total de Recibo pago Expensas', owners, receipt => [`${receipt.customer.firstName} ${receipt.customer.lastName}`, receipt.price, formatDateA(receipt.dateNow),
+      receipt.paymentType === 'TRANSFER'
+      ? 'TR'
+      : receipt.paymentType === 'CASH'
+      ? 'EF'
+      : receipt.paymentType === 'CHECK'
+      ? 'CH'
+      : 'Desconocido',]);
     addDataSectionReceipt(
       'Total de Recibo pago Alquiler Terceros',
       privates,
@@ -292,7 +305,13 @@ export default async function generateBoxList(boxList: any, userName: string): P
           `${receipt.customer.firstName} ${receipt.customer.lastName}`,
           total,
           formatDateA(receipt.dateNow),
-          receipt.paymentType === 'TRANSFER' ? 'TR' : 'EF',
+          receipt.paymentType === 'TRANSFER'
+          ? 'TR'
+          : receipt.paymentType === 'CASH'
+          ? 'EF'
+          : receipt.paymentType === 'CHECK'
+          ? 'CH'
+          : 'Desconocido',
           vehicleOwner
         ];
       }

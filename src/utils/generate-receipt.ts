@@ -16,7 +16,7 @@ export default async function generateReceipt(customer: any, description: string
       if (pendingReceipt) {
         switch (pendingReceipt.receiptTypeKey) {
           case 'JOSE_RICARDO_AZNAR':
-            pdfFile = '/José-Ricardo-Aznar.pdf';
+            pdfFile = '/Jose-Ricardo-Aznar.pdf';
             break;
           case 'CARLOS_ALBERTO_AZNAR':
             pdfFile = '/Carlos-Alberto-Aznar.pdf';
@@ -24,8 +24,8 @@ export default async function generateReceipt(customer: any, description: string
           case 'NIDIA_ROSA_MARIA_FONTELA':
             pdfFile = '/Nidia-Rosa-María-Fontela.pdf';
             break;
-          case 'ADOLFO_RAUL_FONTELA':
-            pdfFile = '/ADOLFO_RAUL_FONTELA.pdf';
+          case 'ALDO_RAUL_FONTELA':
+            pdfFile = '/ALDO_RAUL_FONTELA.pdf';
             break;
           case 'GARAGE_MITRE':
             pdfFile = '/Garage-Mitre.pdf';

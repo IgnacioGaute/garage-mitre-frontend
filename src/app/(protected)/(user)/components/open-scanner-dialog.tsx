@@ -13,14 +13,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { receiptSchema, ReceiptSchemaType } from '@/schemas/receipt.schema';
+import { Customer } from '@/types/cutomer.type';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent } from '@/components/ui/card';
 
-interface PaymentTypeReceiptDialogProps {
+interface OpenScannerDialogProps {
   open: boolean;
   onConfirm: (paymentType: "TRANSFER" | "CASH" | 'CHECK') => Promise<void>;
   onClose: () => void;
+  customer?: Customer;
 }
 
-export function PaymentTypeReceiptDialog({ open, onConfirm, onClose }: PaymentTypeReceiptDialogProps) {
+export function OpenScannerDialog({ open, onConfirm, onClose, customer }: OpenScannerDialogProps) {
   const [isPending, setIsPending] = useState(false);
 
   const form = useForm<ReceiptSchemaType>({
@@ -38,8 +42,15 @@ export function PaymentTypeReceiptDialog({ open, onConfirm, onClose }: PaymentTy
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
         <DialogHeader className="items-center">
-          <DialogTitle>Elegir Tipo de Pago</DialogTitle>
+          <DialogTitle>Elegir Tipo de Pago Para: </DialogTitle>
         </DialogHeader>
+        <Card>
+          <CardContent className="p-4 space-y-3 text-sm sm:text-base">
+            <p><strong>Nombre y Apellido:</strong> {customer?.firstName} {customer?.lastName}</p>
+            <p><strong>Celular:</strong> {customer?.phone}</p>
+            <p><strong>Número de Vehículos:</strong> {customer?.numberOfVehicles}</p>
+          </CardContent>
+        </Card>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
