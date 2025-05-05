@@ -188,7 +188,7 @@ export default async function generateBoxList(boxList: any, userName: string): P
             page.drawText(`(${paymentType})`, { x: descEndX + 5, y: yPosition, size: fontSize, font });
           }
           if (vehicleOwner) {
-            page.drawText(`(${vehicleOwner})`, { x: 210, y: yPosition, size: fontSize, font });
+            page.drawText(`(${vehicleOwner})`, { x: descEndX + 30, y: yPosition, size: fontSize, font });
           }
           
           // Mostrar el precio con signo negativo si es TRANSFER
