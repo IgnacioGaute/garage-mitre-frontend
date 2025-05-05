@@ -111,6 +111,7 @@ export function CreateParkingTypeDialog() {
                         <SelectItem value="EXPENSES_ZOM_2">Expensas salon 2</SelectItem>
                         <SelectItem value="EXPENSES_ZOM_3">Expensas salon 3</SelectItem>
                         <SelectItem value="EXPENSES_RICARDO_AZNAR">Expensas Ricado Aznar</SelectItem>
+                        <SelectItem value="EXPENSES_CARLOS_AZNAR">Expensas Carlos Aznar</SelectItem>
                         <SelectItem value="EXPENSES_ALDO_FONTELA">Expensas Aldo Fontela</SelectItem>
                         <SelectItem value="EXPENSES_NIDIA_FONTELA">Expensas Nidia Fontela</SelectItem>
                       </SelectContent>

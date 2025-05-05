@@ -29,12 +29,11 @@ export default function UpdateAmountCustomerCard({ className }: { className?: st
         resolver: zodResolver(amountCustomerSchema),
         defaultValues: {
             amount: undefined,
-            customerType: 'OWNER',
+            customerType: 'RENTER',
             ownerTypeOfRenter: '',
         },
     });
 
-    const customerType = form.watch('customerType'); // 🔥 Observa el cambio de customerType
 
     const onSubmit = (values: AmountCustomerSchemaType) => {
         setError(undefined);
@@ -64,46 +63,19 @@ export default function UpdateAmountCustomerCard({ className }: { className?: st
     return (
         <Card className={`w-3/5 h-full flex flex-col ${className} mx-auto my-auto justify-center`}>
             <CardHeader>
-                <CardTitle>Gestionar Monto de los clientes</CardTitle>
-                <CardDescription>Elegir tipo de cliente y si el monto va a ser negativo o positivo</CardDescription>
+                <CardTitle>Actualizar Monto Inquilinos</CardTitle>
+                <CardDescription>Elegir tipo de propietario y si el monto va a ser negativo o positivo</CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 flex flex-col h-full">
-                        <FormField
-                            control={form.control}
-                            name="customerType"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Tipo de Cliente</FormLabel>
-                                    <FormControl>
-                                        <Select
-                                            disabled={isPending}
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecciona un tipo" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="OWNER">Propietario</SelectItem>
-                                                <SelectItem value="RENTER">Inquilino</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
 
-                        {/* Si es RENTER mostramos otro select */}
-                        {customerType === 'RENTER' && (
                             <FormField
                                 control={form.control}
                                 name="ownerTypeOfRenter"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Tipo de Dueño</FormLabel>
+                                        <FormLabel>Tipo de Propietario</FormLabel>
                                         <FormControl>
                                             <Select
                                                 disabled={isPending}
@@ -111,11 +83,13 @@ export default function UpdateAmountCustomerCard({ className }: { className?: st
                                                 defaultValue={field.value}
                                             >
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Selecciona un dueño" />
+                                                    <SelectValue placeholder="Selecciona un propietario" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="GARAGE_MITRE">Garage Mitre</SelectItem>
-                                                    <SelectItem value="OWNER">Propietario</SelectItem>
+                                                <SelectItem value="JOSE_RICARDO_AZNAR">José Ricardo Aznar</SelectItem>
+                                                <SelectItem value="CARLOS_ALBERTO_AZNAR">Carlos Alberto Aznar</SelectItem>
+                                                <SelectItem value="NIDIA_ROSA_MARIA_FONTELA">Nidia Rosa Maria Fontela</SelectItem>
+                                                <SelectItem value="ALDO_RAUL_FONTELA">Aldo Raúl Fontela</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </FormControl>
@@ -123,7 +97,6 @@ export default function UpdateAmountCustomerCard({ className }: { className?: st
                                     </FormItem>
                                 )}
                             />
-                        )}
 
                             <div className="flex items-center justify-between">
                             <FormLabel>Convertir en negativo</FormLabel>

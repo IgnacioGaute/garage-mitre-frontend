@@ -30,6 +30,7 @@ import { historialReceiptsAction } from '@/actions/receipts/create-receipt.actio
 import { SoftDeleteOwnerDialog } from './soft-delete-owner-dialog';
 import { RestoredOwnerDialog } from './restored-owner-dialog';
 import { PaymentSummaryCell } from '../../components/automatic-open-summary';
+import { generateReceiptsWithoutRegistering } from '@/utils/generate-receipt-without-registering';
 
 const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
   if (rowA.original.deletedAt && !rowB.original.deletedAt) return 1;
@@ -64,7 +65,7 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
   },
   {
     accessorKey: 'numberOfVehicles',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Número de vehículos" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Número de Cocheras" />,
     cell: ({ row }) => (
       <div
       className={`text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate ${
@@ -167,6 +168,28 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
         }
       };
 
+      const handleConfirmNotRegister = async () => {
+      
+        try {
+          const updatedCustomer = await getCustomerById(customer.id, session.data?.token);
+      
+          if (!updatedCustomer) {
+            toast.error("No se pudieron obtener los datos actualizados del cliente.");
+            return;
+          }
+      
+          await generateReceiptsWithoutRegistering(updatedCustomer);
+      
+          toast.success("Recibo generado y enviado a la impresora.");
+        } catch (error: any) {
+          console.error("Error al imprimir el recibo:", error);
+          toast.error(error?.message || "Error al enviar el recibo a la impresora.");
+        } finally {
+          setOpenPrintDialog(false);
+          setSelectedPaymentType(null); // Limpiar el estado después de imprimir
+        }
+      };
+
       return (
         <>
           <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
@@ -194,23 +217,25 @@ export const OwnerColumns = (parkingTypes: ParkingType[]): ColumnDef<Customer>[]
                     </div>
                     </DropdownMenuItem>
 
+
                     <Dialog open={openPrintDialog} onOpenChange={setOpenPrintDialog}>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>¿Está seguro?</DialogTitle>
-                        <DialogDescription>Se generará e imprimirá un recibo para este propietario.</DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <Button 
-                          variant="ghost"
-                          className="w-full justify-start"
-                          size="sm"
-                         onClick={() => setOpenPrintDialog(false)}>Cancelar</Button>
-                        <Button onClick={handleConfirmPrint}>Imprimir y Registrar Pago</Button>
-                        <Button onClick={handleConfirm}>Registrar Pago</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                      <DialogContent className="max-w-3xl">
+                        <DialogHeader>
+                          <DialogTitle>¿Está seguro?</DialogTitle>
+                        </DialogHeader>
+
+                        <p className="text-sm text-muted-foreground">
+                          Se generará e imprimirá un recibo para este inquilino.
+                        </p>
+
+                        <DialogFooter className="gap-2 item-start mr-20">
+                          <Button variant="outline" onClick={() => setOpenPrintDialog(false)}>Cancelar</Button>
+                          <Button onClick={handleConfirmPrint}>Imprimir y Registrar Pago</Button>
+                          <Button onClick={handleConfirm}>Registrar Pago</Button>
+                          <Button onClick={handleConfirmNotRegister}>Imprimir</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
 
 
                     <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>

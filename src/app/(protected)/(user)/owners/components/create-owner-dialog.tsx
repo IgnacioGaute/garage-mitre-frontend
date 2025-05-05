@@ -110,7 +110,7 @@ export function CreateOwnerDialog() {
 
       <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
         <DialogHeader className="items-center">
-          <DialogTitle>{phase === 'customer' ? 'Crear Cliente' : 'Crear Vehículos'}</DialogTitle>
+          <DialogTitle>{phase === 'customer' ? 'Crear Cliente' : 'Crear Cocheras'}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -171,7 +171,7 @@ export function CreateOwnerDialog() {
                   name="numberOfVehicles"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Número de vehículos</FormLabel>
+                      <FormLabel>Número de Cocheras</FormLabel>
                       <FormControl>
                         <Input
                           type="number"

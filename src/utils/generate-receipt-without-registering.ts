@@ -2,11 +2,11 @@ import { PDFDocument, rgb } from 'pdf-lib';
 import { toast } from 'sonner';
 import JsBarcode from 'jsbarcode';
 
-export async function generateAllReceipts(customers: any[]) {
+export async function generateReceiptsWithoutRegistering(customer: any) {
   try {
     const combinedPdfDoc = await PDFDocument.create();
 
-    for (const customer of customers) {
+
       let pdfFile = '/Garage_Mitre.pdf'; // Valor por defecto para renter
 
       if (customer.customerType === 'OWNER') {
@@ -39,15 +39,6 @@ export async function generateAllReceipts(customers: any[]) {
           pdfFile = '/Consorcio-Garage-Mitre.pdf';
         }
       }
-      
-  
-      const receiptTypeNames: Record<string, string> = {
-        JOSE_RICARDO_AZNAR: 'José Ricardo Aznar',
-        CARLOS_ALBERTO_AZNAR: 'Carlos Alberto Aznar',
-        NIDIA_ROSA_MARIA_FONTELA: 'Nidia Rosa María Fontela',
-        ALDO_RAUL_FONTELA: 'Aldo Raúl Fontela',
-        GARAGE_MITRE: 'Garage Mitre'
-      };
       
   
 
@@ -147,7 +138,6 @@ export async function generateAllReceipts(customers: any[]) {
           combinedPdfDoc.addPage(copiedPage);
         }
         
-    }
 
     const finalPdfBytes = await combinedPdfDoc.save();
     const blob = new Blob([finalPdfBytes], { type: 'application/pdf' });
@@ -160,7 +150,7 @@ export async function generateAllReceipts(customers: any[]) {
       };
     }
 
-    toast.success('Todos los recibos han sido generados correctamente');
+    toast.success('Recibo Impreso');
   } catch (error) {
     console.error('Error al generar todos los recibos:', error);
     toast.error('Error al generar los recibos');
