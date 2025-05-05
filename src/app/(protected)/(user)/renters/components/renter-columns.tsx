@@ -39,6 +39,7 @@ import { RestoredRenterDialog } from './restored-renter-dialog';
 import { PaymentSummaryCell } from '../../components/automatic-open-summary';
 import { Vehicle } from '@/types/vehicle.type';
 import { ViewCustomerRenterDialog } from '../../components/view-customer-renter-dialog';
+import { generateReceiptsWithoutRegistering } from '@/utils/generate-receipt-without-registering';
 
 const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
   if (rowA.original.deletedAt && !rowB.original.deletedAt) return 1;
@@ -174,6 +175,29 @@ export const renterColumns = (customerRenters: Vehicle[]): ColumnDef<Customer>[]
           setSelectedPaymentType(null); // Limpiar el estado después de imprimir
         }
       };
+
+      const handleConfirmNotRegister = async () => {
+      
+        try {
+          const updatedCustomer = await getCustomerById(customer.id, session.data?.token);
+      
+          if (!updatedCustomer) {
+            toast.error("No se pudieron obtener los datos actualizados del cliente.");
+            return;
+          }
+      
+          await generateReceiptsWithoutRegistering(updatedCustomer);
+      
+          toast.success("Recibo generado y enviado a la impresora.");
+        } catch (error: any) {
+          console.error("Error al imprimir el recibo:", error);
+          toast.error(error?.message || "Error al enviar el recibo a la impresora.");
+        } finally {
+          setOpenPrintDialog(false);
+          setSelectedPaymentType(null); // Limpiar el estado después de imprimir
+        }
+      };
+      
       return (
         <>
           <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
@@ -202,18 +226,24 @@ export const renterColumns = (customerRenters: Vehicle[]): ColumnDef<Customer>[]
                     </DropdownMenuItem>
 
                     <Dialog open={openPrintDialog} onOpenChange={setOpenPrintDialog}>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>¿Está seguro?</DialogTitle>
-                        <DialogDescription>Se generará e imprimirá un recibo para este inquilino.</DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setOpenPrintDialog(false)}>Cancelar</Button>
-                        <Button onClick={handleConfirmPrint}>Imprimir y Registrar Pago</Button>
-                        <Button onClick={handleConfirm}>Registrar Pago</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                      <DialogContent className="max-w-3xl">
+                        <DialogHeader>
+                          <DialogTitle>¿Está seguro?</DialogTitle>
+                        </DialogHeader>
+
+                        <p className="text-sm text-muted-foreground">
+                          Se generará e imprimirá un recibo para este inquilino.
+                        </p>
+
+                        <DialogFooter className="gap-2 item-start mr-20">
+                          <Button variant="outline" onClick={() => setOpenPrintDialog(false)}>Cancelar</Button>
+                          <Button onClick={handleConfirmPrint}>Imprimir y Registrar Pago</Button>
+                          <Button onClick={handleConfirm}>Registrar Pago</Button>
+                          <Button onClick={handleConfirmNotRegister}>Imprimir</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
 
 
                     <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>

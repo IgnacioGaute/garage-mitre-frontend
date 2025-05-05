@@ -141,7 +141,7 @@ export function UpdateRenterDialog({ customer, customersRenters }: { customer: C
 
       <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
         <DialogHeader className="items-center">
-          <DialogTitle>{phase === 'customer' ? 'Editar Cliente' : 'Editar Vehículos'}</DialogTitle>
+          <DialogTitle>{phase === 'customer' ? 'Editar Cliente' : 'Editar Cocheras'}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -220,7 +220,7 @@ export function UpdateRenterDialog({ customer, customersRenters }: { customer: C
                   name="numberOfVehicles"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Número de vehículos</FormLabel>
+                      <FormLabel>Número de Cocheras</FormLabel>
                       <FormControl>
                         <Input
                           type="number"

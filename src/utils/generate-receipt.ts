@@ -133,7 +133,7 @@ firstPage.drawImage(barcodeImage, {
         const description =
         customer.customerType === 'OWNER'
           ? `Cochera ${vehicle.garageNumber}`
-          : `Cochera ${vehicle.garageNumber} (${vehicle.vehicle ? `${vehicle.vehicle.customer.lastName} ${vehicle.vehicle.customer.firstName}` : `${receiptTypeNames[pendingReceipt.receiptTypeKey] || pendingReceipt.receiptTypeKey}`})`;
+          : `Cochera ${vehicle.garageNumber} ${vehicle.vehicle ? `(${vehicle.vehicle.customer.lastName} ${vehicle.vehicle.customer.firstName})` : ``}`;
       
             // Agregar la tabla (Cantidad, Descripción, Precio)
         firstPage.drawText(`1`, { x: 70, y: yPosition, size: fontSize, color: textColor }); // Cantidad
@@ -180,7 +180,7 @@ firstPage.drawImage(barcodeImage, {
         const description =
         customer.customerType === 'OWNER'
           ? `Cochera ${vehicle.garageNumber}`
-          : `Cochera ${vehicle.garageNumber} (${vehicle.vehicle ? `${vehicle.vehicle.customer.lastName} ${vehicle.vehicle.customer.firstName}` : `${receiptTypeNames[pendingReceipt.receiptTypeKey] || pendingReceipt.receiptTypeKey}`})`;
+          : `Cochera ${vehicle.garageNumber} ${vehicle.vehicle ? `(${vehicle.vehicle.customer.lastName} ${vehicle.vehicle.customer.firstName})` : ``}`;
       
 
         secondPage.drawText(`1`, { x: 70, y: yPosition2, size: fontSize, color: textColor }); // Cantidad

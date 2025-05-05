@@ -93,7 +93,7 @@ export default async function generateBoxList(boxList: any, userName: string): P
     
     yPosition -= 25;
     const drawVerticalLines = (y: number) => {
-      const columnPositions = [110, 295, 390];
+      const columnPositions = [110, 435, 490];
       columnPositions.forEach(x => {
         page.drawLine({ start: { x, y: y + 20 }, end: { x, y: y - 20 }, thickness: 0.5, color: rgb(0.7, 0.7, 0.7)});
       });
@@ -101,8 +101,8 @@ export default async function generateBoxList(boxList: any, userName: string): P
 
     page.drawText('Fecha', { x: 50, y: yPosition, size: fontSize, font: fontBold });
     page.drawText('Descripcion', { x: 150, y: yPosition, size: fontSize, font: fontBold });
-    page.drawText('Entradas', { x: 300, y: yPosition, size: fontSize, font: fontBold });
-    page.drawText('Saldo', { x: 400, y: yPosition, size: fontSize,font: fontBold });
+    page.drawText('Entradas', { x: 440, y: yPosition, size: fontSize, font: fontBold });
+    page.drawText('Saldo', { x: 500, y: yPosition, size: fontSize,font: fontBold });
     yPosition -= 10;
     page.drawLine({ start: { x: 50, y: yPosition }, end: { x: 550, y: yPosition }, thickness: 1, color: rgb(0, 0, 0) });
     yPosition -= 15;
@@ -114,7 +114,7 @@ export default async function generateBoxList(boxList: any, userName: string): P
       page.drawRectangle({ x: 50, y: yPosition - 20, width: rectWidth, height: 15, color: rgb(0.9, 0.9, 0.9) });
 
       page.drawText(title, { x: 105, y: yPosition - 15, size: fontSize, font: fontBold });
-      page.drawText(formatNumber(total), { x: 400, y: yPosition - 15, size: fontSize, font: fontBold });
+      page.drawText(formatNumber(total), { x: 500, y: yPosition - 15, size: fontSize, font: fontBold });
       yPosition -= 30;
     };
     const addDataSection = (title: string, items: (Ticket | Receipt | TicketRegistration | TicketRegistrationForDay | OtherPayment)[], dataExtractor: (item: any) => string[]) => {
@@ -132,7 +132,7 @@ export default async function generateBoxList(boxList: any, userName: string): P
           page.drawText(`${dateNow}`, { x: 50, y: yPosition, size: fontSize, font });
           page.drawText(`${desc}`, { x: 112, y: yPosition, size: fontSize, font });
           page.drawText(paymentType === '' ? `${paymentType}`: `(${paymentType})`, { x: 200, y: yPosition, size: fontSize, font });
-          page.drawText(`  ${formatNumber(price)}`, { x: 300, y: yPosition, size: fontSize, font });
+          page.drawText(`  ${formatNumber(price)}`, { x: 440, y: yPosition, size: fontSize, font });
           
           yPosition -= 10;
           page.drawLine({ start: { x: 50, y: yPosition }, end: { x: 550, y: yPosition }, thickness: 0.5, color: rgb(0.7, 0.7, 0.7) });
@@ -180,17 +180,20 @@ export default async function generateBoxList(boxList: any, userName: string): P
           // Dibujar la información en el PDF
           page.drawText(`${dateNow}`, { x: 50, y: yPosition, size: fontSize, font });
           page.drawText(`${desc}`, { x: 112, y: yPosition, size: fontSize, font });
-          page.drawText(
-            paymentType === "" ? `${paymentType}` : `(${paymentType})`,
-            { x: 185, y: yPosition, size: fontSize, font }
-          );
+          const descWidth = font.widthOfTextAtSize(desc, fontSize);
+          const descEndX = 112 + descWidth;
+          
+          // Agregá el texto de la abreviación después del nombre, con un pequeño espacio
+          if (paymentType) {
+            page.drawText(`(${paymentType})`, { x: descEndX + 5, y: yPosition, size: fontSize, font });
+          }
           if (vehicleOwner) {
             page.drawText(`(${vehicleOwner})`, { x: 210, y: yPosition, size: fontSize, font });
           }
           
           // Mostrar el precio con signo negativo si es TRANSFER
-          const priceText = paymentType === "TR" || "CH" ? `- ${formatNumber(parsedPrice)}` : `  ${formatNumber(parsedPrice)}`;
-          page.drawText(priceText, { x: 300, y: yPosition, size: fontSize, font });
+          const priceText = paymentType === "TR" ? `- ${formatNumber(parsedPrice)}` : `  ${formatNumber(parsedPrice)}`;
+          page.drawText(priceText, { x: 440, y: yPosition, size: fontSize, font });
     
           // Dibujar la línea de separación
           yPosition -= 10;
@@ -233,7 +236,7 @@ export default async function generateBoxList(boxList: any, userName: string): P
           page.drawText(`${dateNow}`, { x: 50, y: yPosition, size: fontSize, font });
           page.drawText(`${desc}`, { x: 112, y: yPosition, size: fontSize, font });
           page.drawText(paymentType === '' ? `${paymentType}`: `(${paymentType})`, { x: 200, y: yPosition, size: fontSize, font });
-          page.drawText(`- ${formatNumber(price)}`, { x: 300, y: yPosition, size: fontSize, font });
+          page.drawText(`- ${formatNumber(price)}`, { x: 440, y: yPosition, size: fontSize, font });
           
           yPosition -= 10;
           page.drawLine({ start: { x: 50, y: yPosition }, end: { x: 550, y: yPosition }, thickness: 0.5, color: rgb(0.7, 0.7, 0.7) });
@@ -322,8 +325,8 @@ export default async function generateBoxList(boxList: any, userName: string): P
       const rectWidth = 500; 
       page.drawRectangle({ x: 50, y: yPosition - 20, width: rectWidth, height: 15, color: rgb(0.9, 0.9, 0.9) });
       page.drawText(title, { x: 105, y: yPosition - 15, size: fontSize, font: fontBold });
-      page.drawText(formatNumber(total), { x: 400, y: yPosition - 15, size: fontSize, font: fontBold });
-      page.drawText(formatNumber(total), { x: 300, y: yPosition - 15, size: fontSize, font: fontBold });
+      page.drawText(formatNumber(total), { x: 500, y: yPosition - 15, size: fontSize, font: fontBold });
+      page.drawText(formatNumber(total), { x: 440, y: yPosition - 15, size: fontSize, font: fontBold });
 
       yPosition -= 30;
     };
