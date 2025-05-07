@@ -38,6 +38,7 @@ export const parkingTypeColumns: ColumnDef<ParkingType>[] = [
         EXPENSES_ZOM_3: 'Expensas salon 3',
         EXPENSES_RICARDO_AZNAR: 'Expensas Ricardo Aznar',
         EXPENSES_ALDO_FONTELA: 'Expensas Aldo Fontela',
+        EXPENSES_CARLOS_AZNAR: 'Expensas Carlos Aznar',
         EXPENSES_NIDIA_FONTELA: 'Expensas Nidia Fontela',
 
       };
