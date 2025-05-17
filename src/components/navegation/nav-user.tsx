@@ -36,9 +36,14 @@ import { NavigationMenuDemo } from './navegation-menu';
 import { BoxListDialog } from '../box-list-dialog';
 import { getTodayNotes } from '@/services/notes.service';
 import { useNotifications } from '@/hooks/use-notification';
+import { TicketDayOrWeekTable } from '@/app/(protected)/(user)/tickets/tickets-days-or-weeks/tickets-day-or-week-table';
+import { ticketDayOrWeekColumns } from '@/app/(protected)/(user)/tickets/tickets-days-or-weeks/ticket-day-or-week-columns';
+import { TicketTableDialog } from '@/app/(protected)/(user)/tickets/tickets-days-or-weeks/ticket-table-dialog';
+import { TicketRegistrationForDay } from '@/types/ticket-registration-for-day.type';
 
 export function NavUser({
   userNav,
+  ticketRegistrationsDayOrWeek
 }: {
   userNav: {
     name: string;
@@ -46,11 +51,13 @@ export function NavUser({
     avatar: string;
     role: User['role'];
   };
+  ticketRegistrationsDayOrWeek : TicketRegistrationForDay[]
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [openBoxDialog, setOpenBoxDialog] = useState(false);
   const { hasNewNoteAlert, clearNoteAlert } = useNotifications();
-  
+  const [openTicketDialog, setOpenTicketDialog] = useState(false);
+
 
   return (
     <>
@@ -133,12 +140,29 @@ export function NavUser({
               </Link>
                   <DropdownMenuSeparator />
                 </>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault(); 
+                    setOpenTicketDialog(true);
+                  }}
+                  className="cursor-pointer flex items-center gap-2"
+                >
+                  <TicketIcon />
+                  Ver Registros de Tickets
+                </DropdownMenuItem>
+                <TicketTableDialog
+                  ticketRegistrationForDay={ticketRegistrationsDayOrWeek}
+                  open={openTicketDialog}
+                  setOpen={setOpenTicketDialog}
+                />
+                 <DropdownMenuSeparator />
+
                 <>
-                <Link href={userNav.role === 'ADMIN' ? '/admin/users' : '/admin/other-payments'}>
+                <Link href={userNav.role === 'ADMIN' ? '/admin/users' : '/admin/tickets'}>
                     <DropdownMenuGroup>
                       <DropdownMenuItem className="cursor-pointer flex items-center gap-2">
                         <Shield />
-                        Administrar
+                        {userNav.role === 'ADMIN' ? 'Administar' : 'Administrar Tickets y Gastos'}
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
                   </Link>

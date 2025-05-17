@@ -1,0 +1,26 @@
+import { TICKET_TIME_TYPE, VEHICLE_TYPE } from '@/types/ticket-price';
+import { z } from 'zod';
+
+export const ticketPriceSchema = z.object({
+    dayPrice: z.coerce.number().optional(),
+    nightPrice: z.coerce.number().optional(),
+    ticketTimePrice: z.coerce.number().optional(),
+    vehicleType: z.enum(VEHICLE_TYPE).optional(),
+    ticketTimeType: z.enum(TICKET_TIME_TYPE).optional(),
+});
+export type TicketPriceSchemaType = z.infer<typeof ticketPriceSchema>;
+
+
+export const updateTicketPriceSchema = z.object({
+    dayPrice: z.coerce.number().optional(),
+    nightPrice: z.coerce.number().optional(),
+    ticketTimePrice: z.coerce.number().optional(),
+    vehicleType: z.enum(VEHICLE_TYPE).optional(),
+    ticketTimeType: z.enum(TICKET_TIME_TYPE).optional(),
+  });
+  export type UpdateTicketPriceSchemaType = z.infer<typeof updateTicketPriceSchema>;
+
+export const deleteTicketPriceSchema = z.object({
+  confirmation: z.string().min(0, 'Ingrese la confirmación "Eliminar Precio Ticket"'),
+});
+export type DeleteTicketPriceSchemaType = z.infer<typeof deleteTicketPriceSchema>;

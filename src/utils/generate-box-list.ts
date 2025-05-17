@@ -239,7 +239,13 @@ export default async function generateBoxList(boxList: any, userName: string): P
           page.drawText(`- ${formatNumber(price)}`, { x: 440, y: yPosition, size: fontSize, font });
           
           yPosition -= 10;
-          page.drawLine({ start: { x: 50, y: yPosition }, end: { x: 550, y: yPosition }, thickness: 0.5, color: rgb(0.7, 0.7, 0.7) });
+
+page.drawLine({
+  start: { x: 50, y: yPosition },
+  end: { x: 550, y: yPosition },
+  color: rgb(0.7, 0.7, 0.7)
+});
+          
           drawVerticalLines(yPosition);
           yPosition -= 12;
         });
@@ -319,17 +325,23 @@ export default async function generateBoxList(boxList: any, userName: string): P
         ];
       }
     );
-    addDataSectionExpense('Total Gastos', otherPaymentsRegistration, payment => [payment.description, payment.price.toString(), formatDateA(payment.dateNow), '']);
-
-    const drawSectionTotal = (title: string, total: number) => {
+        const drawSectionTotal = (title: string, total: number) => {
       const rectWidth = 500; 
-      page.drawRectangle({ x: 50, y: yPosition - 20, width: rectWidth, height: 15, color: rgb(0.9, 0.9, 0.9) });
+      page.drawRectangle({ x: 50, y: yPosition - 20, width: rectWidth, height: 15, color: rgb(0.8, 0.8, 0.8) });
       page.drawText(title, { x: 105, y: yPosition - 15, size: fontSize, font: fontBold });
       page.drawText(formatNumber(total), { x: 500, y: yPosition - 15, size: fontSize, font: fontBold });
       page.drawText(formatNumber(total), { x: 440, y: yPosition - 15, size: fontSize, font: fontBold });
 
       yPosition -= 30;
     };
+    const expenseSum = otherPaymentsRegistration.reduce((sum, item) => sum + item.price, 0);
+
+// Subtotal de todo lo demás
+    const subtotalSinGastos = totalPrice + expenseSum;
+
+    drawSectionTotal('Total Recibos y Tickets', subtotalSinGastos);
+    addDataSectionExpense('Total Gastos', otherPaymentsRegistration, payment => [payment.description, payment.price.toString(), formatDateA(payment.dateNow), '']);
+
 
     drawSectionTotal('Total', totalPrice);
     // 📌 Guardar el PDF

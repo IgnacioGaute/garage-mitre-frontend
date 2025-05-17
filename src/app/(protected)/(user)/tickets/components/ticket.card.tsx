@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { TicketRegistration } from "@/types/ticket-registration.type";
-import { CreateTicketRegistrationDialog } from "./create-ticket-registration-for-day-dialog";
+import { CreateTicketRegistrationDialog } from "../tickets-days-or-weeks/create-ticket-registration-for-day-dialog";
 import ScannerButton from "./scanner-button";
 
 export default function CardTicket({
@@ -35,7 +35,13 @@ export default function CardTicket({
     };
   }, []);
 
-  const latestRegistration = registrations.length > 0 ? registrations[0] : null;
+  const latestRegistration =
+  registrations.length > 0
+    ? [...registrations].sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      )[0]
+    : null;
+
 
   const formatDateA = (date: string | Date) => {
     if (typeof date === "string") {
@@ -67,13 +73,7 @@ export default function CardTicket({
               <p className="p-3"><strong>Descripción:</strong> {latestRegistration.description}</p>
               <p className="p-3"><strong>Día de entrada:</strong> {formatDateA(latestRegistration.entryDay)}</p>
               <p className="p-3"><strong>Horario de entrada:</strong> {latestRegistration.entryTime}</p>
-              <p className="p-3">
-                <strong>
-                {latestRegistration.ticket.price === latestRegistration.ticket.dayPrice
-                  ? "Tipo de ticket: Día"
-                  : "Tipo de ticket: Noche"}
-                </strong>
-                </p>
+              <p className="p-3"><strong>Codigo de barras:</strong> {latestRegistration.ticket.codeBar}</p>
             </CardContent>
           ) : (
             <CardContent>
@@ -81,6 +81,7 @@ export default function CardTicket({
               <p className="p-3"><strong>Día de salida:</strong> {formatDateA(latestRegistration.departureDay)}</p>
               <p className="p-3"><strong>Horario de entrada:</strong> {latestRegistration.entryTime}</p>
               <p className="p-3"><strong>Horario de salida:</strong> {latestRegistration.departureTime}</p>
+              <p className="p-3"><strong>Codigo de barras:</strong> {latestRegistration.codeBarTicket}</p>
             </CardContent>
           )
         ) : (

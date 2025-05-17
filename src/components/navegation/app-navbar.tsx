@@ -5,6 +5,7 @@ import { ReactNode } from 'react';
 import { currentUser } from '@/lib/auth';
 import { NavUser } from './nav-user';
 import { NotificationSidebar } from '@/app/(protected)/(user)/components/notifications-sidebar';
+import { getTicketsRegistrationForDay } from '@/services/tickets.service';
 
 interface AppNavbarProps {
   children: ReactNode;
@@ -14,6 +15,7 @@ interface AppNavbarProps {
 
 export async function AppNavbar({ children, adminSidebar, userSidebar }: AppNavbarProps) {
   const user = await currentUser();
+  const ticketRegistrationsDayOrWeek = await getTicketsRegistrationForDay()
 
   return (
     <>
@@ -44,6 +46,7 @@ export async function AppNavbar({ children, adminSidebar, userSidebar }: AppNavb
                   name: `${user?.firstName ?? ''} ${user?.lastName ?? ''}`,
                   role: user?.role || 'USER',
                 }}
+                ticketRegistrationsDayOrWeek={ticketRegistrationsDayOrWeek?.data || []}
               />
             </div>
           </div>

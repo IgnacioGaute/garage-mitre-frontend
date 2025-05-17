@@ -43,29 +43,32 @@ import { Ticket } from '@/types/ticket.type';
 import { updateTicketSchema, UpdateTicketSchemaType } from '@/schemas/ticket.schema';
 import { updateTicketAction } from '@/actions/tickets/update-ticket.action';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ticketPrice } from '@/types/ticket-price';
+import { updateTicketPriceSchema, UpdateTicketPriceSchemaType } from '@/schemas/ticket-price.schema';
+import { updateTicketPriceAction } from '@/actions/tickets/update-ticket-price.action';
 
 
-export function UpdateTicketDialog({ ticket }: { ticket: Ticket }) {
+export function UpdateTicketPriceWeekOrDayDialog({ ticketPrice }: { ticketPrice: ticketPrice }) {
 
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
 
-  const form = useForm<UpdateTicketSchemaType>({
-    resolver: zodResolver(updateTicketSchema),
+  const form = useForm<UpdateTicketPriceSchemaType>({
+    resolver: zodResolver(updateTicketPriceSchema),
     defaultValues: {
-      codeBar: ticket.codeBar,
-      vehicleType: 'AUTO',
+      ticketTimePrice: ticketPrice.ticketTimePrice || 0,
+      ticketTimeType: ticketPrice.ticketTimeType || 'DIA'
     },
   });
 
 
-  const onSubmit = async (values: UpdateTicketSchemaType) => {
-    startTransition(async () => {
-      const response = await updateTicketAction(ticket.id, values);
-      if (response.error) {
-        toast.error(response.error);
+  const onSubmit = async (values: UpdateTicketPriceSchemaType) => {
+    startTransition(async() => {
+      const data = await updateTicketPriceAction(ticketPrice.id, values);
+      if (!data || data.error) {
+        toast.error(data?.error?.message ?? 'Error desconocido');
       } else {
-        toast.success('Ticket actualizado exitosamente');
+        toast.success('Precio ticket editado exitosamente');
         form.reset();
         setOpen(false);
       }
@@ -88,30 +91,16 @@ export function UpdateTicketDialog({ ticket }: { ticket: Ticket }) {
 
       <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
         <DialogHeader className="items-center">
-          <DialogTitle>Actualizar Ticket</DialogTitle>
+          <DialogTitle>Actualizar Precio Ticket</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-              control={form.control}
-              name="codeBar"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Código de Barras</FormLabel>
-                  <FormControl>
-                    <Input disabled={isPending} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Select para Vehicle Type */}
             <FormField
               control={form.control}
-              name="vehicleType"
+              name="ticketTimeType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tipo de Vehículo</FormLabel>
+                  <FormLabel>Tipo de Ticket</FormLabel>
                   <FormControl>
                     <Select
                       disabled={isPending}
@@ -122,8 +111,8 @@ export function UpdateTicketDialog({ ticket }: { ticket: Ticket }) {
                         <SelectValue placeholder="Selecciona un tipo" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="AUTO">Auto</SelectItem>
-                        <SelectItem value="CAMIONETA">Camioneta</SelectItem>
+                        <SelectItem value="DIA">Dia/s</SelectItem>
+                        <SelectItem value="SEMANA">Semana/s</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -131,8 +120,21 @@ export function UpdateTicketDialog({ ticket }: { ticket: Ticket }) {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="ticketTimePrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Precio de Ticket</FormLabel>
+                  <FormControl>
+                    <Input disabled={isPending} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <Button className="w-full" type="submit" disabled={isPending}>
-              Editar Ticket
+              Editar Precio Ticket
             </Button>
           </form>
         </Form>

@@ -25,14 +25,13 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { DataTableViewOptions } from '@/components/ui/data-table-view-options';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { CreateTicketDialog } from './create-ticket-dialog';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function TicketsTable<TData, TValue>({
+export function TicketDayOrWeekTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -54,26 +53,25 @@ export function TicketsTable<TData, TValue>({
     },
     initialState: {
       pagination: {
-        pageSize: 5,
+        pageSize: 10,
       },
     },
   });
 
   return (
     <div className="flex flex-col space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col mb-5 sm:flex-row sm:items-center sm:justify-center gap-7">
         <Input
-          placeholder="Filtrar tipos..."
-          value={(table.getColumn('vehicleType')?.getFilterValue() as string) ?? ''}
+          placeholder="Filtrar apellido..."
+          value={(table.getColumn('lastNameCustomer')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn('vehicleType')?.setFilterValue(event.target.value)
+            table.getColumn('lastNameCustomer')?.setFilterValue(event.target.value)
           }
           className="w-full sm:max-w-sm rounded-xl bg-secondary border-white"
         />
-        <CreateTicketDialog />
-        <DataTableViewOptions table={table} />
+
       </div>
-      <ScrollArea className="rounded-xl border bg-background">
+      <ScrollArea className="bg-transparent border-0">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

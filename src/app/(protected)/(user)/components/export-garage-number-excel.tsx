@@ -54,7 +54,7 @@ export const ExportGarageNumberExcel = ({ customers }: Props) => {
 
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(blob, `garages_${dayjs().format('YYYY-MM-DD')}.xlsx`);
+    saveAs(blob, `garages_registrados.xlsx`);
   };
 
   return (

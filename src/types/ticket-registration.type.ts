@@ -6,6 +6,7 @@ export type TicketRegistration = {
     id: string;
     description: string;
     price: number;
+    codeBarTicket: string;
     entryDay: string;
     departureDay: string;
     entryTime: string;
@@ -13,4 +14,5 @@ export type TicketRegistration = {
     dateNow: Date | null;
     ticket: Ticket;
     boxList: BoxList;
+    updatedAt: Date;
 }

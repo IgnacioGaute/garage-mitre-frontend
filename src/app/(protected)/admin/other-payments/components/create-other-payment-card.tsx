@@ -55,7 +55,7 @@ export default function CardOtherPayment({ className }: { className?: string }) 
     return (
         <Card className={`w-3/5 h-full flex flex-col ${className} mx-auto my-auto flex justify-center`}>
             <CardHeader>
-                <CardTitle>Pagos</CardTitle>
+                <CardTitle>Gastos</CardTitle>
                 <CardDescription>Registra gastos adicionales</CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
@@ -67,7 +67,7 @@ export default function CardOtherPayment({ className }: { className?: string }) 
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="flex items-center gap-2">
-                                        Descripcion del pago 
+                                        Descripcion del gasto 
                                     </FormLabel>
                                     <FormControl>
                                         <Input disabled={isPending} {...field} />
@@ -93,7 +93,7 @@ export default function CardOtherPayment({ className }: { className?: string }) 
                         />
                         <div className="flex-grow"></div> 
                         <Button className="w-full" type="submit" disabled={isPending}>
-                            Crear Pago
+                            Crear Gasto
                         </Button>
                     </form>
                 </Form>

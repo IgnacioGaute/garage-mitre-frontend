@@ -45,6 +45,16 @@ export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean 
     };
   }, [isDialogOpen]);
 
+  useEffect(() => {
+  const interval = setInterval(() => {
+    if (inputRef.current) {
+      inputRef.current.value = ""; // limpiar el input
+    }
+  }, 10000); // cada 10 segundos
+
+  return () => clearInterval(interval); // limpiar cuando el componente se desmonta
+}, []);
+
   const handleSubmit = async (barCode: string) => {
     startTransition(() => {
       startScanner({ barCode })

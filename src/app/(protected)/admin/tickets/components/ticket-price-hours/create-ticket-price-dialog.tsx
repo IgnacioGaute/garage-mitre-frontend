@@ -24,46 +24,51 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { ticketSchema, TicketSchemaType } from '@/schemas/ticket.schema';
 import { createTicketAction } from '@/actions/tickets/create-ticket.action';
+import { ticketPriceSchema, TicketPriceSchemaType } from '@/schemas/ticket-price.schema';
+import { createTicketPriceAction } from '@/actions/tickets/create-ticket-price.action';
 
-export function CreateTicketDialog() {
+export function CreateTicketPriceDialog() {
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
 
-  const form = useForm<TicketSchemaType>({
-    resolver: zodResolver(ticketSchema),
+  const form = useForm<TicketPriceSchemaType>({
+    resolver: zodResolver(ticketPriceSchema),
     defaultValues: {
-      codeBar: '',
+      dayPrice: undefined,
+      nightPrice: undefined,
       vehicleType: 'AUTO',
     },
   });
 
-  const onSubmit = (values: TicketSchemaType) => {
+  const onSubmit = (values: TicketPriceSchemaType) => {
     setError(undefined);
     setSuccess(undefined);
 
-    startTransition(() => {
-      createTicketAction(values)
-        .then((data) => {
-          setError(data.error);
-          setSuccess(data.success);
-          toast.success('Ticket creado exitosamente');
-          setOpen(false)
-        })
-        .catch((error) => {
-          console.error(error);
-          setError('Error al crear ticket');
-          toast.error(error);
-        });
+    startTransition(async() => {
+      const data = await createTicketPriceAction(values)
+      if (!data || data.error) {
+        // Verifica si data.error es un string o un objeto antes de acceder a 'message'
+        const errorMessage = typeof data.error === 'string' 
+          ? data.error // Si el error es solo un string, mostramos ese mensaje
+          : data.error.message; // Si el error es un objeto, accedemos a 'message'
+  
+        toast.error(errorMessage); // Mostramos el mensaje de error
+      } else {
+        toast.success('Precio ticket creado exitosamente');
+        form.reset();
+        setOpen(false);
+      }
     });
   };
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" onClick={() => setOpen(true)}>
-          Crear Ticket
+        <Button size="sm" onClick={() => setOpen(true)}>
+          Crear Precio Ticket
         </Button>
       </DialogTrigger>
 
@@ -75,10 +80,10 @@ export function CreateTicketDialog() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="codeBar"
+              name="dayPrice"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Código de Barras</FormLabel>
+                  <FormLabel>Precio de Ticket por Hora Dia</FormLabel>
                   <FormControl>
                     <Input disabled={isPending} {...field} />
                   </FormControl>
@@ -86,6 +91,20 @@ export function CreateTicketDialog() {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="nightPrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Precio de Ticket por Hora Noche</FormLabel>
+                  <FormControl>
+                    <Input disabled={isPending} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Select para Vehicle Type */}
             <FormField
               control={form.control}
               name="vehicleType"
@@ -113,7 +132,7 @@ export function CreateTicketDialog() {
             />
 
             <Button className="w-full" type="submit" disabled={isPending}>
-              Crear Ticket
+              Crear Precio Ticket
             </Button>
           </form>
         </Form>

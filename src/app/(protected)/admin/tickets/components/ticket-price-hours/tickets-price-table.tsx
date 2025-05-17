@@ -25,14 +25,15 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { DataTableViewOptions } from '@/components/ui/data-table-view-options';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { CreateTicketDialog } from './create-ticket-dialog';
+import { CreateTicketDialog } from '../create-ticket-dialog';
+import { CreateTicketPriceDialog } from './create-ticket-price-dialog';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function TicketsTable<TData, TValue>({
+export function TicketsPriceTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -54,24 +55,15 @@ export function TicketsTable<TData, TValue>({
     },
     initialState: {
       pagination: {
-        pageSize: 5,
+        pageSize: 2,
       },
     },
   });
 
   return (
     <div className="flex flex-col space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <Input
-          placeholder="Filtrar tipos..."
-          value={(table.getColumn('vehicleType')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
-            table.getColumn('vehicleType')?.setFilterValue(event.target.value)
-          }
-          className="w-full sm:max-w-sm rounded-xl bg-secondary border-white"
-        />
-        <CreateTicketDialog />
-        <DataTableViewOptions table={table} />
+      <div className="flex flex-col gap-4">
+        <CreateTicketPriceDialog />
       </div>
       <ScrollArea className="rounded-xl border bg-background">
         <Table>
@@ -124,7 +116,6 @@ export function TicketsTable<TData, TValue>({
         </Table>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
-      <DataTablePagination table={table} />
     </div>
   );
 }

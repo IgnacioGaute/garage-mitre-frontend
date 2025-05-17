@@ -2,8 +2,20 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { Customer } from '@/types/cutomer.type';
@@ -12,85 +24,126 @@ import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-dayjs.extend(isSameOrAfter);
 
 interface Props {
   customers: Customer[];
 }
 
+type ExportRow = {
+  Apellido: string;
+  Nombre: string;
+  '¿Pagó este mes?': string;
+  'Monto Actual': string;
+  'Fecha de Inicio': string;
+};
+
 export const ExportCustomersExcel = ({ customers }: Props) => {
-  const [selectedYear, setSelectedYear] = useState<string>(dayjs().format('YYYY'));
-  const [selectedMonth, setSelectedMonth] = useState<string>(dayjs().format('MM'));
-  const [exportType, setExportType] = useState<string>('all'); // Nuevo estado para el tipo de exportación
+  const [selectedYear, setSelectedYear] = useState<string>(
+    dayjs().format('YYYY')
+  );
+  const [selectedMonth, setSelectedMonth] = useState<string>(
+    dayjs().format('MM')
+  );
+  const [exportType, setExportType] = useState<'all' | 'paid' | 'unpaid'>(
+    'all'
+  );
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
   const handleExport = () => {
-    const selectedDate = dayjs(`${selectedYear}-${selectedMonth}-01`);
-    const prevMonth = selectedDate.subtract(1, "month").format("MM");
+    // Primer día del mes seleccionado
+    const selectedMonthStart = dayjs(
+      `${selectedYear}-${selectedMonth}-01`
+    ).tz('America/Argentina/Buenos_Aires');
 
-    const filteredCustomers = customers.map((customer) => {
-      const latestReceipt = customer.receipts.find((receipt) => {
-        const receiptDate = dayjs(receipt.dateNow).tz("America/Argentina/Buenos_Aires");
-        const receiptMonth = receiptDate.format("MM");
-        const receiptYear = receiptDate.format("YYYY");
+    // Construyo las filas
+    const rows = customers
+      .map((customer): ExportRow | null => {
+        // Último recibo por fecha startDate
+        const latestReceipt = customer.receipts
+          .map((r) => ({
+            ...r,
+            start: dayjs(r.startDate).tz('America/Argentina/Buenos_Aires'),
+          }))
+          .sort((a, b) => b.start.valueOf() - a.start.valueOf())[0] || null;
 
-        return (
-          receiptYear === selectedYear &&
-          (receiptMonth === selectedMonth || receiptMonth === prevMonth)
-        );
-      });
+        if (!latestReceipt) return null;
 
-      if (!latestReceipt) return null;
-      const argentinaToday = dayjs().tz('America/Argentina/Buenos_Aires').startOf('day');
+        const receiptMonth = latestReceipt.start.month() + 1;
+        const receiptYear = latestReceipt.start.year();
+        const selMonthNum = parseInt(selectedMonth, 10);
+        const selYearNum = parseInt(selectedYear, 10);
 
-      const startDate = latestReceipt?.startDate
-      ? dayjs(latestReceipt.startDate).tz("America/Argentina/Buenos_Aires")
-      : null;
-    
-    const selectedMonthStart = dayjs(`${selectedYear}-${selectedMonth}-01`).tz("America/Argentina/Buenos_Aires");
-    
-    const hasPaid = startDate ? startDate.isSameOrAfter(selectedMonthStart, 'day') : false;
-    
+        // Lógica: si mismo año y mes seleccionado >= mes del recibo → NO pagó
+        //        caso contrario → SÍ pagó
+        let hasPaid: boolean;
+        if (selYearNum !== receiptYear) {
+          hasPaid = true;
+        } else {
+          hasPaid = selMonthNum < receiptMonth;
+        }
 
-      return {
-        Apellido: customer.lastName,
-        Nombre: customer.firstName,
-        "¿Pagó este mes?": hasPaid ? "Si" : "No",
-        "Monto Actual": latestReceipt?.price || "N/A",
-        "Fecha de Inicio": customer.previusStartDate || customer.startDate || "N/A",
-      };
-    }).filter(Boolean);
+        return {
+          Apellido: customer.lastName,
+          Nombre: customer.firstName,
+          '¿Pagó este mes?': hasPaid ? 'Si' : 'No',
+          'Monto Actual': latestReceipt.price.toString(),
+          'Fecha de Inicio':
+            customer.previusStartDate ?? customer.startDate ?? 'N/A',
+        };
+      })
+      // Predicado para eliminar null y que TypeScript sepa que quedan ExportRow[]
+      .filter((c): c is ExportRow => c !== null);
 
-    // Filtrar según la opción seleccionada
-    const finalCustomers = filteredCustomers.filter((customer) => {
-      if (exportType === "paid") return customer?.["¿Pagó este mes?"] === "Si";
-      if (exportType === "unpaid") return customer?.["¿Pagó este mes?"] === "No";
-      return true; // "all" → No filtrar
+    // Aplico el filtro de tipo de exportación
+    const finalRows = rows.filter((row) => {
+      if (exportType === 'paid') return row['¿Pagó este mes?'] === 'Si';
+      if (exportType === 'unpaid') return row['¿Pagó este mes?'] === 'No';
+      return true;
     });
 
-    if (finalCustomers.length === 0) {
-      toast.error("No hay recibos para el mes seleccionado ni el mes anterior según el filtro aplicado");
+    if (finalRows.length === 0) {
+      toast.error(
+        'No hay datos que coincidan con el filtro y el mes seleccionado.'
+      );
       return;
     }
 
-    const worksheet = XLSX.utils.json_to_sheet(finalCustomers);
+    // Generar Excel
+    const worksheet = XLSX.utils.json_to_sheet(finalRows);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Clientes");
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-
-    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(blob, `clientes_pago_${selectedYear}_${selectedMonth}.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Clientes');
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+    const blob = new Blob([excelBuffer], {
+      type: 'application/octet-stream',
+    });
+    saveAs(blob, `clientes_pagos_${selectedYear}_${selectedMonth}.xlsx`);
   };
+
+  const handleExportTypeChange = (value: string) => {
+  if (value === 'all' || value === 'paid' || value === 'unpaid') {
+    setExportType(value);
+  } else {
+    console.warn('Valor inválido para exportType:', value);
+  }
+};
+
 
   return (
     <div className="flex flex-col space-y-4">
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-          <Button variant="ghost" className="w-full justify-start" size="sm" onClick={() => setIsDialogOpen(true)}>
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            size="sm"
+            onClick={() => setIsDialogOpen(true)}
+          >
             Exportar Excel Clientes
           </Button>
         </DialogTrigger>
@@ -99,7 +152,7 @@ export const ExportCustomersExcel = ({ customers }: Props) => {
             <DialogTitle>Seleccionar Fecha</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col space-y-4">
-            {/* Select de Año */}
+            {/* Año */}
             <Select onValueChange={setSelectedYear} defaultValue={selectedYear}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar Año" />
@@ -113,18 +166,21 @@ export const ExportCustomersExcel = ({ customers }: Props) => {
               </SelectContent>
             </Select>
 
-            {/* Select de Mes */}
-            <Select onValueChange={setSelectedMonth} defaultValue={selectedMonth}>
+            {/* Mes */}
+            <Select
+              onValueChange={setSelectedMonth}
+              defaultValue={selectedMonth}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona un mes" />
               </SelectTrigger>
               <SelectContent>
-                <ScrollArea className="h-48"> {/* Puedes ajustar la altura */}
+                <ScrollArea className="h-48">
                   {Array.from({ length: 12 }, (_, i) => {
-                    const monthNumber = (i + 1).toString().padStart(2, "0"); // Formato MM
+                    const monthNumber = (i + 1).toString().padStart(2, '0');
                     return (
                       <SelectItem key={monthNumber} value={monthNumber}>
-                        {dayjs().month(i).format("MMMM")}
+                        {dayjs().month(i).format('MMMM')}
                       </SelectItem>
                     );
                   })}
@@ -132,9 +188,8 @@ export const ExportCustomersExcel = ({ customers }: Props) => {
               </SelectContent>
             </Select>
 
-
-            {/* Select de Tipo de Exportación */}
-            <Select onValueChange={setExportType} defaultValue={exportType}>
+            {/* Filtro pago */}
+            <Select onValueChange={handleExportTypeChange} defaultValue={exportType}>
               <SelectTrigger>
                 <SelectValue placeholder="Filtrar por pago" />
               </SelectTrigger>
@@ -146,7 +201,13 @@ export const ExportCustomersExcel = ({ customers }: Props) => {
             </Select>
           </div>
 
-          <Button className="mt-4" onClick={() => { handleExport(); setIsDialogOpen(false); }}>
+          <Button
+            className="mt-4"
+            onClick={() => {
+              handleExport();
+              setIsDialogOpen(false);
+            }}
+          >
             Exportar
           </Button>
         </DialogContent>

@@ -1,6 +1,6 @@
 import { TicketRegistration } from "./ticket-registration.type";
 
-export const TICKET_TYPE = ['AUTO', 'CAMIONETA', 'MOTO'] as const;
+export const TICKET_TYPE = ['AUTO', 'CAMIONETA'] as const;
 export type TicketType = (typeof TICKET_TYPE)[number];
 
 export type Ticket ={
