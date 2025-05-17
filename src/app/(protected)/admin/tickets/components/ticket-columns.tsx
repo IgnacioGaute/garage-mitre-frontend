@@ -14,6 +14,11 @@ import { BadgeCheckIcon, BadgeXIcon, MoreHorizontal } from 'lucide-react';
 import { UpdateTicketDialog } from './update-ticket-dialog';
 import { Ticket } from '@/types/ticket.type';
 import { DeleteTicketDialog } from './delete-ticket-dialog';
+import { useSession } from 'next-auth/react';
+
+
+
+
 export const ticketColumns: ColumnDef<Ticket>[] = [
   {
     accessorKey: 'codeBar',
@@ -55,6 +60,7 @@ export const ticketColumns: ColumnDef<Ticket>[] = [
     id: 'actions',
     cell: ({ row }) => {
       const ticket = row.original;
+      const { data: session } = useSession();
 
       return  (
         <DropdownMenu>
@@ -67,7 +73,9 @@ export const ticketColumns: ColumnDef<Ticket>[] = [
           <DropdownMenuContent align="end" className="w-full">
             <DropdownMenuLabel className="text-sm">Acciones</DropdownMenuLabel>
             <UpdateTicketDialog ticket={ticket} />
-            <DeleteTicketDialog ticket={ticket} />
+            {session?.user.role === 'ADMIN' &&(
+              <DeleteTicketDialog ticket={ticket} />
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       )

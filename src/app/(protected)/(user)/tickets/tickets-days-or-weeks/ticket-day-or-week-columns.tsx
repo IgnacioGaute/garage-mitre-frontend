@@ -11,8 +11,6 @@ import {
 import { User } from '@/types/user.type';
 import { ColumnDef } from '@tanstack/react-table';
 import { BadgeCheckIcon, BadgeXIcon, MoreHorizontal } from 'lucide-react';
-import { UpdateUserDailog } from './update-user-dialog';
-import { DeleteUserDialog } from './delete-user-dialog';
 import { TicketRegistrationForDay } from '@/types/ticket-registration-for-day.type';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -171,26 +169,6 @@ export const ticketDayOrWeekColumns: ColumnDef<TicketRegistrationForDay>[] = [
         >
           {isRetired ? 'Sí' : 'No'}
         </Button>
-      )
-    },
-  },
-  {
-    id: 'actions',
-    cell: ({ row }) => {
-      const user = row.original;
-
-      return  (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[160px]">
-            <DropdownMenuLabel className="text-sm">Acciones</DropdownMenuLabel>
-          </DropdownMenuContent>
-        </DropdownMenu>
       )
     },
   },
