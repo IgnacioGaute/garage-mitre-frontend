@@ -50,7 +50,7 @@ export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean 
     if (inputRef.current) {
       inputRef.current.value = ""; // limpiar el input
     }
-  }, 10000); // cada 10 segundos
+  }, 50000); // cada 30 segundos
 
   return () => clearInterval(interval); // limpiar cuando el componente se desmonta
 }, []);
