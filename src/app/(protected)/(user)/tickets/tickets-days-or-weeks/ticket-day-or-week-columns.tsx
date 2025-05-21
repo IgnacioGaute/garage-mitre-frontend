@@ -15,6 +15,7 @@ import { TicketRegistrationForDay } from '@/types/ticket-registration-for-day.ty
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { updateTicketRegistrationForDayStatusAction } from '@/actions/tickets/update-ticket-registration-for-day-status.action';
+import { DeleteTicketRegistrationForDayDialog } from './delete-registration-for-day-dialog';
 async function toggleFieldOnServer(
   id: string,
   field: 'paid' | 'retired',
@@ -172,4 +173,16 @@ export const ticketDayOrWeekColumns: ColumnDef<TicketRegistrationForDay>[] = [
       )
     },
   },
+    {
+      id: 'actions',
+      cell: ({ row }) => {
+        const ticket = row.original;
+  
+        return  (
+          <div>
+          <DeleteTicketRegistrationForDayDialog ticket={ticket} />
+          </div>
+        )
+      },
+    },
 ];

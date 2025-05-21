@@ -20,3 +20,9 @@ export const ticketRegistrationForDayStatusSchema = z.object({
     retired: z.boolean().optional(),
 });
 export type TicketRegistrationForDayStatusSchemaType = z.infer<typeof ticketRegistrationForDayStatusSchema>;
+
+
+export const deleteRegistrationForDaySchema = z.object({
+  confirmation: z.string().min(0, 'Ingrese la confirmación "Eliminar Ticket"'),
+});
+export type DeleteRegistrationForDaySchemaType = z.infer<typeof deleteRegistrationForDaySchema>;

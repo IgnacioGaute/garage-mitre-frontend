@@ -337,4 +337,26 @@ export const updateTicketStatus = async (
   }
 };
 
+export const deleteTicketRegistrationForDay = async (id: string, authToken?: string) => {
+  try {
+    const response = await fetch(`${BASE_URL}/tickets/registrationForDays/${id}`, {
+      method: 'DELETE',
+      headers: await getAuthHeaders(authToken),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      revalidateTag(getCacheTag('registrationForDays', 'all'));
+      return data;
+    } else {
+      console.error(data);
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
 
