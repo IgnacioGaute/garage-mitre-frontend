@@ -2,7 +2,7 @@ import { PDFDocument, rgb } from 'pdf-lib';
 import { toast } from 'sonner';
 import JsBarcode from 'jsbarcode';
 
-export async function generateAllReceipts(customers: any[]) {
+export async function generateAllReceipts(customers: any[], selectedDate?: Date) {
   try {
     const combinedPdfDoc = await PDFDocument.create();
 
@@ -88,7 +88,9 @@ export async function generateAllReceipts(customers: any[]) {
       }
       
 
-      const today = new Date().toLocaleDateString();
+      const today = selectedDate;
+      const todayFormatted = today?.toLocaleDateString(); // o usa .toISOString(), etc.
+
       const vehicles =
         customer.customerType === 'OWNER' ? customer.vehicles : customer.vehicleRenters;
 
@@ -100,7 +102,7 @@ export async function generateAllReceipts(customers: any[]) {
             size: fontSize,
             color: textColor,
           });
-          page.drawText(today, { x: 450, y: 350, size: fontSize, color: textColor });
+          page.drawText(todayFormatted, { x: 450, y: 350, size: fontSize, color: textColor });
         
           let y = 220;
           for (const vehicle of vehicles) {
