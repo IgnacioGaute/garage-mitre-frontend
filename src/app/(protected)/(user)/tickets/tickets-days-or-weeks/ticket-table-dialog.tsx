@@ -16,7 +16,7 @@ export function TicketTableDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-7xl w-full shadow-none p-4">
+      <DialogContent className="max-w-8xl w-full shadow-none">
         <DialogHeader className="items-center">
           <DialogTitle></DialogTitle>
         </DialogHeader>

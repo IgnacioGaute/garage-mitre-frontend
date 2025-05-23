@@ -38,6 +38,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
       paid: true,
       retired:false,
       ticketTimeType: 'DIA',
+      vehicleType: 'AUTO',
       weeks: undefined,
       days: undefined,
     },
@@ -242,6 +243,31 @@ const onSubmit = async (values: TicketRegistrationForDaySchemaType) => {
                 />
              </>
               )}
+              <FormField
+                control={form.control}
+                name="vehicleType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Vehículo</FormLabel>
+                    <FormControl>
+                      <Select
+                        disabled={isPending}
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="AUTO">Auto</SelectItem>
+                          <SelectItem value="CAMIONETA">Camioneta</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="firstNameCustomer"

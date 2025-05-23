@@ -34,6 +34,15 @@ export const ticketPriceWeekOrDayColumns: ColumnDef<ticketPrice>[] = [
       <div className="min-w-[100px] text-sm">{row.getValue('ticketTimeType')}</div>
     ),
   },
+    {
+    accessorKey: 'vehicleType',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Tipo de Vehiculo" />
+    ),
+    cell: ({ row }) => (
+      <div className="min-w-[100px] text-sm">{row.getValue('vehicleType')}</div>
+    ),
+  },
   {
     id: 'actions',
     cell: ({ row }) => {

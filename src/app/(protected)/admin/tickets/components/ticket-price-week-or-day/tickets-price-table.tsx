@@ -55,7 +55,7 @@ export function TicketsPriceWeekOrDayTable<TData, TValue>({
     },
     initialState: {
       pagination: {
-        pageSize: 2,
+        pageSize: 4,
       },
     },
   });

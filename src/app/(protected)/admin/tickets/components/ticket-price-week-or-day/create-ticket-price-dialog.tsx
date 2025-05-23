@@ -37,7 +37,8 @@ export function CreateTicketPriceWeekOrDayDialog() {
     resolver: zodResolver(ticketPriceSchema),
     defaultValues: {
       ticketTimePrice: undefined,
-      ticketTimeType: 'DIA'
+      ticketTimeType: 'DIA',
+      vehicleType: 'AUTO'
     },
   });
 
@@ -96,6 +97,31 @@ export function CreateTicketPriceWeekOrDayDialog() {
                       <SelectContent>
                         <SelectItem value="DIA">Dia/s</SelectItem>
                         <SelectItem value="SEMANA">Semana/s</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="vehicleType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Vehículo</FormLabel>
+                  <FormControl>
+                    <Select
+                      disabled={isPending}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="AUTO">Auto</SelectItem>
+                        <SelectItem value="CAMIONETA">Camioneta</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
