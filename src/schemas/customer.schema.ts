@@ -1,5 +1,5 @@
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
-import { z } from 'zod';
+import { string, z } from 'zod';
 import { vehicleRenterSchema, vehicleSchema } from './vehicle.schema';
 
 export const customerSchema = z.object({
@@ -10,6 +10,13 @@ export const customerSchema = z.object({
   customerNumber: z.coerce.number().optional(),
   numberOfVehicles: z.coerce.number().min(1, 'Debe tener al menos un vehículo'),
   customerType: z.enum(CUSTOMER_TYPE),
+  hasDebt:z.boolean().optional().default(false),
+  monthsDebt: z.array(
+  z.object({
+    month: z.string(), // formato: YYYY-MM
+    amount: z.number().min(0, "El monto debe ser mayor o igual a 0").optional()
+  })
+),
   vehicles: z.array(vehicleSchema).optional(),
   vehicleRenters: z.array(vehicleRenterSchema).optional(),  
 });
@@ -27,6 +34,13 @@ export const updateCustomerSchema = z.object({
   customerNumber: z.coerce.number().optional(),
   numberOfVehicles: z.coerce.number().min(1, 'Debe tener al menos un vehículo'),
   customerType: z.enum(CUSTOMER_TYPE),
+  hasDebt: z.boolean().optional(),
+  monthsDebt: z.array(
+  z.object({
+    month: z.string(), // formato: YYYY-MM
+    amount: z.number().min(0, "El monto debe ser mayor o igual a 0")
+  })
+),
   vehicles: z.array(vehicleSchema).optional(),
   vehicleRenters: z.array(vehicleRenterSchema).optional(),  
   });

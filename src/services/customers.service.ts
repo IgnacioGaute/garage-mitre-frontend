@@ -270,6 +270,38 @@ export const createCustomer = async (
       return null;
     }
   };
+  
+  export const generateReceiptsManual = async (
+    customer: CustomerType,
+    dateNow?: string,
+  ) => {
+    try {
+      const response = await fetch(`${BASE_URL}/receipts/generate-manual/${customer}`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({dateNow}),
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        return data
+      } else {
+        console.error(data);
+        return {
+          error: {
+            code: data.code || 'UNKNOWN_ERROR',
+            message: data.message || 'Error desconocido'
+          },
+        };
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
 
   export const findAllPendingReceipts = async (
     customer: CustomerType

@@ -4,31 +4,31 @@
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { generateAllReceipts } from '@/utils/generate-all-receipts'
-import { Customer } from '@/types/cutomer.type'
+import { Customer, CustomerType } from '@/types/cutomer.type'
+import { useSession } from 'next-auth/react'
 
 export type GenerateReceiptsButtonProps = {
-  customers: Customer[]
+  type: CustomerType
   selectedDate?: Date
   onFinish: () => void
 }
 
 export default function GenerateReceiptsButton({
-  customers,
+  type,
   selectedDate,
   onFinish,
 }: GenerateReceiptsButtonProps) {
+  const { data: session } = useSession();
   const handleGenerateAllReceipts = async () => {
-    if (!customers?.length) {
-      toast.error('No hay inquilinos disponibles')
-      return
-    }
+
+
     if (!selectedDate) {
       toast.error('Selecciona una fecha primero')
       return
     }
 
     try {
-      await generateAllReceipts(customers, selectedDate)
+      await generateAllReceipts(type, selectedDate, session?.token)
       toast.success('Recibos generados e impresos correctamente')
       onFinish()
     } catch (error) {

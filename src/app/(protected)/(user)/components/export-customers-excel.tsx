@@ -41,6 +41,7 @@ type ExportRow = {
 };
 
 export const ExportCustomersExcel = ({ customers }: Props) => {
+  customers.sort((a, b) => a.lastName.localeCompare(b.lastName));
   const [selectedYear, setSelectedYear] = useState<string>(
     dayjs().format('YYYY')
   );

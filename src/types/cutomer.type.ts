@@ -19,6 +19,7 @@ export type Customer = {
     startDate: string | null; 
     previusStartDate: string | null;  
     customerType: CustomerType;
+    hasDebt: boolean;
     deletedAt: Date;
     createdAt: Date;
     updatedAt: Date;

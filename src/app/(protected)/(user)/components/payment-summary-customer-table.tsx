@@ -49,25 +49,42 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
   }, [autoOpen]);
   
 
-  useEffect(() => {
-    if (open) {
-      startTransition(async () => {
-        try {
-          const updatedOwner = await getCustomerById(customer.id, session?.token);
-          if (updatedOwner) {
-            setUpdatedCustomer(updatedOwner); // ✅ Guardamos el customer actualizado
-            setReceipts(updatedOwner.receipts || []);
-  
-            // ✅ Al abrir el modal, se va a la última página
-            const newTotalPages = Math.ceil(updatedOwner.receipts.length / pageSize);
-            setCurrentPage(newTotalPages > 0 ? newTotalPages : 1);
-          }
-        } catch (error) {
-          console.error('Error fetching owner receipts:', error);
+useEffect(() => {
+  if (open) {
+    startTransition(async () => {
+      try {
+        const updatedOwner = await getCustomerById(customer.id, session?.token);
+        if (updatedOwner) {
+          setUpdatedCustomer(updatedOwner);
+
+const sortedReceipts = (updatedOwner.receipts || []).sort((a, b) => {
+  const dateA = a.dateNow ? Date.parse(a.dateNow) : 0; // Date.parse devuelve ms o NaN
+  const dateB = b.dateNow ? Date.parse(b.dateNow) : 0;
+
+  // Si alguna fecha es inválida, ponla al final
+  if (isNaN(dateA) && isNaN(dateB)) return 0;
+  if (isNaN(dateA)) return 1;
+  if (isNaN(dateB)) return -1;
+
+  return dateA - dateB;
+});
+
+
+
+
+          setReceipts(sortedReceipts);
+
+          // ✅ Al abrir el modal, ir a la última página
+          const newTotalPages = Math.ceil(sortedReceipts.length / pageSize);
+          setCurrentPage(newTotalPages > 0 ? newTotalPages : 1);
         }
-      });
-    }
-  }, [open, customer.id]);
+      } catch (error) {
+        console.error('Error fetching owner receipts:', error);
+      }
+    });
+  }
+}, [open, customer.id]);
+
   
   // Usamos `updatedCustomer` si está disponible, de lo contrario usamos `customer`
   const activeCustomer = updatedCustomer || customer;
@@ -87,7 +104,7 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
 
       <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-2xl sm:max-w-2xl">
         <DialogHeader className="items-center">
-          <DialogTitle>Resumen de Pagos Recientes de {customer.firstName} {customer.lastName}</DialogTitle>
+          <DialogTitle>Resumen de Recibos pagados y pendientes de {customer.firstName} {customer.lastName}</DialogTitle>
         </DialogHeader>
 
         <Table>
@@ -114,15 +131,15 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
                   </TableCell>
                   <TableCell>
                     {receiptOwner.status === 'PENDING'
-                    ? activeCustomer.startDate
+                    ? receiptOwner.startDate
                       ? new Date(
-                          new Date(activeCustomer.startDate).getTime() +
+                          new Date(receiptOwner.startDate).getTime() +
                             new Date().getTimezoneOffset() * 60000
                         ).toLocaleDateString()
                       : 'Sin fecha'
-                    : activeCustomer.previusStartDate
+                    : receiptOwner.startDate
                     ? new Date(
-                        new Date(activeCustomer.previusStartDate).getTime() +
+                        new Date(receiptOwner.startDate).getTime() +
                           new Date().getTimezoneOffset() * 60000
                       ).toLocaleDateString()
                     : 'Sin fecha'}

@@ -9,7 +9,8 @@ export type ServiceName =
   | 'notes'
   | 'parkingTypes'
   | 'ticketsPrice'
-  | 'registrationForDays';
+  | 'registrationForDays'
+  | 'expenses';
 
 // Define the cache tags structure
 export const CACHE_TAGS = {
@@ -47,6 +48,9 @@ export const CACHE_TAGS = {
   },
   parkingTypes: {
     all: 'parkingTypes',
+  },
+  expenses: {
+    all: 'expenses',
   },
 } as const;
 

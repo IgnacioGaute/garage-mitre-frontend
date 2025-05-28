@@ -1,9 +1,23 @@
 import { PDFDocument, rgb } from 'pdf-lib';
 import { toast } from 'sonner';
 import JsBarcode from 'jsbarcode';
+import { generateReceiptsManual, getCustomers } from '@/services/customers.service';
+import { CustomerType } from '@/types/cutomer.type';
 
-export async function generateAllReceipts(customers: any[], selectedDate?: Date) {
+export async function generateAllReceipts(type: CustomerType, selectedDate?: Date, token?: string) {
   try {
+    
+    const dateStr = selectedDate?.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+
+  // 1) Crear en el backend los recibos de ese mes
+    const result = await generateReceiptsManual(type, dateStr);
+    if (result?.error) {
+      toast.error(`No se pudieron crear recibos: ${result.error.message}`);
+      return;
+    }
+    const customers = await getCustomers(type, token) || [];
+    customers.sort((a, b) => a.lastName.localeCompare(b.lastName));
+    
     const combinedPdfDoc = await PDFDocument.create();
 
     for (const customer of customers) {
@@ -40,17 +54,6 @@ export async function generateAllReceipts(customers: any[], selectedDate?: Date)
         }
       }
       
-  
-      const receiptTypeNames: Record<string, string> = {
-        JOSE_RICARDO_AZNAR: 'José Ricardo Aznar',
-        CARLOS_ALBERTO_AZNAR: 'Carlos Alberto Aznar',
-        NIDIA_ROSA_MARIA_FONTELA: 'Nidia Rosa María Fontela',
-        ALDO_RAUL_FONTELA: 'Aldo Raúl Fontela',
-        GARAGE_MITRE: 'Garage Mitre'
-      };
-      
-  
-
       const response = await fetch(pdfFile);
       if (!response.ok || !response.headers.get('content-type')?.includes('application/pdf')) {
         throw new Error(`No se pudo cargar el PDF válido desde: ${pdfFile}`);
@@ -59,7 +62,23 @@ export async function generateAllReceipts(customers: any[], selectedDate?: Date)
       const customerPdfDoc = await PDFDocument.load(existingPdfBytes);
       const pages = customerPdfDoc.getPages();
 
-      const pendingReceipt = customer.receipts?.find((receipt: any) => receipt.status === 'PENDING');
+      const pendingReceipt = customer.receipts.find((receipt: any) => {
+        if (receipt.status !== "PENDING") return false;
+
+        const [year, month, day] = receipt.startDate.split('-').map(Number);
+        const receiptDate = new Date(year, month - 1, day);
+
+        const targetMonth = selectedDate?.getMonth();
+        const targetYear = selectedDate?.getFullYear();
+
+        return (
+          receiptDate instanceof Date &&
+          !isNaN(receiptDate.getTime()) &&
+          receiptDate.getMonth() === targetMonth &&
+          receiptDate.getFullYear() === targetYear
+        );
+      });
+
       const pendingPrice = pendingReceipt ? pendingReceipt.price : 0;
 
       const fontSize = 12;
@@ -105,18 +124,26 @@ export async function generateAllReceipts(customers: any[], selectedDate?: Date)
           page.drawText(todayFormatted, { x: 450, y: 350, size: fontSize, color: textColor });
         
           let y = 220;
-          for (const vehicle of vehicles) {
-            const description =
-            customer.customerType === 'OWNER'
-              ? `Cochera ${vehicle.garageNumber}`
-              : `Cochera ${vehicle.garageNumber} ${vehicle.vehicle ? `(${vehicle.vehicle.customer.lastName} ${vehicle.vehicle.customer.firstName})` : ``}`;
-        
-            page.drawText(`1`, { x: 70, y, size: fontSize, color: textColor });
+        if (customer.customerType === 'OWNER') {
+          for (const garage of customer.vehicles) {
+            const description = `Cochera ${garage.garageNumber}`;
+            page.drawText(`1`,      { x:  70, y, size: fontSize, color: textColor });
             page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
-            page.drawText(`$${vehicle.amount}`, { x: 460, y, size: fontSize, color: textColor });
-        
+            page.drawText(`$${garage.amount}`, { x: 460, y, size: fontSize, color: textColor });
             y -= 30;
           }
+        } else {
+          for (const renter of customer.vehicleRenters) {
+            const plateOwner = renter.vehicle?.customer
+              ? `(${renter.vehicle.customer.lastName} ${renter.vehicle.customer.firstName})`
+        : '';
+      const description = `Cochera ${renter.garageNumber} ${plateOwner}`;
+      page.drawText(`1`,      { x:  70, y, size: fontSize, color: textColor });
+      page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
+      page.drawText(`$${renter.amount}`, { x: 460, y, size: fontSize, color: textColor });
+      y -= 30;
+    }
+  }
         
           page.drawText(`$${pendingPrice}`, { x: 425, y: 45, size: fontSize, color: textColor });
         };

@@ -21,48 +21,44 @@ import {
 import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { DeleteUserSchemaType, deleteUserSchema } from '@/schemas/user.schema';
+
 import { toast } from 'sonner';
-import { deleteCustomerAction } from '@/actions/customers/delete-customer.action';
-import { deleteCustomerSchema, DeleteCustomerSchemaType } from '@/schemas/customer.schema';
-import { Customer } from '@/types/cutomer.type';
-import { Trash, X } from 'lucide-react';
-import { deleteRegistrationForDaySchema, DeleteRegistrationForDaySchemaType } from '@/schemas/ticket-registration-for-day.schema';
-import { TicketRegistrationForDay } from '@/types/ticket-registration-for-day.type';
-import { deleteTicketRegistrationForDay } from '@/services/tickets.service';
-import { useSession } from 'next-auth/react';
-import { deleteTicketRegistrationForDayAction } from '@/actions/tickets/delete-ticket-registration-for-day.action';
+import { User } from '@/types/user.type';
+import { deleteUserAction } from '@/actions/users/delete-user.action';
+import { ParkingType } from '@/types/parking-type';
+import { deleteParkingTypeSchema, DeleteParkingTypeSchemaType } from '@/schemas/parking-type.schema';
+import { deleteParkingTypeAction } from '@/actions/parking-type/delete-parking-type.action';
+import { OtherPayment } from '@/types/other-payment.type';
+import { deleteExpenseAction } from '@/actions/other-payment/delete-other-payment.action';
 
 
-const DELETE_TICKET_TEXT = 'Eliminar Ticket';
 
-export function DeleteTicketRegistrationForDayDialog({ ticket }: { ticket: TicketRegistrationForDay }) {
+export function DeleteExpenseDialog({ expense }: { expense: OtherPayment }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const session = useSession();
-  
 
-  const form = useForm<DeleteRegistrationForDaySchemaType>({
-    resolver: zodResolver(deleteRegistrationForDaySchema),
+  const form = useForm<DeleteParkingTypeSchemaType>({
+    resolver: zodResolver(deleteParkingTypeSchema),
     defaultValues: {
       confirmation: '',
     },
   });
 
-  const onSubmit = (values: DeleteRegistrationForDaySchemaType) => {
+  const onSubmit = (values: DeleteParkingTypeSchemaType) => {
 
-    startTransition(async () => {
-      const data = await deleteTicketRegistrationForDayAction(ticket.id, session.data?.token);
-    
-      if ('error' in data) {
-        toast.error(data.error);
-      } else {
-        toast.success('Ticket eliminado exitosamente');
-        form.reset();
-        setOpen(false);
-      }
+    startTransition(() => {
+      deleteExpenseAction(expense.id).then((data) => {
+        if (!data || data.error) {
+          toast.error(data.error);
+        } else {
+          toast.success(data.success);
+          form.reset();
+          setOpen(false);
+        }
+      });
     });
   };
-
 
   return (
     <>
@@ -70,20 +66,17 @@ export function DeleteTicketRegistrationForDayDialog({ ticket }: { ticket: Ticke
         <DialogTrigger asChild>
           <Button
             variant="ghost"
-            className="w-full justify-center text-red-600 hover:text-red-800"
+            className="w-full justify-start"
             size="sm"
             onClick={() => setOpen(true)}
           >
-            ❌
+            Eliminar
           </Button>
-
         </DialogTrigger>
 
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Eliminar Ticket</DialogTitle>
-            <DialogDescription>
-            </DialogDescription>
+            <DialogTitle>Eliminar Gasto</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

@@ -23,7 +23,7 @@ export default async function RenterPage() {
         </div>
       </div>
       <div className="mb-4">
-        <DropdownMenuAction customers={customers || []} />
+        <DropdownMenuAction customers={customers || []} type='RENTER' />
       </div>
       <RentersTable
         columns={renterColumns}

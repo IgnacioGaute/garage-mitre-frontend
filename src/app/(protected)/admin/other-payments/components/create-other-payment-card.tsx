@@ -29,28 +29,34 @@ export default function CardOtherPayment({ className }: { className?: string }) 
         },
     });
 
-    const onSubmit = (values: OtherPaymentSchemaType) => {
-        setError(undefined);
-        setSuccess(undefined);
+const onSubmit = (values: OtherPaymentSchemaType) => {
+  setError(undefined);
+  setSuccess(undefined);
 
-        startTransition(() => {
-            createOtherPaymentAction(values)
-                .then((data) => {
-                    if (data.error) {
-                        setError(data.error);
-                        toast.error(data.error);
-                    } else {
-                        setSuccess(data.success);
-                        toast.success('Pago creado exitosamente');
-                    }
-                })
-                .catch((error) => {
-                    console.error(error);
-                    setError('Error al crear pago');
-                    toast.error(error.message || 'Error desconocido');
-                });
-        });
-    };
+  startTransition(() => {
+    createOtherPaymentAction(values)
+      .then((data) => {
+        if (data.error) {
+          setError(data.error);
+          toast.error(data.error);
+        } else {
+          setSuccess(data.success);
+          toast.success('Gasto Registrado exitosamente');
+
+          // 🔁 Reset del formulario solo si la acción fue exitosa
+          form.reset({
+            description: "",
+            price: "" as unknown as number
+          });
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        setError('Error al crear pago');
+        toast.error(error.message || 'Error desconocido');
+      });
+  });
+};
 
     return (
         <Card className={`w-3/5 h-full flex flex-col ${className} mx-auto my-auto flex justify-center`}>

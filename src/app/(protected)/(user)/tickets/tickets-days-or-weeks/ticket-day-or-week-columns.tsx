@@ -41,7 +41,7 @@ export const ticketDayOrWeekColumns: ColumnDef<TicketRegistrationForDay>[] = [
       <DataTableColumnHeader column={column} title="Apellido" />
     ),
     cell: ({ row }) => (
-      <div className="min-w-[100px] text-sm">{row.getValue('lastNameCustomer')}</div>
+      <div className="min-w-[50px] text-sm">{row.getValue('lastNameCustomer')}</div>
     ),
   },
   {
@@ -50,7 +50,7 @@ export const ticketDayOrWeekColumns: ColumnDef<TicketRegistrationForDay>[] = [
       <DataTableColumnHeader column={column} title="Nombre" />
     ),
     cell: ({ row }) => (
-      <div className="min-w-[100px] text-sm">{row.getValue('firstNameCustomer')}</div>
+      <div className="min-w-[50px] text-sm">{row.getValue('firstNameCustomer')}</div>
     ),
   },
   {
@@ -59,7 +59,7 @@ export const ticketDayOrWeekColumns: ColumnDef<TicketRegistrationForDay>[] = [
       <DataTableColumnHeader column={column} title="Patente" />
     ),
     cell: ({ row }) => (
-      <div className="min-w-[100px] text-sm">{row.getValue('vehiclePlateCustomer')}</div>
+      <div className="min-w-[50px] text-sm">{row.getValue('vehiclePlateCustomer')}</div>
     ),
   },
     {
@@ -68,7 +68,7 @@ export const ticketDayOrWeekColumns: ColumnDef<TicketRegistrationForDay>[] = [
       <DataTableColumnHeader column={column} title="Monto" />
     ),
     cell: ({ row }) => (
-      <div className="min-w-[100px] text-sm">$ {row.getValue('price')}</div>
+      <div className="min-w-[50px] text-sm">$ {row.getValue('price')}</div>
     ),
   },
       {
@@ -77,7 +77,7 @@ export const ticketDayOrWeekColumns: ColumnDef<TicketRegistrationForDay>[] = [
       <DataTableColumnHeader column={column} title="Semana/s" />
     ),
     cell: ({ row }) => (
-      <div className="min-w-[100px] text-sm text-center">{row.getValue('weeks') ?? 0}</div>
+      <div className="min-w-[50px] text-sm text-center">{row.getValue('weeks') ?? 0}</div>
     ),
   },
       {
@@ -86,7 +86,7 @@ export const ticketDayOrWeekColumns: ColumnDef<TicketRegistrationForDay>[] = [
       <DataTableColumnHeader column={column} title="Dias/s" />
     ),
     cell: ({ row }) => (
-      <div className="min-w-[100px] text-sm text-center">{row.getValue('days')?? 0}</div>
+      <div className="min-w-[50px] text-sm text-center">{row.getValue('days')?? 0}</div>
     ),
   },
     {
@@ -104,7 +104,7 @@ export const ticketDayOrWeekColumns: ColumnDef<TicketRegistrationForDay>[] = [
       <DataTableColumnHeader column={column} title="Desde" />
     ),
     cell: ({ row }) => (
-      <div className="min-w-[100px] text-sm">{row.getValue('dateNow')}</div>
+      <div className="min-w-[50px] text-sm">{row.getValue('dateNow')}</div>
     ),
   },
   {

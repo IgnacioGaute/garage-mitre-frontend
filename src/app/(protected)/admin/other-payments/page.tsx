@@ -1,9 +1,13 @@
 
 import { Banknote, CreditCardIcon, User, Wallet } from 'lucide-react';
 import CardOtherPayment from './components/create-other-payment-card';
+import { expenseColumns } from './components/other-payment-columns';
+import { ExpenseTable } from './components/other-payment-table';
+import { getExpenses } from '@/services/expenses.service';
 
 
 export default async function OtherPaymentPage() {
+  const expenses = await getExpenses()
   return (
     <div className="container mx-auto px-4 py-4 sm:p-6">
       <div className="w-3/5 mx-auto">
@@ -14,7 +18,13 @@ export default async function OtherPaymentPage() {
           </div>
         </div>
       </div>
+      <div className='mb-10'>
         <CardOtherPayment />
+      </div>
+        <ExpenseTable
+          columns={expenseColumns}
+          data={expenses|| []}
+        />
     </div>
   );
 }

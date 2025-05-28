@@ -37,28 +37,3 @@ export const findBoxByDate = async (date: string, authToken?: string) => {
     return null;
   }
 };
-
-export const createOtherPayment = async (
-    values: OtherPaymentSchemaType,
-    authToken?: string
-  ) => {
-    try {
-      const response = await fetch(`${BASE_URL}/box-lists/otherPayment`, {
-        method: 'POST',
-        headers: await getAuthHeaders(authToken),
-        body: JSON.stringify(values),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        return data as OtherPayment;
-      } else {
-        console.error('Error en la respuesta:', data);
-        return null;
-      }
-    } catch (error) {
-      console.error('Error en create pago:', error);
-      return null;
-    }
-  };

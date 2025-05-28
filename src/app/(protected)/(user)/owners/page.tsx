@@ -24,7 +24,7 @@ export default async function OwnerPage() {
         </div>
       </div>
       <div className="mb-4">
-        <DropdownMenuAction customers={customers || []} />
+        <DropdownMenuAction customers={customers || []} type='OWNER' />
       </div>
       <OwnersTable
         columns={OwnerColumns}

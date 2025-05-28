@@ -23,6 +23,9 @@ export type Receipt = {
     dateNow: string | null;
     boxList: BoxList;
     customer: Customer;
+    deletedAt: Date;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export type ScannerReceipt ={
