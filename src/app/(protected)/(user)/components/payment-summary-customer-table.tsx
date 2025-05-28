@@ -22,6 +22,12 @@ import { BadgeCheck, Clock, ArrowUp } from 'lucide-react';
 import { Customer } from '@/types/cutomer.type';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface PaymentSummaryTableProps {
   customer: Customer;
@@ -94,6 +100,21 @@ const sortedReceipts = (updatedOwner.receipts || []).sort((a, b) => {
     currentPage * pageSize
   );
 
+
+function getMonthName(dateString?: string | null): string {
+  if (!dateString) return 'Sin fecha';
+
+  const meses = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+
+  // Parseamos la fecha en la zona horaria de Argentina para evitar el problema UTC
+  const date = dayjs.tz(dateString, 'America/Argentina/Buenos_Aires');
+  if (!date.isValid()) return 'Fecha inválida';
+
+  return meses[date.month()];
+}
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -129,21 +150,8 @@ const sortedReceipts = (updatedOwner.receipts || []).sort((a, b) => {
                     )}
                     <span>{receiptOwner.status === 'PAID' ? 'Pagado' : 'Pendiente'}</span>
                   </TableCell>
-                  <TableCell>
-                    {receiptOwner.status === 'PENDING'
-                    ? receiptOwner.startDate
-                      ? new Date(
-                          new Date(receiptOwner.startDate).getTime() +
-                            new Date().getTimezoneOffset() * 60000
-                        ).toLocaleDateString()
-                      : 'Sin fecha'
-                    : receiptOwner.startDate
-                    ? new Date(
-                        new Date(receiptOwner.startDate).getTime() +
-                          new Date().getTimezoneOffset() * 60000
-                      ).toLocaleDateString()
-                    : 'Sin fecha'}
-                </TableCell>
+<TableCell>{getMonthName(receiptOwner.startDate)}</TableCell>
+
 
 
                   <TableCell>
