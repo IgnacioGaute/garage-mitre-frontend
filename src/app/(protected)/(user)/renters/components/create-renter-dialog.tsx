@@ -47,6 +47,8 @@ export function CreateRenterDialog({ customersRenters } : { customersRenters:Veh
       customerNumber: undefined,
       numberOfVehicles: 1,
       customerType: 'RENTER',
+      hasDebt: false,
+      monthsDebt: [],
       vehicleRenters: [],
     },
   });
