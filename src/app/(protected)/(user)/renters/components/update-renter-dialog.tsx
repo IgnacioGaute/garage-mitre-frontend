@@ -52,6 +52,8 @@ export function UpdateRenterDialog({ customer, customersRenters }: { customer: C
       numberOfVehicles: customer.numberOfVehicles ?? 0,
       comments: customer.comments ?? "",
       customerType: customer.customerType ?? 'RENTER',
+      hasDebt: customer.hasDebt || false,
+      monthsDebt: customer.monthsDebt || [],
       customerNumber: customer.customerNumber || 0,
       vehicleRenters: customer.vehicleRenters?.map((vehicle) => ({
         id: vehicle.id ?? "",
