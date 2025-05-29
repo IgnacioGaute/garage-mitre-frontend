@@ -169,6 +169,7 @@ export const createCustomer = async (
     } catch (error) {
       console.error(error);
       return null;
+      
     }
   };
 
