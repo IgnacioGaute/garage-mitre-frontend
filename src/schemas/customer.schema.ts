@@ -14,9 +14,9 @@ export const customerSchema = z.object({
   monthsDebt: z.array(
   z.object({
     month: z.string(), // formato: YYYY-MM
-    amount: z.number().min(0, "El monto debe ser mayor o igual a 0").optional()
+    amount: z.number().min(0, "El monto debe ser mayor o igual a 0")
   })
-),
+).optional(),
   vehicles: z.array(vehicleSchema).optional(),
   vehicleRenters: z.array(vehicleRenterSchema).optional(),  
 });

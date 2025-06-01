@@ -30,6 +30,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Vehicle } from '@/types/vehicle.type';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
+import { Checkbox } from '@/components/ui/checkbox';
 
 export function CreateRenterDialog({ customersRenters } : { customersRenters:Vehicle[] }) {
   const [open, setOpen] = useState(false);
@@ -114,6 +125,33 @@ export function CreateRenterDialog({ customersRenters } : { customersRenters:Veh
       return selectedOwnerIds.includes(vehicle.id);
     });
   };
+  const today = new Date();
+const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), 1);
+
+const monthOptions = Array.from({ length: 12 }).map((_, i) => {
+  const d = new Date();
+  d.setMonth(d.getMonth() - i);
+  const value = d.toISOString().slice(0, 7); // "YYYY-MM"
+  const label = d.toLocaleString('default', {
+    month: 'long',
+    year: 'numeric',
+  });
+  const isDisabled = d < oneYearAgo;
+
+  return { value, label, isDisabled };
+})
+// Filtrar el mes actual
+.filter(option => {
+  const currentMonth = today.toISOString().slice(0, 7);
+  return option.value !== currentMonth;
+});
+
+
+   const hasDebt = form.watch('hasDebt');
+
+  const formattedMonth = (month: string) =>
+  month.length === 7 ? `${month}-01` : month;
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -218,6 +256,123 @@ export function CreateRenterDialog({ customersRenters } : { customersRenters:Veh
                     </FormItem>
                   )}
                 />
+                <FormField control={form.control} name="hasDebt"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>¿Tiene deudas?</FormLabel>
+                        <FormControl>
+                          <Select
+                            disabled={isPending}
+                            onValueChange={v => field.onChange(v === 'true')}
+                            value={field.value?.toString()}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccione"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="true">Sí</SelectItem>
+                              <SelectItem value="false">No</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage/>
+                      </FormItem>
+                    )}
+                  /> 
+                  {hasDebt && (
+              <FormField
+                control={form.control}
+                name="monthsDebt"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Meses adeudados</FormLabel>
+  
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          className="w-full justify-between"
+                                        >
+                                          Selecciona meses
+                                          <span className="ml-2">&#x25BC;</span>
+                                        </Button>
+                                      </PopoverTrigger>
+                  
+                                      <PopoverContent className="w-[300px] p-2 shadow-lg rounded-md z-50">
+                                        <Command>
+                                          <CommandGroup>
+                                            {monthOptions.map(option => {
+                                              const monthKey = formattedMonth(option.value);
+                                              const current = form.getValues('monthsDebt') ?? [];
+                                              const isSelected = current.some(d => d.month === monthKey);
+                  
+                                              return (
+                                                <CommandItem
+                                                  key={option.value}
+                                                  onSelect={() => {
+                                                    if (option.isDisabled) return;
+                                                    if (isSelected) {
+                                                      form.setValue(
+                                                        'monthsDebt',
+                                                        current?.filter(d => d.month !== monthKey)
+                                                      );
+                                                    } else {
+                                                      form.setValue('monthsDebt', [
+                                                        ...current,
+                                                        { month: monthKey, amount: 0 }
+                                                      ]);
+                                                    }
+                                                  }}
+                                                  className={`flex items-center justify-between gap-2 ${
+                                                    option.isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                                                  }`}
+                                                  style={{ pointerEvents: option.isDisabled ? 'none' : 'auto' }}
+                                                >
+                                                  {option.label}
+                                                  <Checkbox checked={isSelected} />
+                                                </CommandItem>
+                                              );
+                                            })}
+                                          </CommandGroup>
+                                        </Command>
+                                      </PopoverContent>
+                                    </Popover>
+  
+                    <div className="mt-4 space-y-3">
+                                      {form.watch('monthsDebt')?.map((entry, index) => {
+                                        const label = monthOptions.find(opt =>
+                                          formattedMonth(opt.value) === entry.month
+                                        )?.label ?? entry.month;
+                  
+                                        return (
+                                          <div key={entry.month} className="flex items-center mt-5 gap-4">
+                                            <span className="w-40 text-sm text-white">{label} :</span>
+                                            $
+                                            <Input
+                                              type="number"
+                                              min={0}
+                                              step={1}
+                                              className="w-40"
+                                              value={entry.amount}
+                                              onChange={(e) =>
+                                                form.setValue(
+                                                  `monthsDebt.${index}.amount`,
+                                                  parseFloat(e.target.value) || 0
+                                                )
+                                              }
+                                            />
+                                          </div>
+                                        );
+                                      })}
+                    </div>
+  
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+  
+                  )} 
+  
                 <FormField
                   control={form.control}
                   name="comments"

@@ -103,7 +103,9 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
   
 
   const handleVehiclesSubmit = async (values: Partial<UpdateCustomerSchemaType>) => {
-    console.log(values)
+    if (!values.hasDebt) {
+    values.monthsDebt = [];
+  }
     setIsPending(true);
     try {
       const data = await updateCustomerAction(customer.id, values);
@@ -247,7 +249,7 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
                     </FormItem>
                   )}
                 />
-                             {/* <FormField control={form.control} name="hasDebt"
+                             <FormField control={form.control} name="hasDebt"
                                   render={({ field }) => (
                                     <FormItem>
                                       <FormLabel>¿Tiene deudas?</FormLabel>
@@ -296,12 +298,15 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
                                             const monthKey = formattedMonth(option.value);
                                             const current = form.getValues('monthsDebt') ?? [];
                                             const isSelected = current.some(d => d.month === monthKey);
-                
+                                            const preselectedMonths = customer.monthsDebt?.map(m => m.month) ?? [];
+                                            const isPreselected = preselectedMonths.includes(monthKey);
+
                                             return (
                                               <CommandItem
                                                 key={option.value}
                                                 onSelect={() => {
-                                                  if (option.isDisabled) return;
+                                                  if (option.isDisabled || isPreselected) return;
+
                                                   if (isSelected) {
                                                     form.setValue(
                                                       'monthsDebt',
@@ -314,16 +319,29 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
                                                     ]);
                                                   }
                                                 }}
-                                                className={`flex items-center justify-between gap-2 ${
-                                                  option.isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                                                className={`relative flex items-center justify-between gap-2 px-2 py-1.5 rounded-md ${
+                                                  option.isDisabled || isPreselected
+                                                    ? 'opacity-50 cursor-not-allowed'
+                                                    : 'cursor-pointer hover:bg-accent'
                                                 }`}
-                                                style={{ pointerEvents: option.isDisabled ? 'none' : 'auto' }}
+                                                style={{ pointerEvents: option.isDisabled || isPreselected ? 'none' : 'auto' }}
                                               >
-                                                {option.label}
-                                                <Checkbox checked={isSelected} />
+                                                <span className="flex items-center gap-2">
+                                                  {option.label}
+                                                  {isPreselected && (
+                                                    <span
+                                                      className="absolute top-1 right-2 text-red-500"
+                                                      title="Mes protegido"
+                                                    >
+                                                      🔒
+                                                    </span>
+                                                  )}
+                                                </span>
+                                                <Checkbox checked={isSelected} className="hover:text-white" />
                                               </CommandItem>
                                             );
                                           })}
+
                                         </CommandGroup>
                                       </Command>
                                     </PopoverContent>
@@ -363,7 +381,7 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
                             />
                 
                                 )} 
-                 */}
+                
                 <FormField
                   control={form.control}
                   name="comments"
