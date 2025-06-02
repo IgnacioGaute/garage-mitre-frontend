@@ -1,8 +1,14 @@
 import { PDFDocument, rgb } from 'pdf-lib';
 import { toast } from 'sonner';
 import JsBarcode from 'jsbarcode';
+import dayjs from 'dayjs';
 
-export async function generateReceiptsWithoutRegistering(customer: any) {
+interface MonthDebt {
+  month: string; // p.ej. "2025-05-01"
+  amount: number;
+}
+
+export async function generateReceiptsWithoutRegistering(customer: any, pendingReceipt?: any) {
   try {
     const combinedPdfDoc = await PDFDocument.create();
 
@@ -12,10 +18,12 @@ export async function generateReceiptsWithoutRegistering(customer: any) {
       if (customer.customerType === 'OWNER') {
         pdfFile = '/Consorcio-Garage-Mitre.pdf';
       } else {
-        const pendingReceipt = customer.receipts.find((receipt: any) => receipt.status === "PENDING");
+        const effectivePendingReceipt  = pendingReceipt ?? customer.receipts.find((receipt: any) => receipt.status === "PENDING");
+        console.log(effectivePendingReceipt)
+
       
-        if (pendingReceipt) {
-          switch (pendingReceipt.receiptTypeKey) {
+        if (effectivePendingReceipt) {
+          switch (effectivePendingReceipt.receiptTypeKey) {
             case 'JOSE_RICARDO_AZNAR':
               pdfFile = '/Jose-Ricardo-Aznar.pdf';
               break;
@@ -50,9 +58,15 @@ export async function generateReceiptsWithoutRegistering(customer: any) {
       const customerPdfDoc = await PDFDocument.load(existingPdfBytes);
       const pages = customerPdfDoc.getPages();
 
-      const pendingReceipt = customer.receipts?.find((receipt: any) => receipt.status === 'PENDING');
-      const pendingPrice = pendingReceipt ? pendingReceipt.price : 0;
+      const effectivePendingReceipt  = pendingReceipt ?? customer.receipts.find((receipt: any) => receipt.status === "PENDING");
 
+      const pendingPrice = effectivePendingReceipt ? effectivePendingReceipt.price : 0;
+
+      const monthsDebt = customer.monthsDebt; // arreglo con la estructura que diste
+
+      const isSameMonthDebt = monthsDebt.some((debt: MonthDebt) => {
+        return dayjs(debt.month).isSame(dayjs(pendingReceipt.startDate), 'month');
+      });
       const fontSize = 12;
       const textColor = rgb(0, 0, 0);
 
@@ -102,7 +116,7 @@ export async function generateReceiptsWithoutRegistering(customer: any) {
         
             page.drawText(`1`, { x: 70, y, size: fontSize, color: textColor });
             page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
-            page.drawText(`$${vehicle.amount}`, { x: 460, y, size: fontSize, color: textColor });
+            page.drawText(`$${isSameMonthDebt ? pendingPrice/vehicles.length :vehicle.amount}`, { x: 460, y, size: fontSize, color: textColor });
         
             y -= 30;
           }

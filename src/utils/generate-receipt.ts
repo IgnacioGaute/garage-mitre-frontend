@@ -4,17 +4,17 @@ import { PDFDocument, rgb } from 'pdf-lib';
 import { toast } from 'sonner';
 import JsBarcode from 'jsbarcode';
 
-export default async function generateReceipt(customer: any, description: string, value:ReceiptSchemaType): Promise<Uint8Array> {
+export default async function generateReceipt(customer: any, description: string, value:ReceiptSchemaType, pendingReceipt?: any): Promise<Uint8Array> {
   try {
     let pdfFile = '/Garage_Mitre.pdf'; // Valor por defecto para renter
 
     if (customer.customerType === 'OWNER') {
       pdfFile = '/Consorcio-Garage-Mitre.pdf';
     } else {
-      const pendingReceipt = customer.receipts.find((receipt: any) => receipt.status === "PENDING");
+      const effectivePendingReceipt  = pendingReceipt ?? customer.receipts.find((receipt: any) => receipt.status === "PENDING");
     
-      if (pendingReceipt) {
-        switch (pendingReceipt.receiptTypeKey) {
+      if (effectivePendingReceipt ) {
+        switch (effectivePendingReceipt .receiptTypeKey) {
           case 'JOSE_RICARDO_AZNAR':
             pdfFile = '/Jose-Ricardo-Aznar.pdf';
             break;
@@ -36,16 +36,6 @@ export default async function generateReceipt(customer: any, description: string
         }
       }
     }
-
-    const receiptTypeNames: Record<string, string> = {
-      JOSE_RICARDO_AZNAR: 'José Ricardo Aznar',
-      CARLOS_ALBERTO_AZNAR: 'Carlos Alberto Aznar',
-      NIDIA_ROSA_MARIA_FONTELA: 'Nidia Rosa María Fontela',
-      ALDO_RAUL_FONTELA: 'Aldo Raúl Fontela',
-      GARAGE_MITRE: 'Garage Mitre'
-    };
-    
-
     const response = await fetch(pdfFile);
     if (!response.ok || !response.headers.get('content-type')?.includes('application/pdf')) {
       throw new Error(`No se pudo cargar el PDF válido desde: ${pdfFile}`);
@@ -57,12 +47,12 @@ export default async function generateReceipt(customer: any, description: string
     const secondPage = pages[1];
 
     // 🟢 Obtener el precio del recibo PENDING
-    const pendingReceipt = customer.receipts.find((receipt: any) => receipt.status === "PENDING");
+    const effectivePendingReceipt  = pendingReceipt ?? customer.receipts.find((receipt: any) => receipt.status === "PENDING");
 
     const vehicles = customer.customerType === 'OWNER' ? customer.vehicles : customer.vehicleRenters;
 
 
-    const pendingPrice = pendingReceipt ? pendingReceipt.price : 0;
+    const pendingPrice = effectivePendingReceipt  ? effectivePendingReceipt .price : 0;
 
     // 🟢 2️⃣ Definir estilos y posiciones
     const fontSize = 12;

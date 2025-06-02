@@ -221,12 +221,12 @@ export const renterColumns = (customerRenters: Vehicle[]): ColumnDef<Customer>[]
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={handlePrint}>
                       <div className='flex pl-1 mb-1 gap-2'>
                       <Printer className="w-4 h-4" />
-                      Imprimir Recibo
+                      Registrar e Imprimir
                       </div>
                     </DropdownMenuItem>
 
                     <Dialog open={openPrintDialog} onOpenChange={setOpenPrintDialog}>
-                      <DialogContent className="max-w-3xl">
+                      <DialogContent className="w-1/2">
                         <DialogHeader>
                           <DialogTitle>¿Está seguro?</DialogTitle>
                         </DialogHeader>
@@ -235,11 +235,10 @@ export const renterColumns = (customerRenters: Vehicle[]): ColumnDef<Customer>[]
                           Se generará e imprimirá un recibo para este inquilino.
                         </p>
 
-                        <DialogFooter className="gap-2 item-start mr-20">
+                        <DialogFooter className="gap-2 item-start">
                           <Button variant="outline" onClick={() => setOpenPrintDialog(false)}>Cancelar</Button>
                           <Button onClick={handleConfirmPrint}>Imprimir y Registrar Pago</Button>
                           <Button onClick={handleConfirm}>Registrar Pago</Button>
-                          <Button onClick={handleConfirmNotRegister}>Imprimir</Button>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>

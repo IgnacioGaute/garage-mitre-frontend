@@ -18,13 +18,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { getCustomerById } from '@/services/customers.service';
-import { BadgeCheck, Clock, ArrowUp } from 'lucide-react';
+import { BadgeCheck, Clock, ArrowUp, Printer } from 'lucide-react';
 import { Customer } from '@/types/cutomer.type';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { generateReceiptsWithoutRegistering } from '@/utils/generate-receipt-without-registering';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -115,6 +116,15 @@ function getMonthName(dateString?: string | null): string {
 
   return meses[date.month()];
 }
+
+  const handlePrint = async (receiptOwner: typeof receipts[0]) => {
+    // Aquí llamamos a tu función de generación de recibo, pasándole el cliente y el recibo
+    try {
+      await generateReceiptsWithoutRegistering(activeCustomer, receiptOwner);
+    } catch (err) {
+      console.error('Error al generar el recibo para imprimir:', err);
+    }
+  };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -142,14 +152,17 @@ function getMonthName(dateString?: string | null): string {
             {paginatedReceipts.length > 0 ? (
               paginatedReceipts.map((receiptOwner) => (
                 <TableRow key={receiptOwner.id}>
-                  <TableCell className="font-medium flex items-center space-x-2">
-                    {receiptOwner.status === 'PAID' ? (
-                      <BadgeCheck className="h-5 w-5 text-green-500" />
-                    ) : (
-                      <Clock className="h-5 w-5 text-yellow-500" />
-                    )}
-                    <span>{receiptOwner.status === 'PAID' ? 'Pagado' : 'Pendiente'}</span>
-                  </TableCell>
+<TableCell className="font-medium">
+  <div className="flex items-center space-x-2">
+    {receiptOwner.status === 'PAID' ? (
+      <BadgeCheck className="h-5 w-5 text-green-500" />
+    ) : (
+      <Clock className="h-5 w-5 text-yellow-500" />
+    )}
+    <span>{receiptOwner.status === 'PAID' ? 'Pagado' : 'Pendiente'}</span>
+  </div>
+</TableCell>
+
 <TableCell>{getMonthName(receiptOwner.startDate)}</TableCell>
 
 
@@ -161,21 +174,34 @@ function getMonthName(dateString?: string | null): string {
                           new Date().getTimezoneOffset() * 60000
                       ).toLocaleDateString()}
                   </TableCell>
-                  <TableCell className="font-medium flex items-center space-x-2">
-                    {receiptOwner.paymentType && (
-                      <span>
-                      {receiptOwner.paymentType === 'TRANSFER'
-                        ? 'Transferencia'
-                        : receiptOwner.paymentType === 'CASH'
-                        ? 'Efectivo'
-                        : receiptOwner.paymentType === 'CHECK'
-                        ? 'Cheque'
-                        : 'Desconocido'}
-                    </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right relative pr-6">
-                    <span className="block pr-5">${receiptOwner.price}</span>
+<TableCell className="font-medium">
+  <div className="flex items-center space-x-2">
+    {receiptOwner.paymentType && (
+      <span>
+        {receiptOwner.paymentType === 'TRANSFER'
+          ? 'Transferencia'
+          : receiptOwner.paymentType === 'CASH'
+          ? 'Efectivo'
+          : receiptOwner.paymentType === 'CHECK'
+          ? 'Cheque'
+          : 'Desconocido'}
+      </span>
+    )}
+  </div>
+</TableCell>
+
+<TableCell className="text-right pr-6 align-middle">
+  <span className="block pr-5">${receiptOwner.price}</span>
+</TableCell>
+
+                  <TableCell className="text-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => void handlePrint(receiptOwner)}
+                    >
+                      <Printer className="h-5 w-5 text-gray-600 hover:text-gray-900" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))

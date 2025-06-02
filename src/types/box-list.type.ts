@@ -14,3 +14,8 @@ export type BoxList = {
     receipts: Receipt[];
     otherPayments: OtherPayment[];
 }
+
+export interface BoxListResponse {
+  message: string;
+  data: BoxList;
+}
