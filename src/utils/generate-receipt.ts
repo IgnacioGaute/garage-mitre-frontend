@@ -128,7 +128,7 @@ firstPage.drawImage(barcodeImage, {
             // Agregar la tabla (Cantidad, Descripción, Precio)
         firstPage.drawText(`1`, { x: 70, y: yPosition, size: fontSize, color: textColor }); // Cantidad
         firstPage.drawText(description, { x: 140, y: yPosition, size: fontSize, color: textColor }); // Descripción
-        firstPage.drawText(`$${vehicle.amount}`, { x: 460, y: yPosition, size: fontSize, color: textColor }); // Total correcto
+        firstPage.drawText(`$${vehicle.amount.toLocaleString('es-AR')}`, { x: 460, y: yPosition, size: fontSize, color: textColor }); // Total correcto
 
         
         yPosition -= 30; // Aumenta el valor de y en cada ciclo (esto asegura que cada fila se dibuje debajo de la anterior)
@@ -136,7 +136,7 @@ firstPage.drawImage(barcodeImage, {
         // Agregar la tabla (Cantidad, Descripción, Precio)
         firstPage.drawText(`1`, { x: 70, y: yPosition, size: fontSize, color: textColor }); // Cantidad
         firstPage.drawText(description, { x: 140, y: yPosition, size: fontSize, color: textColor }); // Descripción
-        firstPage.drawText(`$${vehicle.amount}`, { x: 460, y: yPosition, size: fontSize, color: textColor }); // Total correcto
+        firstPage.drawText(`$${vehicle.amount.toLocaleString('es-AR')}`, { x: 460, y: yPosition, size: fontSize, color: textColor }); // Total correcto
         
         yPosition -= 30; // Aumenta el valor de y en cada ciclo (esto asegura que cada fila se dibuje debajo de la anterior)
       }
@@ -144,7 +144,7 @@ firstPage.drawImage(barcodeImage, {
     
 
     // 🟢 4️⃣ Total (fuera de la tabla, alineado correctamente)
-    firstPage.drawText(`$${pendingPrice}`, { x: 425, y: 45, size: fontSize, color: textColor });
+    firstPage.drawText(`$${pendingPrice.toLocaleString('es-AR')}`, { x: 425, y: 45, size: fontSize, color: textColor });
 
 
     secondPage.drawText(result.receiptNumber, {
@@ -175,7 +175,7 @@ firstPage.drawImage(barcodeImage, {
 
         secondPage.drawText(`1`, { x: 70, y: yPosition2, size: fontSize, color: textColor }); // Cantidad
         secondPage.drawText(description, { x: 140, y: yPosition2, size: fontSize, color: textColor }); // Descripción
-        secondPage.drawText(`$${vehicle.amount}`, { x: 460, y: yPosition2, size: fontSize, color: textColor }); // Total correcto
+        secondPage.drawText(`$${vehicle.amount.toLocaleString('es-AR')}`, { x: 460, y: yPosition2, size: fontSize, color: textColor }); // Total correcto
 
         
         yPosition2 -= 30; // Aumenta el valor de y en cada ciclo (esto asegura que cada fila se dibuje debajo de la anterior)
@@ -183,7 +183,7 @@ firstPage.drawImage(barcodeImage, {
         // Agregar la tabla (Cantidad, Descripción, Precio)
         secondPage.drawText(`1`, { x: 70, y: yPosition2, size: fontSize, color: textColor }); // Cantidad
         secondPage.drawText(description, { x: 140, y: yPosition2, size: fontSize, color: textColor }); // Descripción
-        secondPage.drawText(`$${vehicle.amount}`, { x: 460, y: yPosition2, size: fontSize, color: textColor }); // Total correcto
+        secondPage.drawText(`$${vehicle.amount.toLocaleString('es-AR')}`, { x: 460, y: yPosition2, size: fontSize, color: textColor }); // Total correcto
 
         
         yPosition2 -= 30; // Aumenta el valor de y en cada ciclo (esto asegura que cada fila se dibuje debajo de la anterior)
@@ -192,7 +192,7 @@ firstPage.drawImage(barcodeImage, {
     
 
     // 🟢 4️⃣ Total (fuera de la tabla, alineado correctamente)
-    secondPage.drawText(`$${pendingPrice}`, { x: 425, y: 45, size: fontSize, color: textColor });
+    secondPage.drawText(`$${pendingPrice.toLocaleString('es-AR')}`, { x: 425, y: 45, size: fontSize, color: textColor });
 
 
 

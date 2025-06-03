@@ -17,10 +17,11 @@ export async function generateAllReceipts(type: CustomerType, selectedDate?: Dat
     }
     const customers = await getCustomers(type, token) || [];
     customers.sort((a, b) => a.lastName.localeCompare(b.lastName));
+    const activeCustomers = customers.filter(customer => customer.deletedAt === null);
     
     const combinedPdfDoc = await PDFDocument.create();
 
-    for (const customer of customers) {
+    for (const customer of activeCustomers) {
       let pdfFile = '/Garage_Mitre.pdf'; // Valor por defecto para renter
 
       if (customer.customerType === 'OWNER') {
@@ -129,7 +130,7 @@ export async function generateAllReceipts(type: CustomerType, selectedDate?: Dat
             const description = `Cochera ${garage.garageNumber}`;
             page.drawText(`1`,      { x:  70, y, size: fontSize, color: textColor });
             page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
-            page.drawText(`$${garage.amount}`, { x: 460, y, size: fontSize, color: textColor });
+            page.drawText(`$${garage.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
             y -= 30;
           }
         } else {
@@ -140,12 +141,12 @@ export async function generateAllReceipts(type: CustomerType, selectedDate?: Dat
       const description = `Cochera ${renter.garageNumber} ${plateOwner}`;
       page.drawText(`1`,      { x:  70, y, size: fontSize, color: textColor });
       page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
-      page.drawText(`$${renter.amount}`, { x: 460, y, size: fontSize, color: textColor });
+      page.drawText(`$${renter.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
       y -= 30;
     }
   }
         
-          page.drawText(`$${pendingPrice}`, { x: 425, y: 45, size: fontSize, color: textColor });
+          page.drawText(`$${pendingPrice.toLocaleString('es-AR')}`, { x: 425, y: 45, size: fontSize, color: textColor });
         };
         
         const renderBarcodeContent = (page: any) => {

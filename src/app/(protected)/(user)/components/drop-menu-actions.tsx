@@ -40,6 +40,8 @@ export function DropdownMenuAction({ customers, type }: { customers: Customer[],
   const minYear = 2025;
   const minMonth = 5; // Mayo (0-based index: 0 = Enero, 4 = Mayo)
 
+  const activeCustomers = customers.filter(customer => customer.deletedAt === null);
+
 
 
   const months = [
@@ -72,7 +74,7 @@ useEffect(() => {
   };
 
   checkReceipts();
-}, [selectedMonth, selectedYear, selectedDay, customers, type]);
+}, [selectedMonth, selectedYear, selectedDay, activeCustomers, type]);
 
 
   return (
@@ -94,8 +96,8 @@ useEffect(() => {
           >
             Generar Recibos
           </Button>
-          <ExportCustomersExcel customers={customers} />
-          <ExportGarageNumberExcel customers={customers} />
+          <ExportCustomersExcel customers={activeCustomers} />
+          <ExportGarageNumberExcel customers={activeCustomers} />
         </DropdownMenuContent>
       </DropdownMenu>
 

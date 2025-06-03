@@ -116,26 +116,26 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
         
             page.drawText(`1`, { x: 70, y, size: fontSize, color: textColor });
             page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
-            page.drawText(`$${isSameMonthDebt ? pendingPrice/vehicles.length :vehicle.amount}`, { x: 460, y, size: fontSize, color: textColor });
+            page.drawText(`$${isSameMonthDebt ? pendingPrice.toLocaleString('es-AR')/vehicles.length :vehicle.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
         
             y -= 30;
           }
         
-          page.drawText(`$${pendingPrice}`, { x: 425, y: 45, size: fontSize, color: textColor });
+          page.drawText(`$${pendingPrice.toLocaleString('es-AR')}`, { x: 425, y: 45, size: fontSize, color: textColor });
         };
         
         const renderBarcodeContent = (page: any) => {
           if (barcodeImage && barcodeDims) {
             page.drawImage(barcodeImage, {
               x: 220,
-              y: 33,
+              y: 50,
               width: barcodeDims.width,
               height: barcodeDims.height,
             });
           }
         
           if (pendingReceipt?.barcode) {
-            page.drawText(pendingReceipt.barcode, { x: 250, y: 18, size: fontSize, color: textColor });
+            page.drawText(pendingReceipt.barcode, { x: 250, y: 35, size: fontSize, color: textColor });
           }
         };
 
