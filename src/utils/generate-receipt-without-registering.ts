@@ -19,7 +19,6 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
         pdfFile = '/Consorcio-Garage-Mitre.pdf';
       } else {
         const effectivePendingReceipt  = pendingReceipt ?? customer.receipts.find((receipt: any) => receipt.status === "PENDING");
-        console.log(effectivePendingReceipt)
 
       
         if (effectivePendingReceipt) {
@@ -63,10 +62,11 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
       const pendingPrice = effectivePendingReceipt ? effectivePendingReceipt.price : 0;
 
       const monthsDebt = customer.monthsDebt; // arreglo con la estructura que diste
-
-      const isSameMonthDebt = monthsDebt.some((debt: MonthDebt) => {
-        return dayjs(debt.month).isSame(dayjs(pendingReceipt.startDate), 'month');
-      });
+      const isSameMonthDebt = Array.isArray(monthsDebt) && pendingReceipt
+        ? monthsDebt.some((debt: MonthDebt) => {
+            return dayjs(debt.month).isSame(dayjs(pendingReceipt.startDate), 'month');
+          })
+        : false;
       const fontSize = 12;
       const textColor = rgb(0, 0, 0);
 
