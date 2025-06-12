@@ -131,7 +131,7 @@ export default async function generateBoxList(
 
     yPosition -= 25;
     const drawVerticalLines = (y: number) => {
-      const columnPositions = [110, 435, 490];
+      const columnPositions = [110, 435, 500];
       columnPositions.forEach(x => {
         page.drawLine({
           start: { x, y: y + 20 },
@@ -161,24 +161,24 @@ export default async function generateBoxList(
       font: fontBold,
     });
     page.drawText('Saldo', {
-      x: 500,
+      x: 515,
       y: yPosition,
       size: fontSize,
       font: fontBold,
     });
     yPosition -= 10;
     page.drawLine({
-      start: { x: 50, y: yPosition },
-      end: { x: 550, y: yPosition },
+      start: { x: 40, y: yPosition },
+      end: { x: 560, y: yPosition },
       thickness: 1,
       color: rgb(0, 0, 0),
     });
     yPosition -= 15;
 
     const drawSection = (title: string, total: number) => {
-      const rectWidth = 550 - 50;
+      const rectWidth = 525;
       page.drawRectangle({
-        x: 50,
+        x: 40,
         y: yPosition - 20,
         width: rectWidth,
         height: 15,
@@ -192,7 +192,7 @@ export default async function generateBoxList(
         font: fontBold,
       });
       page.drawText(formatNumber(total), {
-        x: 500,
+        x: 515,
         y: yPosition - 15,
         size: fontSize,
         font: fontBold,
@@ -344,7 +344,7 @@ export default async function generateBoxList(
           drawVerticalLines(yPosition);
           yPosition -= 12;
 
-          total = cashTotal - transferTotal;
+          total = cashTotal;
         });
 
         drawSection(title, total);
@@ -511,9 +511,9 @@ export default async function generateBoxList(
       }
     );
     const drawSectionTotal = (title: string, total: number) => {
-      const rectWidth = 500; 
+      const rectWidth = 525; 
       page.drawRectangle({
-        x: 50,
+        x: 40,
         y: yPosition - 20,
         width: rectWidth,
         height: 15,
@@ -526,7 +526,7 @@ export default async function generateBoxList(
         font: fontBold,
       });
       page.drawText(formatNumber(total), {
-        x: 500,
+        x: 515,
         y: yPosition - 15,
         size: fontSize,
         font: fontBold,

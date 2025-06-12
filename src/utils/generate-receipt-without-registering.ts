@@ -114,9 +114,13 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
               ? `Cochera ${vehicle.garageNumber}`
               : `Cochera ${vehicle.garageNumber} ${vehicle.vehicle ? `(${vehicle.vehicle.customer.lastName} ${vehicle.vehicle.customer.firstName})` : ``}`;
         
+            const pendingPriceDebt = vehicles.length > 0
+              ? (pendingPrice / vehicles.length).toLocaleString('es-AR')
+              : pendingPrice.toLocaleString('es-AR')
+
             page.drawText(`1`, { x: 70, y, size: fontSize, color: textColor });
             page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
-            page.drawText(`$${isSameMonthDebt ? pendingPrice.toLocaleString('es-AR')/vehicles.length :vehicle.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
+            page.drawText(`$${isSameMonthDebt ? pendingPriceDebt : vehicle.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
         
             y -= 30;
           }
