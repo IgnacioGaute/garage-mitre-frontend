@@ -1,10 +1,10 @@
-import { TICKET_TIME_TYPE, VEHICLE_TYPE } from '@/types/ticket-price';
+import { TICKET_DAY_TYPE, TICKET_TIME_TYPE, VEHICLE_TYPE } from '@/types/ticket-price';
 import { z } from 'zod';
 
 export const ticketPriceSchema = z.object({
-    dayPrice: z.coerce.number().optional(),
-    nightPrice: z.coerce.number().optional(),
+    price: z.coerce.number().optional(),
     ticketTimePrice: z.coerce.number().optional(),
+    ticketDayType: z.enum(TICKET_DAY_TYPE).optional(),
     vehicleType: z.enum(VEHICLE_TYPE).optional(),
     ticketTimeType: z.enum(TICKET_TIME_TYPE).optional(),
 });
@@ -12,9 +12,9 @@ export type TicketPriceSchemaType = z.infer<typeof ticketPriceSchema>;
 
 
 export const updateTicketPriceSchema = z.object({
-    dayPrice: z.coerce.number().optional(),
-    nightPrice: z.coerce.number().optional(),
+    price: z.coerce.number().optional(),
     ticketTimePrice: z.coerce.number().optional(),
+    ticketDayType: z.enum(TICKET_DAY_TYPE).optional(),
     vehicleType: z.enum(VEHICLE_TYPE).optional(),
     ticketTimeType: z.enum(TICKET_TIME_TYPE).optional(),
   });

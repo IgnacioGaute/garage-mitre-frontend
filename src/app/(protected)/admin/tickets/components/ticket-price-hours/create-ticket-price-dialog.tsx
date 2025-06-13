@@ -36,8 +36,8 @@ export function CreateTicketPriceDialog() {
   const form = useForm<TicketPriceSchemaType>({
     resolver: zodResolver(ticketPriceSchema),
     defaultValues: {
-      dayPrice: undefined,
-      nightPrice: undefined,
+      price: undefined,
+      ticketDayType: 'DAY',
       vehicleType: 'AUTO',
     },
   });
@@ -80,10 +80,10 @@ export function CreateTicketPriceDialog() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="dayPrice"
+              name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Precio de Ticket por Hora Dia</FormLabel>
+                  <FormLabel>Precio de Ticket</FormLabel>
                   <FormControl>
                     <Input disabled={isPending} {...field} />
                   </FormControl>
@@ -91,14 +91,26 @@ export function CreateTicketPriceDialog() {
                 </FormItem>
               )}
             />
-            <FormField
+                        <FormField
               control={form.control}
-              name="nightPrice"
+              name="ticketDayType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Precio de Ticket por Hora Noche</FormLabel>
+                  <FormLabel>Tipo de Horario</FormLabel>
                   <FormControl>
-                    <Input disabled={isPending} {...field} />
+                    <Select
+                      disabled={isPending}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="DAY">Dia</SelectItem>
+                        <SelectItem value="NIGHT">Noche</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -36,6 +36,7 @@ export function CreateTicketDialog() {
     defaultValues: {
       codeBar: '',
       vehicleType: 'AUTO',
+      ticketDayType: 'DAY'
     },
   });
 
@@ -104,6 +105,32 @@ export function CreateTicketDialog() {
                       <SelectContent>
                         <SelectItem value="AUTO">Auto</SelectItem>
                         <SelectItem value="CAMIONETA">Camioneta</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+                        <FormField
+              control={form.control}
+              name="ticketDayType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Horario</FormLabel>
+                  <FormControl>
+                    <Select
+                      disabled={isPending}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="DAY">Dia</SelectItem>
+                        <SelectItem value="NIGHT">Noche</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>

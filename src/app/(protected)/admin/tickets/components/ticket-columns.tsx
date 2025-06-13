@@ -17,7 +17,10 @@ import { DeleteTicketDialog } from './delete-ticket-dialog';
 import { useSession } from 'next-auth/react';
 
 
-
+const typeMap: Record<string, string> = {
+  DAY: 'DIA',
+  NIGHT: 'NOCHE',
+};
 
 export const ticketColumns: ColumnDef<Ticket>[] = [
   {
@@ -30,23 +33,28 @@ export const ticketColumns: ColumnDef<Ticket>[] = [
     ),
   },
   {
-    accessorKey: 'dayPrice',
+    accessorKey: 'price',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Precio por hora Dia" />
+      <DataTableColumnHeader column={column} title="Precio" />
     ),
     cell: ({ row }) => (
-      <div className="min-w-[100px] text-sm">{row.getValue('dayPrice')}</div>
+      <div className="min-w-[100px] text-sm">{row.getValue('price')}</div>
     ),
   },
-  {
-    accessorKey: 'nightPrice',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Precio por hora Noche" />
-    ),
-    cell: ({ row }) => (
-      <div className="min-w-[100px] text-sm">{row.getValue('nightPrice')}</div>
-    ),
+{
+  accessorKey: 'ticketDayType',
+  header: ({ column }) => (
+    <DataTableColumnHeader column={column} title="Tipo Horario" />
+  ),
+  cell: ({ row }) => {
+    const value = row.getValue('ticketDayType') as string;
+    return (
+      <div className="min-w-[100px] text-sm">
+        {typeMap[value] || value}
+      </div>
+    );
   },
+},
   {
     accessorKey: 'vehicleType',
     header: ({ column }) => (

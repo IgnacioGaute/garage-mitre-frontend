@@ -19,7 +19,7 @@ export default async function UserPage() {
 
   // ✅ Filtros
   const ticketTimeTypeNull = ticketsPrice?.data?.filter(tp => tp.ticketTimeType === null) || [];
-  const vehicleTypeNull = ticketsPrice?.data?.filter(tp => tp.nightPrice === null) || [];
+  const vehicleTypeNull = ticketsPrice?.data?.filter(tp => tp.ticketDayType === null) || [];
 
   return (
 <div className="container mx-auto px-4 py-6 space-y-10">

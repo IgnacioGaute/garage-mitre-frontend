@@ -61,7 +61,7 @@ export default function CardTicket({
     <>
       <ScannerButton isDialogOpen={isDialogOpen} />
 
-      <Card className="w-200 max-w-md mx-auto mt-8 p-5">
+      <Card className="w-1/4 max-w-md mx-auto mt-8 p-5">
         <CardHeader>
           <CardTitle>Registro de Tickets X Hora</CardTitle>
           <CardDescription>Escanea el código de barras en esta pagina y registra un ticket por hora</CardDescription>

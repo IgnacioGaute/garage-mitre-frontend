@@ -56,9 +56,9 @@ export function UpdateTicketPriceDialog({ ticketPrice }: { ticketPrice: ticketPr
   const form = useForm<UpdateTicketPriceSchemaType>({
     resolver: zodResolver(updateTicketPriceSchema),
     defaultValues: {
-      dayPrice: ticketPrice.dayPrice,
-      nightPrice: ticketPrice.nightPrice,
-      vehicleType: 'AUTO',
+      price: ticketPrice.price,
+      ticketDayType: ticketPrice.ticketDayType || 'DAY',
+      vehicleType: ticketPrice.vehicleType || 'AUTO',
     },
   });
 
@@ -98,10 +98,10 @@ export function UpdateTicketPriceDialog({ ticketPrice }: { ticketPrice: ticketPr
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="dayPrice"
+              name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Precio de Ticket por Hora Dia</FormLabel>
+                  <FormLabel>Precio de Ticket</FormLabel>
                   <FormControl>
                     <Input disabled={isPending} {...field} />
                   </FormControl>
@@ -109,45 +109,40 @@ export function UpdateTicketPriceDialog({ ticketPrice }: { ticketPrice: ticketPr
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="nightPrice"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Precio de Ticket por Hora Noche</FormLabel>
-                  <FormControl>
-                    <Input disabled={isPending} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Select para Vehicle Type */}
-            <FormField
-              control={form.control}
-              name="vehicleType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo de Vehículo</FormLabel>
-                  <FormControl>
-                    <Select
-                      disabled={isPending}
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="AUTO">Auto</SelectItem>
-                        <SelectItem value="CAMIONETA">Camioneta</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+{/* Campo solo lectura: Tipo de Horario */}
+<FormField
+  control={form.control}
+  name="ticketDayType"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Tipo de Horario</FormLabel>
+      <FormControl>
+        <p className="border border-input rounded-md px-3 py-2 text-sm bg-muted">
+          {field.value === 'DAY' ? 'Día' : field.value === 'NIGHT' ? 'Noche' : ''}
+        </p>
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
+{/* Campo solo lectura: Tipo de Vehículo */}
+<FormField
+  control={form.control}
+  name="vehicleType"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Tipo de Vehículo</FormLabel>
+      <FormControl>
+        <p className="border border-input rounded-md px-3 py-2 text-sm bg-muted">
+          {field.value === 'AUTO' ? 'Auto' : field.value === 'CAMIONETA' ? 'Camioneta' : ''}
+        </p>
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
             <Button className="w-full" type="submit" disabled={isPending}>
               Editar Precio Ticket
             </Button>

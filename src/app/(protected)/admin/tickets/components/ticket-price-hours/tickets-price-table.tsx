@@ -55,7 +55,7 @@ export function TicketsPriceTable<TData, TValue>({
     },
     initialState: {
       pagination: {
-        pageSize: 2,
+        pageSize: 4,
       },
     },
   });
