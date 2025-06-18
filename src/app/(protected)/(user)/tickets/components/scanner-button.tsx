@@ -7,6 +7,8 @@ import { historialReceiptsAction } from "@/actions/receipts/create-receipt.actio
 import { useSession } from "next-auth/react";
 import { OpenScannerDialog } from "../../components/open-scanner-dialog";
 import { Customer } from "@/types/cutomer.type";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean }) {
   const [isScanning, setIsScanning] = useState(false);
@@ -16,34 +18,34 @@ export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean 
   const session = useSession();
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [customer, setCustomer] = useState<Customer>();
+  const [manualInputVisible, setManualInputVisible] = useState(false);
+  const [manualBarCode, setManualBarCode] = useState("");
 
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (!isDialogOpen && !isScanning && !manualInputVisible) {
+          setIsScanning(true);
+          setTimeout(() => {
+            inputRef.current?.focus();
+          }, 100);
+        }
+      };
 
+      const handleKeyUp = () => {
+        setIsScanning(false);
+      };
 
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isDialogOpen && !isScanning) {
-        setIsScanning(true);
-        setTimeout(() => {
-          inputRef.current?.focus();
-        }, 100);
+      if (!isDialogOpen && !manualInputVisible) {
+        document.addEventListener("keydown", handleKeyDown);
+        document.addEventListener("keyup", handleKeyUp);
       }
-    };
 
-    const handleKeyUp = () => {
-      setIsScanning(false);
-    };
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+        document.removeEventListener("keyup", handleKeyUp);
+      };
+    }, [isDialogOpen, manualInputVisible]);
 
-    if (!isDialogOpen) {
-      document.addEventListener("keydown", handleKeyDown);
-      document.addEventListener("keyup", handleKeyUp);
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("keyup", handleKeyUp);
-    };
-  }, [isDialogOpen]);
 
   useEffect(() => {
   const interval = setInterval(() => {
@@ -130,12 +132,26 @@ export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean 
     }
   };
   
-  return (
-    <div className="flex flex-col items-center">
-      <p className={`text-lg font-bold ${isScanning ? "text-[#fffc34]" : "text-gray-700"}`}>
-        {isScanning ? "Escaneando..." : ""}
-      </p>
+ return (
+  <div className="flex flex-col items-center gap-4">
+    <p
+      className={`text-lg font-semibold ${
+        manualInputVisible
+          ? "text-yellow-400"
+          : isScanning
+          ? "text-yellow-400"
+          : "text-muted-foreground"
+      }`}
+    >
+      {manualInputVisible
+        ? "Ingreso manual activo"
+        : isScanning
+        ? "Escaneando..."
+        : ""}
+    </p>
 
+    {/* Solo mostrar el input invisible si no está activo el modo manual */}
+    {!manualInputVisible && (
       <input
         ref={inputRef}
         type="text"
@@ -150,13 +166,53 @@ export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean 
         }}
         className="absolute w-0 h-0 opacity-0 pointer-events-none"
       />
+    )}
 
-      <OpenScannerDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        onConfirm={handleConfirm}
-        customer={customer}
-      />
-    </div>
-  );
+    <Button
+      variant="default"
+      size="sm"
+      onClick={() => setManualInputVisible((prev) => !prev)}
+    >
+      {manualInputVisible
+        ? "Cancelar ingreso manual"
+        : "Ingresar código manualmente"}
+    </Button>
+
+    {manualInputVisible && (
+      <div className="w-full max-w-md flex flex-col items-center gap-4 mt-4">
+        <Input
+          value={manualBarCode}
+          onChange={(e) => setManualBarCode(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSubmit(manualBarCode);
+              setManualBarCode("");
+              setManualInputVisible(false);
+            }
+          }}
+          placeholder="Ingrese el código manualmente"
+        />
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={() => {
+            handleSubmit(manualBarCode);
+            setManualBarCode("");
+            setManualInputVisible(false);
+          }}
+        >
+          Confirmar código
+        </Button>
+      </div>
+    )}
+
+    <OpenScannerDialog
+      open={dialogOpen}
+      onClose={() => setDialogOpen(false)}
+      onConfirm={handleConfirm}
+      customer={customer}
+    />
+  </div>
+);
+
 }
