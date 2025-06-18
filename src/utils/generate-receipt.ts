@@ -44,7 +44,13 @@ export default async function generateReceipt(customer: any, description: string
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
     const pages = pdfDoc.getPages();
     const firstPage = pages[0];
-    const secondPage = pages[1];
+let secondPage = pages[1];
+
+    
+    if (!secondPage) {
+      secondPage = pdfDoc.addPage();
+    }
+
 
     // 🟢 Obtener el precio del recibo PENDING
     const effectivePendingReceipt  = pendingReceipt ?? customer.receipts.find((receipt: any) => receipt.status === "PENDING");
@@ -64,42 +70,6 @@ export default async function generateReceipt(customer: any, description: string
       throw new Error(result.error.message); // ✅ Propaga el mensaje al catch de handleConfirmPrint
     }
 
-// Crear el canvas
-const canvas = document.createElement('canvas');
-JsBarcode(canvas, result.barcode, {
-  format: "CODE128",
-  width: 2,
-  height: 40,
-  displayValue: false, // No mostrar el número debajo
-});
-
-// Obtener el DataURL
-const barcodeDataUrl = canvas.toDataURL('image/png');
-
-// Extraer solo la parte Base64
-const base64 = barcodeDataUrl.split(',')[1];
-
-// Convertir el base64 en un Uint8Array
-const binaryString = atob(base64);
-const barcodeBytes = new Uint8Array(binaryString.length);
-for (let i = 0; i < binaryString.length; i++) {
-  barcodeBytes[i] = binaryString.charCodeAt(i);
-}
-
-// Insertar en el PDF
-const barcodeImage = await pdfDoc.embedPng(barcodeBytes);
-const barcodeDims = barcodeImage.scale(0.5);
-
-// Ahora dibujarlo
-firstPage.drawImage(barcodeImage, {
-  x: 220,
-  y: 33,
-  width: barcodeDims.width,
-  height: barcodeDims.height,
-});
-    firstPage.drawText(result.barcode, {
-      x: 250, y: 18, size: fontSize, color: textColor,
-    });
 
     
     firstPage.drawText(result.receiptNumber, {
@@ -145,6 +115,43 @@ firstPage.drawImage(barcodeImage, {
 
     // 🟢 4️⃣ Total (fuera de la tabla, alineado correctamente)
     firstPage.drawText(`$${pendingPrice.toLocaleString('es-AR')}`, { x: 425, y: 45, size: fontSize, color: textColor });
+
+    // Crear el canvas
+    const canvas = document.createElement('canvas');
+    JsBarcode(canvas, result.barcode, {
+      format: "CODE128",
+      width: 2,
+      height: 40,
+      displayValue: false, // No mostrar el número debajo
+    });
+
+    // Obtener el DataURL
+    const barcodeDataUrl = canvas.toDataURL('image/png');
+
+    // Extraer solo la parte Base64
+    const base64 = barcodeDataUrl.split(',')[1];
+
+    // Convertir el base64 en un Uint8Array
+    const binaryString = atob(base64);
+    const barcodeBytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      barcodeBytes[i] = binaryString.charCodeAt(i);
+    }
+
+    // Insertar en el PDF
+    const barcodeImage = await pdfDoc.embedPng(barcodeBytes);
+    const barcodeDims = barcodeImage.scale(0.5);
+
+    // Ahora dibujarlo
+    secondPage.drawImage(barcodeImage, {
+      x: 220,
+      y: 33,
+      width: barcodeDims.width,
+      height: barcodeDims.height,
+    });
+        secondPage.drawText(result.barcode, {
+          x: 250, y: 18, size: fontSize, color: textColor,
+        });
 
 
     secondPage.drawText(result.receiptNumber, {

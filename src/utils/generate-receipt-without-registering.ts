@@ -146,7 +146,7 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
         for (let i = 0; i < pages.length; i++) {
           const page = pages[i];
         
-          if (i === 0) {
+          if (i === 1) {
             renderBarcodeContent(page); // Solo en la primera página
           }
         

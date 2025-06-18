@@ -327,12 +327,21 @@ export default async function generateBoxList(
             paymentType === 'TR'
               ? `- ${formatNumber(parsedPrice)}`
               : `  ${formatNumber(parsedPrice)}`;
+          const pricePositive= formatNumber(parsedPrice)
           page.drawText(priceText, {
             x: 440,
             y: yPosition,
             size: fontSize,
             font,
           });
+          if(paymentType === 'TR'){
+            page.drawText(pricePositive, {
+             x: 515,
+             y: yPosition,
+             size: fontSize,
+             font,
+           });
+          }
 
           yPosition -= 10;
           page.drawLine({

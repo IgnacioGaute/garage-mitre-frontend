@@ -115,6 +115,21 @@ export async function generateAllReceipts(type: CustomerType, selectedDate?: Dat
         customer.customerType === 'OWNER' ? customer.vehicles : customer.vehicleRenters;
 
         const renderCommonContent = (page: any) => {
+          // Dibujar una "X" negra a la izquierda del número de recibo
+page.drawLine({
+  start: { x: 300, y: 380 },
+  end: { x: 310, y: 370 },
+  thickness: 3,
+  color: rgb(0, 0, 0),
+});
+
+page.drawLine({
+  start: { x: 300, y: 370 },
+  end: { x: 310, y: 380 },
+  thickness: 3,
+  color: rgb(0, 0, 0),
+});
+
           page.drawText(pendingReceipt?.receiptNumber ?? '', { x: 420, y: 380, size: fontSize, color: textColor });
           page.drawText(`${customer.lastName} ${customer.firstName}`, {
             x: 85,
@@ -153,21 +168,21 @@ export async function generateAllReceipts(type: CustomerType, selectedDate?: Dat
           if (barcodeImage && barcodeDims) {
             page.drawImage(barcodeImage, {
               x: 220,
-              y: 33,
+              y: 50,
               width: barcodeDims.width,
               height: barcodeDims.height,
             });
           }
         
           if (pendingReceipt?.barcode) {
-            page.drawText(pendingReceipt.barcode, { x: 250, y: 18, size: fontSize, color: textColor });
+            page.drawText(pendingReceipt.barcode, { x: 250, y: 35, size: fontSize, color: textColor });
           }
         };
 
         for (let i = 0; i < pages.length; i++) {
           const page = pages[i];
         
-          if (i === 0) {
+          if (i === 1) {
             renderBarcodeContent(page); // Solo en la primera página
           }
         
