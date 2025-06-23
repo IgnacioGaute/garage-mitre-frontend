@@ -289,8 +289,6 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
                               ))}
                             </div>
                           ) :(
-                            !receiptOwner.paymentHistoryOnAccount &&
-                            !receiptOwner.payments ? (
                             <div className="flex flex-col gap-1">
                                 <span>
                                   {receiptOwner.paymentType === 'TRANSFER'
@@ -301,11 +299,11 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
                                     ? 'Cheque'
                                     : 'Desconocido'}
                                 </span>
-                              )
+                              
                             </div>
-                          ) :(
+                          )} :(
                             <span>Sin pagos</span>
-                          ))}
+                          )
                         </div>
                       </TableCell>
 
