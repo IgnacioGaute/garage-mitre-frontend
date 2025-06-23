@@ -22,12 +22,18 @@ interface ReceiptMovementsDrawerProps {
 export function ReceiptMovementsDrawer({ receipt }: ReceiptMovementsDrawerProps) {
   const [open, setOpen] = useState(false);
 
-  const hasMovements =
-    (receipt.payments?.length || 0) > 0 ||
-    (receipt.paymentHistoryOnAccount?.length || 0) > 0;
+const hasMovements =
+  (receipt.payments?.length || 0) > 0 ||
+  (receipt.paymentHistoryOnAccount?.length || 0) > 0 ||
+  (!receipt.payments?.length &&
+    !receipt.paymentHistoryOnAccount?.length &&
+    receipt.status === 'PAID');
 
   if (!hasMovements) return null;
-
+const hasOnlyReceiptPayment =
+  receipt.status === 'PAID' &&
+  (!receipt.payments?.length || receipt.payments.length === 0) &&
+  (!receipt.paymentHistoryOnAccount?.length || receipt.paymentHistoryOnAccount.length === 0);
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
@@ -60,19 +66,19 @@ export function ReceiptMovementsDrawer({ receipt }: ReceiptMovementsDrawerProps)
               </ul>
             </div>
           )}
+        {hasOnlyReceiptPayment && (
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Pagos</h3>
+            <ul className="space-y-2 text-sm">
+              <li className="p-3 border rounded-md">
+                <div><strong>Tipo:</strong> {translatePaymentType(receipt.paymentType)}</div>
+                <div><strong>Monto:</strong> ${receipt.price}</div>
+                <div><strong>Fecha:</strong> {receipt.paymentDate ? new Date(receipt.paymentDate).toLocaleDateString() : 'Sin fecha'}</div>
+              </li>
+            </ul>
+          </div>
+        )}
 
-          {(!receipt.payments && receipt.status === 'PAID') && (
-           <div>
-              <h3 className="text-lg font-semibold mb-3">Pagos</h3>
-              <ul className="space-y-2 text-sm">
-                  <li className="p-3 border rounded-md">
-                    <div><strong>Tipo:</strong> {translatePaymentType(receipt.paymentType)}</div>
-                    <div><strong>Monto:</strong> ${receipt.price}</div>
-                    <div><strong>Fecha:</strong> {receipt.paymentDate ? new Date(receipt.paymentDate).toLocaleDateString() : 'Sin fecha'}</div>
-                  </li>
-              </ul>
-            </div>
-          )}
 
           {receipt.paymentHistoryOnAccount?.length > 0 && (
             <div>
