@@ -1,6 +1,6 @@
 
 import { OtherPayment } from "./other-payment.type";
-import { Receipt } from "./receipt.type";
+import { PaymentHistoryOnAccount, Receipt, ReceiptPayment } from "./receipt.type";
 import { TicketRegistrationForDay } from "./ticket-registration-for-day.type";
 import { TicketRegistration } from "./ticket-registration.type";
 
@@ -13,6 +13,8 @@ export type BoxList = {
     ticketRegistrationForDays: TicketRegistrationForDay[];
     receipts: Receipt[];
     otherPayments: OtherPayment[];
+    receiptPayments: ReceiptPayment[];  
+    paymentHistoryOnAccount: PaymentHistoryOnAccount[]
 }
 
 export interface BoxListResponse {

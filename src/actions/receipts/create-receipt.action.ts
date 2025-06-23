@@ -5,9 +5,9 @@ import { handleReceiptError, ReceiptError } from "./receipt.utility";
 import { ReceiptSchemaType } from "@/schemas/receipt.schema";
 
 
-export async function historialReceiptsAction(customerId: string, values: ReceiptSchemaType) {
+export async function historialReceiptsAction(receiptId: string, customerId: string, values: ReceiptSchemaType) {
     try {
-      const receipt = await historialReceiptsAPI(customerId, values);
+      const receipt = await historialReceiptsAPI(receiptId, customerId, values);
   
       if (!receipt) {
         return {

@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, startTransition } from "react";
 import { startScanner } from "@/services/scanner.service";
 import { toast } from "sonner";
-import { PaymentTypeReceiptDialog } from "../../components/payment-type-receipt-dialog"; // asegúrate de importar esto
 import { getCustomerById } from "@/services/customers.service";
 import { historialReceiptsAction } from "@/actions/receipts/create-receipt.action";
 import { useSession } from "next-auth/react";
@@ -9,66 +8,65 @@ import { OpenScannerDialog } from "../../components/open-scanner-dialog";
 import { Customer } from "@/types/cutomer.type";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ReceiptSchemaType } from "@/schemas/receipt.schema";
+import { Receipt } from "@/types/receipt.type";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean }) {
   const [isScanning, setIsScanning] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [selectedPaymentType, setSelectedPaymentType] = useState<"TRANSFER" | "CASH" | "CHECK" | null>(null);
+  const [selectedPaymentType, setSelectedPaymentType] = useState<"TRANSFER" | "CASH" | "CHECK" | "MIX" |null>(null);
   const session = useSession();
   const [customerId, setCustomerId] = useState<string | null>(null);
+  const [barCode, setbarCode] = useState<string | null>(null);
   const [customer, setCustomer] = useState<Customer>();
+  const [receipt, setReceipt] = useState<Receipt>();
+  const [receiptId, setReceiptId] = useState<string | null>(null);
   const [manualInputVisible, setManualInputVisible] = useState(false);
   const [manualBarCode, setManualBarCode] = useState("");
 
-    useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (!isDialogOpen && !isScanning && !manualInputVisible) {
-          setIsScanning(true);
-          setTimeout(() => {
-            inputRef.current?.focus();
-          }, 100);
-        }
-      };
-
-      const handleKeyUp = () => {
-        setIsScanning(false);
-      };
-
-      if (!isDialogOpen && !manualInputVisible) {
-        document.addEventListener("keydown", handleKeyDown);
-        document.addEventListener("keyup", handleKeyUp);
-      }
-
-      return () => {
-        document.removeEventListener("keydown", handleKeyDown);
-        document.removeEventListener("keyup", handleKeyUp);
-      };
-    }, [isDialogOpen, manualInputVisible]);
-
-
-  useEffect(() => {
-  const interval = setInterval(() => {
-    if (inputRef.current) {
-      inputRef.current.value = ""; // limpiar el input
+useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    const dialogIsOpen = isDialogOpen || dialogOpen || manualInputVisible;
+    if (!dialogIsOpen && !isScanning) {
+      setIsScanning(true);
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
     }
-  }, 50000); // cada 30 segundos
+  };
 
-  return () => clearInterval(interval); // limpiar cuando el componente se desmonta
-}, []);
+  const handleKeyUp = () => {
+    setIsScanning(false);
+  };
+
+  const dialogIsOpen = isDialogOpen || dialogOpen || manualInputVisible;
+
+  if (!dialogIsOpen) {
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
+  }
+
+  return () => {
+    document.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("keyup", handleKeyUp);
+  };
+}, [isDialogOpen, dialogOpen, manualInputVisible]);
 
   const handleSubmit = async (barCode: string) => {
     startTransition(() => {
       startScanner({ barCode })
         .then(async (data) => {
-          console.log("DATA", data);
           if (!data || "error" in data) {
             toast.error(data?.error || "Error desconocido");
           } else {
             if (data.type === "RECEIPT") {
               toast.success("🧾 Recibo detectado", { duration: 5000 });
               setCustomerId(data.id);
-  
+              setbarCode(data.barcode);
+              setReceipt(data.receipt)
+              setReceiptId(data.receiptId || "")
               try {
                 const fetchedCustomer = await getCustomerById(data.id || "", session.data?.token);
                 if (!fetchedCustomer) {
@@ -100,37 +98,43 @@ export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean 
   };
   
 
-  const handleConfirm = async (paymentType: "TRANSFER" | "CASH" | "CHECK") => {
-    if (!paymentType || !customerId) return;
-  
-    try {
+const handleConfirm = async (data: ReceiptSchemaType) => {
+  if (!data || !data.payments || !customerId) return;
 
-      const updatedCustomer = await getCustomerById(customerId, session.data?.token);
-  
-      if (!updatedCustomer) {
-        toast.error("No se pudieron obtener los datos actualizados del cliente.");
-        return;
-      }
-      setCustomer(updatedCustomer); 
-  
-      const result = await historialReceiptsAction(customerId, {
-        paymentType,
-        print: false,
-      });
-  
-      if (result.error) {
-        toast.error(result.error.message);
-      } else {
-        toast.success("Pago registrado exitosamente.", { duration: 5000 });
-      }
-    } catch (error) {
-      console.error("Error al registrar el pago:", error);
-      toast.error("Error al registrar el pago.");
-    } finally {
-      setSelectedPaymentType(null);
-      setDialogOpen(false);
+  try {
+    const updatedCustomer = await getCustomerById(customerId, session.data?.token);
+
+    if (!updatedCustomer) {
+      toast.error("No se pudieron obtener los datos actualizados del cliente.");
+      return;
     }
-  };
+
+    setCustomer(updatedCustomer);
+
+    const fullData: ReceiptSchemaType = {
+      ...data,
+      barcode: barCode || undefined,
+    };
+
+    const result = await historialReceiptsAction(receiptId || '', customerId, fullData);
+
+    if (result.error) {
+      toast.error(result.error.message);
+      return; // 👈🏽 No continuar, mantener el diálogo abierto
+    }
+
+    toast.success("Pago registrado exitosamente.", { duration: 5000 });
+    setDialogOpen(false); // 👈🏽 Solo cerrar si todo fue bien
+    setSelectedPaymentType(null);
+
+  } catch (error) {
+    console.error("Error al registrar el pago:", error);
+    toast.error("Error al registrar el pago.");
+    // no cerrar el diálogo aquí tampoco
+  }
+};
+
+
   
  return (
   <div className="flex flex-col items-center gap-4">
@@ -208,9 +212,10 @@ export default function ScannerButton({ isDialogOpen }: { isDialogOpen: boolean 
 
     <OpenScannerDialog
       open={dialogOpen}
-      onClose={() => setDialogOpen(false)}
       onConfirm={handleConfirm}
+      onClose={() => setDialogOpen(false)}
       customer={customer}
+      receipt={receipt}
     />
   </div>
 );

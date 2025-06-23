@@ -1,6 +1,6 @@
 
 import { CreditCardIcon } from 'lucide-react';
-import { getCustomers, getParkingTypes } from '@/services/customers.service';
+import { findReceipts, getCustomers, getParkingTypes } from '@/services/customers.service';
 import { OwnersTable } from './components/owners-table';
 import { OwnerColumns } from './components/owner-columns';
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
@@ -10,6 +10,7 @@ import { DropdownMenuAction } from '../components/drop-menu-actions';
 export default async function OwnerPage() {
   const customers = await getCustomers(CUSTOMER_TYPE[0]);
   const parkingTypes = await getParkingTypes();
+  const receipts = await findReceipts();
   
 
   return (
@@ -24,7 +25,7 @@ export default async function OwnerPage() {
         </div>
       </div>
       <div className="mb-4">
-        <DropdownMenuAction customers={customers || []} type='OWNER' />
+        <DropdownMenuAction customers={customers || []} type='OWNER' receipts={receipts || []} />
       </div>
       <OwnersTable
         columns={OwnerColumns}

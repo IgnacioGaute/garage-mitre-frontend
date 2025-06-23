@@ -1,3 +1,4 @@
+import { Receipt } from "./receipt.type";
 import { TicketRegistration } from "./ticket-registration.type";
 
 export const TICKET_TYPE = ['AUTO', 'CAMIONETA'] as const;
@@ -17,9 +18,11 @@ export type Ticket ={
 }
 
 export type Scanner ={
-    codeBar: string;
+    barcode: string;
     success: boolean;
     message?: string;
     type?: 'RECEIPT' | 'TICKET';
     id: string | null;
+    receipt: Receipt;
+    receiptId?: string;
 }

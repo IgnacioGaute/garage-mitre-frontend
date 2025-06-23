@@ -1,7 +1,7 @@
 // src/utils/generate-box-list.ts
 import { BoxList } from '@/types/box-list.type';
 import { OtherPayment } from '@/types/other-payment.type';
-import { Receipt } from '@/types/receipt.type';
+import { Receipt, ReceiptPayment } from '@/types/receipt.type';
 import { TicketRegistrationForDay } from '@/types/ticket-registration-for-day.type';
 import { TicketRegistration } from '@/types/ticket-registration.type';
 import { Ticket } from '@/types/ticket.type';
@@ -27,6 +27,8 @@ export default async function generateBoxList(
       totalPrice,
       date,
       boxNumber,
+      receiptPayments,
+      paymentHistoryOnAccount
     } = boxList;
 
     const tickets = Array.isArray(ticketRegistrations) ? ticketRegistrations : [];
@@ -38,22 +40,40 @@ export default async function generateBoxList(
       ? otherPayments
       : [];
 
-    // Filtrados de recibos como antes...
-    const owners = validReceipts.filter(
-      receipt => receipt && receipt.customer?.customerType === 'OWNER'
+    const owners = receiptPayments.filter(
+      receiptPayment => receiptPayment && receiptPayment.receipt.customer?.customerType === 'OWNER'
     );
+
     const renterReceiptTypes = [
       'JOSE_RICARDO_AZNAR',
       'CARLOS_ALBERTO_AZNAR',
       'NIDIA_ROSA_MARIA_FONTELA',
       'ALDO_RAUL_FONTELA',
     ];
-    const renters = validReceipts.filter(receipt =>
-      renterReceiptTypes.includes(receipt?.receiptTypeKey)
+    const renters = receiptPayments.filter(receiptPayment =>
+      renterReceiptTypes.includes(receiptPayment.receipt?.receiptTypeKey)
     );
-    const privates = validReceipts.filter(
-      receipt => receipt?.receiptTypeKey === 'GARAGE_MITRE'
+    const privates = receiptPayments.filter(
+      receiptPayment => receiptPayment.receipt?.receiptTypeKey === 'GARAGE_MITRE'
     );
+
+    const paymentHistoryOwners = paymentHistoryOnAccount.filter(
+  p => p.receipt?.customer?.customerType === 'OWNER'
+    );
+
+    const paymentHistoryRenters = paymentHistoryOnAccount.filter(
+      p => renterReceiptTypes.includes(p.receipt?.receiptTypeKey)
+    );
+
+    const paymentHistoryPrivates = paymentHistoryOnAccount.filter(
+      p => p.receipt?.receiptTypeKey === 'GARAGE_MITRE'
+    );
+
+    const combinedOwners = [...owners, ...paymentHistoryOwners];
+    const combinedRenters = [...renters, ...paymentHistoryRenters];
+    const combinedPrivates = [...privates, ...paymentHistoryPrivates];
+
+
 
     // Creamos el PDF...
     const pdfDoc = await PDFDocument.create();
@@ -263,7 +283,7 @@ export default async function generateBoxList(
 
     const addDataSectionReceipt = (
       title: string,
-      items: Receipt[],
+      items: ReceiptPayment[],
       dataExtractor: (item: any) => [string, number, string, string, string?]
     ) => {
       let total = 0;
@@ -458,66 +478,76 @@ export default async function generateBoxList(
         '',
       ]
     );
-    addDataSectionReceipt(
-      'Total de Recibo pago Alquiler',
-      renters,
-      receipt => {
-        const total = receipt.price;
-        const owner = `${receiptTypeNames[receipt.receiptTypeKey] || receipt.receiptTypeKey}`;
-        return [
-          `${receipt.customer.firstName} ${receipt.customer.lastName}`,
-          total,
-          formatDateA(receipt.dateNow),
-          receipt.paymentType === 'TRANSFER'
-            ? 'TR'
-            : receipt.paymentType === 'CASH'
-            ? 'EF'
-            : receipt.paymentType === 'CHECK'
-            ? 'CH'
-            : 'Desconocido',
-          owner,
-        ];
-      }
-    );
+addDataSectionReceipt(
+  'Total de Recibo pago Alquiler',
+  combinedRenters, // renters es ReceiptPayment[]
+  (receiptPayment) => {
+    const receipt = receiptPayment.receipt;
+    const total = receiptPayment.price; // <- ahora usás el monto parcial del ReceiptPayment
+    const owner = `${receiptTypeNames[receipt.receiptTypeKey] || receipt.receiptTypeKey}`;
+    
+    return [
+      `${receipt.customer.firstName} ${receipt.customer.lastName}`,
+      total,
+      formatDateA(receipt.dateNow),
+      receiptPayment.paymentType === 'TRANSFER'
+        ? 'TR'
+        : receiptPayment.paymentType === 'CASH'
+        ? 'EF'
+        : receiptPayment.paymentType === 'CHECK'
+        ? 'CH'
+        : 'Desconocido',
+      owner,
+    ];
+  }
+);
+
     addDataSectionReceipt(
       'Total de Recibo pago Expensas',
-      owners,
-      receipt => [
-        `${receipt.customer.firstName} ${receipt.customer.lastName}`,
-        receipt.price,
-        formatDateA(receipt.dateNow),
-        receipt.paymentType === 'TRANSFER'
-          ? 'TR'
-          : receipt.paymentType === 'CASH'
-          ? 'EF'
-          : receipt.paymentType === 'CHECK'
-          ? 'CH'
-          : 'Desconocido',
-      ]
+      combinedOwners,
+  (receiptPayment) => {
+    const receipt = receiptPayment.receipt;
+    const total = receiptPayment.price; // <- ahora usás el monto parcial del ReceiptPayment
+    
+    return [
+      `${receipt.customer.firstName} ${receipt.customer.lastName}`,
+      total,
+      formatDateA(receipt.dateNow),
+      receiptPayment.paymentType === 'TRANSFER'
+        ? 'TR'
+        : receiptPayment.paymentType === 'CASH'
+        ? 'EF'
+        : receiptPayment.paymentType === 'CHECK'
+        ? 'CH'
+        : 'Desconocido',
+    ];
+  }
     );
     addDataSectionReceipt(
       'Total de Recibo pago Alquiler Terceros',
-      privates,
-      receipt => {
-        const total = receipt.price;
-        const vehicleCustomer = receipt.customer.vehicleRenters?.[0]?.vehicle?.customer;
-        const vehicleOwner = vehicleCustomer
-          ? `${vehicleCustomer.firstName} ${vehicleCustomer.lastName}`
-          : '';
-        return [
-          `${receipt.customer.firstName} ${receipt.customer.lastName}`,
-          total,
-          formatDateA(receipt.dateNow),
-          receipt.paymentType === 'TRANSFER'
-            ? 'TR'
-            : receipt.paymentType === 'CASH'
-            ? 'EF'
-            : receipt.paymentType === 'CHECK'
-            ? 'CH'
-            : 'Desconocido',
-          vehicleOwner,
-        ];
-      }
+      combinedPrivates,
+  (receiptPayment) => {
+    const receipt = receiptPayment.receipt;
+    const total = receiptPayment.price; // <- ahora usás el monto parcial del ReceiptPayment
+    const vehicleCustomer = receipt.customer.vehicleRenters?.[0]?.vehicle?.customer;
+    const vehicleOwner = vehicleCustomer
+    ? `${vehicleCustomer.firstName} ${vehicleCustomer.lastName}`
+    : '';
+    
+    return [
+      `${receipt.customer.firstName} ${receipt.customer.lastName}`,
+      total,
+      formatDateA(receipt.dateNow),
+      receiptPayment.paymentType === 'TRANSFER'
+        ? 'TR'
+        : receiptPayment.paymentType === 'CASH'
+        ? 'EF'
+        : receiptPayment.paymentType === 'CHECK'
+        ? 'CH'
+        : 'Desconocido',
+      vehicleOwner,
+    ];
+  }
     );
     const drawSectionTotal = (title: string, total: number) => {
       const rectWidth = 525; 

@@ -67,7 +67,7 @@ export function CreateOwnerDialog() {
   });
 
   const handleCustomerSubmit = (values: CustomerSchemaType) => {
-    console.log('VALORES',values)
+
     const numberOfVehicles = values.numberOfVehicles;
     const currentVehicles = form.getValues('vehicles') || [];
   

@@ -59,7 +59,7 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
 
       const effectivePendingReceipt  = pendingReceipt ?? customer.receipts.find((receipt: any) => receipt.status === "PENDING");
 
-      const pendingPrice = effectivePendingReceipt ? effectivePendingReceipt.price : 0;
+      const pendingPrice = effectivePendingReceipt ? effectivePendingReceipt.startAmount : 0;
 
       const monthsDebt = customer.monthsDebt; // arreglo con la estructura que diste
       const isSameMonthDebt = Array.isArray(monthsDebt) && pendingReceipt
@@ -98,6 +98,19 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
         customer.customerType === 'OWNER' ? customer.vehicles : customer.vehicleRenters;
 
         const renderCommonContent = (page: any) => {
+          page.drawLine({
+            start: { x: 300, y: 380 },
+            end: { x: 310, y: 370 },
+            thickness: 3,
+            color: rgb(0, 0, 0),
+          });
+  
+          page.drawLine({
+            start: { x: 300, y: 370 },
+            end: { x: 310, y: 380 },
+            thickness: 3,
+            color: rgb(0, 0, 0),
+          });
           page.drawText(pendingReceipt?.receiptNumber ?? '', { x: 420, y: 380, size: fontSize, color: textColor });
           page.drawText(`${customer.lastName} ${customer.firstName}`, {
             x: 85,

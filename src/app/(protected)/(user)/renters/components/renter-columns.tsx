@@ -14,32 +14,14 @@ import { ColumnDef, SortingFn } from '@tanstack/react-table';
 import { Ban, MoreHorizontal, Printer } from 'lucide-react';
 import { UpdateRenterDialog } from './update-renter-dialog';
 import { DeleteRenterDialog } from './delete-renter-dialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { useState } from 'react';
-import { ViewCustomerDialog } from '../../components/view-customer-dialog';
-import { toast } from 'sonner';
 import { Customer } from '@/types/cutomer.type';
-import { PaymentSummaryTable } from '../../components/payment-summary-customer-table';
-import generateReceipt from '@/utils/generate-receipt';
-import { cancelReceipt, getCustomerById, historialReceipts } from '@/services/customers.service';
 import { useSession } from 'next-auth/react';
-import { PaymentTypeReceiptDialog } from '../../components/payment-type-receipt-dialog';
-import { cancelReceiptAction } from '@/actions/receipts/cancel-receipt.action';
-import { historialReceiptsAction } from '@/actions/receipts/create-receipt.action';
 import { SoftDeleteRenterDialog } from './soft-delete-renter-dialog';
 import { RestoredRenterDialog } from './restored-renter-dialog';
 import { PaymentSummaryCell } from '../../components/automatic-open-summary';
 import { Vehicle } from '@/types/vehicle.type';
 import { ViewCustomerRenterDialog } from '../../components/view-customer-renter-dialog';
-import { generateReceiptsWithoutRegistering } from '@/utils/generate-receipt-without-registering';
 
 const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
   if (rowA.original.deletedAt && !rowB.original.deletedAt) return 1;
@@ -107,97 +89,9 @@ export const renterColumns = (customerRenters: Vehicle[]): ColumnDef<Customer>[]
     id: "actions",
     cell: ({ row }) => {
       const customer = row.original;
-      const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
-      const [openPrintDialog, setOpenPrintDialog] = useState(false);
-      const [openCancelDialog, setOpenCancelDialog] = useState(false);
       const [openDropdown, setOpenDropdown] = useState(false);
       const session = useSession();
-      const [selectedPaymentType, setSelectedPaymentType] = useState<"TRANSFER" | "CASH" | "CHECK" | null>(null);
-      
-      const handlePrint = () => {
-        setOpenPaymentDialog(true); // Primero abre el diálogo de selección de tipo de pago
-      };
-      
-      const handleConfirmPayment = async (paymentType: "TRANSFER" | "CASH" | "CHECK") => {
-        setSelectedPaymentType(paymentType);
-        setOpenPaymentDialog(false);
-        setOpenPrintDialog(true); // Luego abre el diálogo de confirmación de impresión
-      };
-      
-      const handleConfirmPrint = async () => {
-        if (!selectedPaymentType) return;
-      
-        try {
-          const updatedCustomer = await getCustomerById(customer.id, session.data?.token);
-      
-          if (!updatedCustomer) {
-            toast.error("No se pudieron obtener los datos actualizados del cliente.");
-            return;
-          }
-      
-          await generateReceipt(updatedCustomer, "Expensas correspondientes", { paymentType: selectedPaymentType, print: true});
-      
-          toast.success("Recibo generado y enviado a la impresora.");
-        } catch (error: any) {
-          console.error("Error al imprimir el recibo:", error);
-          toast.error(error?.message || "Error al enviar el recibo a la impresora.");
-        } finally {
-          setOpenPrintDialog(false);
-          setSelectedPaymentType(null); // Limpiar el estado después de imprimir
-        }
-      };
 
-            
-      const handleConfirm = async () => {
-        if (!selectedPaymentType) return;
-      
-        try {
-          const updatedCustomer = await getCustomerById(customer.id, session.data?.token);
-      
-          if (!updatedCustomer) {
-            toast.error("No se pudieron obtener los datos actualizados del cliente.");
-            return;
-          }
-      
-          const result = await historialReceiptsAction(customer.id, {paymentType: selectedPaymentType, print: false});
-          if (result.error) {
-            toast.error(result.error.message); // Aquí mostramos el mensaje del error procesado
-          } else {
-            toast.success("Pago registrado exitosamente.");
-          }
-      
-          
-        } catch (error) {
-          console.error("Error al registrar el pago:", error);
-          toast.error("Error al registrar el pago.");
-        } finally {
-          setOpenPrintDialog(false);
-          setSelectedPaymentType(null); // Limpiar el estado después de imprimir
-        }
-      };
-
-      const handleConfirmNotRegister = async () => {
-      
-        try {
-          const updatedCustomer = await getCustomerById(customer.id, session.data?.token);
-      
-          if (!updatedCustomer) {
-            toast.error("No se pudieron obtener los datos actualizados del cliente.");
-            return;
-          }
-      
-          await generateReceiptsWithoutRegistering(updatedCustomer);
-      
-          toast.success("Recibo generado y enviado a la impresora.");
-        } catch (error: any) {
-          console.error("Error al imprimir el recibo:", error);
-          toast.error(error?.message || "Error al enviar el recibo a la impresora.");
-        } finally {
-          setOpenPrintDialog(false);
-          setSelectedPaymentType(null); // Limpiar el estado después de imprimir
-        }
-      };
-      
       return (
         <>
           <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
@@ -217,67 +111,6 @@ export const renterColumns = (customerRenters: Vehicle[]): ColumnDef<Customer>[]
                     <>
                     <UpdateRenterDialog customer={customer} customersRenters={customerRenters} />
                     <SoftDeleteRenterDialog customer={customer} />
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={handlePrint}>
-                      <div className='flex pl-1 mb-1 gap-2'>
-                      <Printer className="w-4 h-4" />
-                      Registrar e Imprimir
-                      </div>
-                    </DropdownMenuItem>
-
-                    <Dialog open={openPrintDialog} onOpenChange={setOpenPrintDialog}>
-                      <DialogContent className="w-1/2">
-                        <DialogHeader>
-                          <DialogTitle>¿Está seguro?</DialogTitle>
-                        </DialogHeader>
-
-                        <p className="text-sm text-muted-foreground">
-                          Se generará e imprimirá un recibo para este inquilino.
-                        </p>
-
-                        <DialogFooter className="gap-2 item-start">
-                          <Button variant="outline" onClick={() => setOpenPrintDialog(false)}>Cancelar</Button>
-                          <Button onClick={handleConfirmPrint}>Imprimir y Registrar Pago</Button>
-                          <Button onClick={handleConfirm}>Registrar Pago</Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-
-
-
-                    <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>
-                      <DialogTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <div className='flex pl-1 gap-2'>
-                        <Ban className="w-4 h-4" />
-                        Cancelar Recibo
-                        </div>
-                          </DropdownMenuItem>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>¿Está seguro?</DialogTitle>
-                          <DialogDescription>Se eliminará el último recibo del inquilino y el anterior se marcará como "pendiente".</DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <Button variant="outline" onClick={() => setOpenCancelDialog(false)}>Cancelar</Button>
-                          <Button
-                            onClick={async () => {
-                              const result = await cancelReceiptAction(customer.id);
-                              if (result.error) {
-                                toast.error(result.error.message); // Aquí mostramos el mensaje del error procesado
-                              } else {
-                                toast.success('Recibo cancelado exitosamente');
-                              }
-                              setOpenCancelDialog(false);
-                              setOpenDropdown(false);
-                            }}
-                            >
-                            Cancelar Recibo
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
                     </>
                   ): (
                     <>
@@ -289,13 +122,6 @@ export const renterColumns = (customerRenters: Vehicle[]): ColumnDef<Customer>[]
               )}            
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Dialog para seleccionar tipo de pago antes de imprimir */}
-          <PaymentTypeReceiptDialog
-            open={openPaymentDialog}
-            onConfirm={handleConfirmPayment}
-            onClose={() => setOpenPaymentDialog(false)}
-          />
         </>
       );
     },

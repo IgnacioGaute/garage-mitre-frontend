@@ -4,10 +4,10 @@ import { cancelReceipt as cancelReceiptAPI } from "@/services/customers.service"
 import { handleReceiptError, ReceiptError } from "./receipt.utility";
 
 
-export async function cancelReceiptAction(customerId: string) {
+export async function cancelReceiptAction(customerId: string, receiptId: string) {
 
   try {
-    const receipt = await cancelReceiptAPI(customerId)
+    const receipt = await cancelReceiptAPI(receiptId,customerId)
 
     if (!receipt) {
       return {

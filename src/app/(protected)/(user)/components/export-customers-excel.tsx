@@ -18,18 +18,20 @@ import {
 } from '@/components/ui/dialog';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { Customer } from '@/types/cutomer.type';
+import { Customer, CustomerType } from '@/types/cutomer.type';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Receipt } from '@/types/receipt.type';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 interface Props {
-  customers: Customer[];
+  receipts: Receipt[];
+  type: CustomerType;
 }
 
 type ExportRow = {
@@ -37,11 +39,11 @@ type ExportRow = {
   Nombre: string;
   '¿Pagó este mes?': string;
   'Monto Actual': string;
-  'Fecha de Inicio': string;
+  Dueño: string;
 };
 
-export const ExportCustomersExcel = ({ customers }: Props) => {
-  customers.sort((a, b) => a.lastName.localeCompare(b.lastName));
+export const ExportCustomersExcel = ({ receipts, type }: Props) => {
+
   const [selectedYear, setSelectedYear] = useState<string>(
     dayjs().format('YYYY')
   );
@@ -53,78 +55,90 @@ export const ExportCustomersExcel = ({ customers }: Props) => {
   );
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
-  const handleExport = () => {
-    // Primer día del mes seleccionado
-    const selectedMonthStart = dayjs(
-      `${selectedYear}-${selectedMonth}-01`
-    ).tz('America/Argentina/Buenos_Aires');
+const handleExport = () => {
+  const selectedMonthNum = parseInt(selectedMonth, 10) - 1; // 0-indexed
+  const selectedYearNum = parseInt(selectedYear, 10);
 
-    // Construyo las filas
-    const rows = customers
-      .map((customer): ExportRow | null => {
-        // Último recibo por fecha startDate
-        const latestReceipt = customer.receipts
-          .map((r) => ({
-            ...r,
-            start: dayjs(r.startDate).tz('America/Argentina/Buenos_Aires'),
-          }))
-          .sort((a, b) => b.start.valueOf() - a.start.valueOf())[0] || null;
+  // Filtramos los recibos por el mes y año seleccionados
+ const filteredReceipts = receipts.filter((receipt) => {
+    const date = dayjs(receipt.startDate).tz('America/Argentina/Buenos_Aires');
+    return (
+      date.month() === selectedMonthNum &&
+      date.year() === selectedYearNum &&
+      receipt.customer.customerType === type
+    );
+  });
+  if (filteredReceipts.length === 0) {
+    toast.error('No hay recibos para el mes seleccionado.');
+    return;
+  }
+  const receiptTypeNames: Record<string, string> = {
+  JOSE_RICARDO_AZNAR: 'Ricardo Aznar',
+  CARLOS_ALBERTO_AZNAR: 'Carlos Aznar',
+  NIDIA_ROSA_MARIA_FONTELA: 'Nidia Fontela',
+  ALDO_RAUL_FONTELA: 'Aldo Fontela',
+};
 
-        if (!latestReceipt) return null;
 
-        const receiptMonth = latestReceipt.start.month() + 1;
-        const receiptYear = latestReceipt.start.year();
-        const selMonthNum = parseInt(selectedMonth, 10);
-        const selYearNum = parseInt(selectedYear, 10);
+  // Agrupar por cliente
+  const customerMap = new Map<string, ExportRow>();
 
-        // Lógica: si mismo año y mes seleccionado >= mes del recibo → NO pagó
-        //        caso contrario → SÍ pagó
-        let hasPaid: boolean;
-        if (selYearNum !== receiptYear) {
-          hasPaid = true;
-        } else {
-          hasPaid = selMonthNum < receiptMonth;
-        }
+for (const receipt of filteredReceipts) {
+  const customer = receipt.customer;
+  const fullNameKey = `${customer.firstName}_${customer.lastName}_${customer.id}`;
 
-        return {
-          Apellido: customer.lastName,
-          Nombre: customer.firstName,
-          '¿Pagó este mes?': hasPaid ? 'Si' : 'No',
-          'Monto Actual': latestReceipt.price.toString(),
-          'Fecha de Inicio':
-            customer.previusStartDate ?? customer.startDate ?? 'N/A',
-        };
-      })
-      // Predicado para eliminar null y que TypeScript sepa que quedan ExportRow[]
-      .filter((c): c is ExportRow => c !== null);
+  if (!customerMap.has(fullNameKey)) {
+    let ownerLabel = '';
 
-    // Aplico el filtro de tipo de exportación
-    const finalRows = rows.filter((row) => {
-      if (exportType === 'paid') return row['¿Pagó este mes?'] === 'Si';
-      if (exportType === 'unpaid') return row['¿Pagó este mes?'] === 'No';
-      return true;
-    });
-
-    if (finalRows.length === 0) {
-      toast.error(
-        'No hay datos que coincidan con el filtro y el mes seleccionado.'
-      );
-      return;
+    if (receipt.receiptTypeKey === 'OWNER') {
+      ownerLabel = 'Garage Mitre';
+    } else if (receipt.receiptTypeKey === 'GARAGE_MITRE') {
+      const vehicleCustomer = receipt.customer.vehicleRenters?.[0]?.vehicle?.customer;
+      ownerLabel = vehicleCustomer
+        ? `${vehicleCustomer.firstName} ${vehicleCustomer.lastName}`
+        : 'Garage Mitre';
+    } else {
+      ownerLabel = receiptTypeNames[receipt.receiptTypeKey] ?? receipt.receiptTypeKey;
     }
 
-    // Generar Excel
-    const worksheet = XLSX.utils.json_to_sheet(finalRows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Clientes');
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: 'xlsx',
-      type: 'array',
+    customerMap.set(fullNameKey, {
+      Apellido: customer.lastName,
+      Nombre: customer.firstName,
+      '¿Pagó este mes?': receipt.status === 'PAID' ? 'Si' : 'No',
+      'Monto Actual': receipt.price.toString(),
+      Dueño: ownerLabel,
     });
-    const blob = new Blob([excelBuffer], {
-      type: 'application/octet-stream',
-    });
-    saveAs(blob, `clientes_pagos_${selectedYear}_${selectedMonth}.xlsx`);
-  };
+  }
+}
+
+
+  const allRows = Array.from(customerMap.values());
+
+  // Aplico el filtro de tipo de exportación
+  const finalRows = allRows.filter((row) => {
+    if (exportType === 'paid') return row['¿Pagó este mes?'] === 'Si';
+    if (exportType === 'unpaid') return row['¿Pagó este mes?'] === 'No';
+    return true;
+  });
+
+  if (finalRows.length === 0) {
+    toast.error('No hay datos que coincidan con el filtro.');
+    return;
+  }
+
+  // Generar Excel
+  const worksheet = XLSX.utils.json_to_sheet(finalRows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Clientes');
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: 'xlsx',
+    type: 'array',
+  });
+  const blob = new Blob([excelBuffer], {
+    type: 'application/octet-stream',
+  });
+  saveAs(blob, `clientes_pagos_${selectedYear}_${selectedMonth}.xlsx`);
+};
 
   const handleExportTypeChange = (value: string) => {
   if (value === 'all' || value === 'paid' || value === 'unpaid') {
@@ -190,16 +204,17 @@ export const ExportCustomersExcel = ({ customers }: Props) => {
             </Select>
 
             {/* Filtro pago */}
-            <Select onValueChange={handleExportTypeChange} defaultValue={exportType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por pago" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="paid">Solo los que pagaron</SelectItem>
-                <SelectItem value="unpaid">Solo los que no pagaron</SelectItem>
-              </SelectContent>
-            </Select>
+<Select value={exportType} onValueChange={handleExportTypeChange}>
+  <SelectTrigger>
+    <SelectValue placeholder="Filtrar por pago" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="all">Todos</SelectItem>
+    <SelectItem value="paid">Solo los que pagaron</SelectItem>
+    <SelectItem value="unpaid">Solo los que no pagaron</SelectItem>
+  </SelectContent>
+</Select>
+
           </div>
 
           <Button

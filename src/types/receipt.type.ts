@@ -4,7 +4,7 @@ import { Customer } from "./cutomer.type";
 export const PAYMENT_STATUS_TYPE = ['PENDING', 'PAID'] as const;
 export type PaymentStatusType = (typeof PAYMENT_STATUS_TYPE)[number];
 
-export const PAYMENT_TYPE = ['TRANSFER', 'CASH', 'CHECK'] as const;
+export const PAYMENT_TYPE = ['TRANSFER', 'CASH', 'CHECK', 'MIX'] as const;
 export type PaymentType = (typeof PAYMENT_TYPE)[number];
 
 export type Receipt = {
@@ -22,6 +22,8 @@ export type Receipt = {
     startDate: string | null;
     dateNow: string | null;
     boxList: BoxList;
+    payments: ReceiptPayment[];
+    paymentHistoryOnAccount: PaymentHistoryOnAccount[];
     customer: Customer;
     deletedAt: Date;
     createdAt: Date;
@@ -31,4 +33,20 @@ export type Receipt = {
 export type ScannerReceipt ={
     paymentType: PaymentType
     codeBar: string;
+}
+
+export type ReceiptPayment ={
+  paymentType: PaymentType;
+  price: number;
+  paymentDate: string | null;
+  receipt: Receipt;
+  boxList: BoxList;
+}
+
+export type PaymentHistoryOnAccount ={
+  paymentType: PaymentType;
+  price: number;
+  paymentDate: string | null;
+  receipt: Receipt;
+  boxList: BoxList;
 }

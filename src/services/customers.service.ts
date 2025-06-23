@@ -200,11 +200,12 @@ export const createCustomer = async (
 
   
   export const historialReceipts = async (
+    receiptId: string,
     customerId: string,
     values: ReceiptSchemaType
   ): Promise<ReceiptResponse> => {
     try {
-      const response = await fetch(`${BASE_URL}/receipts/customers/${customerId}`, {
+      const response = await fetch(`${BASE_URL}/receipts/${receiptId}/customers/${customerId}`, {
         method: 'PATCH',
         headers: {
           "Content-Type": "application/json",
@@ -244,10 +245,11 @@ export const createCustomer = async (
   
 
   export const cancelReceipt = async (
-    customerId: string
+    customerId: string,
+    receiptId: string
   ) => {
     try {
-      const response = await fetch(`${BASE_URL}/receipts/cancelReceipt/customers/${customerId}`, {
+      const response = await fetch(`${BASE_URL}/receipts/cancelReceipt/${receiptId}/customers/${customerId}`, {
         method: 'PATCH',
         headers: {
           "Content-Type": "application/json",
@@ -325,6 +327,28 @@ export const createCustomer = async (
             message: data.message || 'Error desconocido'
           },
         };
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+    export const findReceipts = async (
+  ) => {
+    try {
+      const response = await fetch(`${BASE_URL}/receipts`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        return data as Receipt[]
+      } else {
+        console.error(data);
+        return null;
       }
     } catch (error) {
       console.error(error);

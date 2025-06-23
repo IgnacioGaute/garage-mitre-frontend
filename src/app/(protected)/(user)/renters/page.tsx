@@ -2,7 +2,7 @@
 import { CreditCardIcon } from 'lucide-react';
 import { RentersTable } from './components/renters-table';
 import { renterColumns } from './components/renter-columns';
-import { getCustomers, getCustomerVehicleRenter } from '@/services/customers.service';
+import { findReceipts, getCustomers, getCustomerVehicleRenter } from '@/services/customers.service';
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
 import { DropdownMenuAction } from '../components/drop-menu-actions';
 
@@ -10,6 +10,7 @@ import { DropdownMenuAction } from '../components/drop-menu-actions';
 export default async function RenterPage() {
   const customers = await getCustomers(CUSTOMER_TYPE[1]);
   const customersRenters = await getCustomerVehicleRenter()
+  const receipts = await findReceipts();
 
   return (
     <div className="container mx-auto px-4 py-4 sm:p-6">
@@ -23,7 +24,7 @@ export default async function RenterPage() {
         </div>
       </div>
       <div className="mb-4">
-        <DropdownMenuAction customers={customers || []} type='RENTER' />
+        <DropdownMenuAction customers={customers || []} type='RENTER' receipts={receipts || []} />
       </div>
       <RentersTable
         columns={renterColumns}

@@ -23,9 +23,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Receipt } from "@/types/receipt.type";
 
 
-export function DropdownMenuAction({ customers, type }: { customers: Customer[], type: CustomerType }) {
+export function DropdownMenuAction({ customers, type, receipts }: { customers: Customer[], type: CustomerType, receipts: Receipt[] }) {
   const [openDropdown, setOpenDropdown] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const today = new Date();
@@ -96,7 +97,7 @@ useEffect(() => {
           >
             Generar Recibos
           </Button>
-          <ExportCustomersExcel customers={activeCustomers} />
+          <ExportCustomersExcel receipts={receipts} type={type}/>
           <ExportGarageNumberExcel customers={activeCustomers} />
         </DropdownMenuContent>
       </DropdownMenu>
