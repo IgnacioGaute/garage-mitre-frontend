@@ -204,6 +204,15 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
       setSelectedPayments([{ paymentType: 'CASH' }]);
     }
   };
+  function translatePaymentType(type: string) {
+  return type === 'TRANSFER'
+    ? 'Transferencia'
+    : type === 'CASH'
+    ? 'Efectivo'
+    : type === 'CHECK'
+    ? 'Cheque'
+    : 'Desconocido';
+}
 
   return (
     <>
@@ -257,55 +266,35 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
                           new Date().getTimezoneOffset() * 60000
                         ).toLocaleDateString()}
                     </TableCell>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center space-x-2">
-                          {receiptOwner.payments && receiptOwner.payments.length > 0 ? (
-                            <div className="flex flex-col gap-1">
-                              {receiptOwner.payments.map((payment, index) => (
-                                <span key={index}>
-                                  {payment.paymentType === 'TRANSFER'
-                                    ? 'Transferencia'
-                                    : payment.paymentType === 'CASH'
-                                    ? 'Efectivo'
-                                    : payment.paymentType === 'CHECK'
-                                    ? 'Cheque'
-                                    : 'Desconocido'}
-                                </span>
-                              ))}
-                            </div>
-                          ) : receiptOwner.paymentHistoryOnAccount &&
-                            receiptOwner.paymentHistoryOnAccount.length > 0 ? (
-                            <div className="flex flex-col gap-1">
-                              {receiptOwner.paymentHistoryOnAccount.map((payment, index) => (
-                                <span key={index}>
-                                  {payment.paymentType === 'TRANSFER'
-                                    ? 'Transferencia'
-                                    : payment.paymentType === 'CASH'
-                                    ? 'Efectivo'
-                                    : payment.paymentType === 'CHECK'
-                                    ? 'Cheque'
-                                    : 'Desconocido'}
-                                </span>
-                              ))}
-                            </div>
-                          ) :(
-                            <div className="flex flex-col gap-1">
-                                <span>
-                                  {receiptOwner.paymentType === 'TRANSFER'
-                                    ? 'Transferencia'
-                                    : receiptOwner.paymentType === 'CASH'
-                                    ? 'Efectivo'
-                                    : receiptOwner.paymentType === 'CHECK'
-                                    ? 'Cheque'
-                                    : 'Desconocido'}
-                                </span>
-                              
-                            </div>
-                          )} :(
-                            <span>Sin pagos</span>
-                          )
-                        </div>
-                      </TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center space-x-2">
+                            {receiptOwner.payments && receiptOwner.payments.length > 0 ? (
+                              <div className="flex flex-col gap-1">
+                                {receiptOwner.payments.map((payment, index) => (
+                                  <span key={index}>
+                                    {translatePaymentType(payment.paymentType)}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : receiptOwner.paymentHistoryOnAccount &&
+                              receiptOwner.paymentHistoryOnAccount.length > 0 ? (
+                              <div className="flex flex-col gap-1">
+                                {receiptOwner.paymentHistoryOnAccount.map((payment, index) => (
+                                  <span key={index}>
+                                    {translatePaymentType(payment.paymentType)}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : receiptOwner.paymentType ? (
+                              <div className="flex flex-col gap-1">
+                                <span>{translatePaymentType(receiptOwner.paymentType)}</span>
+                              </div>
+                            ) : (
+                              <span>Sin pagos</span>
+                            )}
+                          </div>
+                        </TableCell>
+
 
 
                     <TableCell className="text-right pr-6 align-middle">
