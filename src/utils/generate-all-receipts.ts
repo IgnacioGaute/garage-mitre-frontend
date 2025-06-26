@@ -115,20 +115,6 @@ export async function generateAllReceipts(type: CustomerType, selectedDate?: Dat
         customer.customerType === 'OWNER' ? customer.vehicles : customer.vehicleRenters;
 
         const renderCommonContent = (page: any) => {
-          // Dibujar una "X" negra a la izquierda del número de recibo
-        page.drawLine({
-          start: { x: 300, y: 380 },
-          end: { x: 310, y: 370 },
-          thickness: 3,
-          color: rgb(0, 0, 0),
-        });
-
-        page.drawLine({
-          start: { x: 300, y: 370 },
-          end: { x: 310, y: 380 },
-          thickness: 3,
-          color: rgb(0, 0, 0),
-        });
 
           page.drawText(pendingReceipt?.receiptNumber ?? '', { x: 420, y: 380, size: fontSize, color: textColor });
           page.drawText(`${customer.lastName} ${customer.firstName}`, {

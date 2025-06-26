@@ -546,3 +546,25 @@ export const createParkingType = async (
     }
   };
 
+    export const getCustomerThird= async (authToken?: string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/customers/thirds`, {
+        headers: await getAuthHeaders(authToken),
+        next: {
+          tags: [getCacheTag('customers', 'all')],
+        },
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        return data as Customer[]
+      } else {
+        console.error(data);
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+

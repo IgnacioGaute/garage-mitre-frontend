@@ -47,7 +47,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 
 
-export function UpdateRenterDialog({ customer, customersRenters }: { customer: Customer, customersRenters:Vehicle[] }) {
+export function UpdatePrivateDialog({ customer, customersRenters }: { customer: Customer, customersRenters:Vehicle[] }) {
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<'customer' | 'vehicleRenters'>('customer');
   const [isPending, setIsPending] = useState(false);
@@ -62,7 +62,7 @@ export function UpdateRenterDialog({ customer, customersRenters }: { customer: C
       phone: customer.phone ?? '',
       numberOfVehicles: customer.numberOfVehicles ?? 0,
       comments: customer.comments ?? "",
-      customerType: customer.customerType ?? 'RENTER',
+      customerType: customer.customerType ?? 'PRIVATE',
       hasDebt: customer.hasDebt || false,
       monthsDebt: customer.monthsDebt || [],
       customerNumber: customer.customerNumber || 0,
@@ -468,11 +468,17 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
              </SelectTrigger>
            </FormControl>
            <SelectContent>
-             {/* Propietarios manuales */}
-             <SelectItem value="JOSE_RICARDO_AZNAR">José Ricardo Aznar</SelectItem>
-             <SelectItem value="CARLOS_ALBERTO_AZNAR">Carlos Alberto Aznar</SelectItem>
-             <SelectItem value="NIDIA_ROSA_MARIA_FONTELA">Nidia Rosa Maria Fontela</SelectItem>
-             <SelectItem value="ALDO_RAUL_FONTELA">Aldo Raúl Fontela</SelectItem>
+             {/* Separador visual */}
+             <div className="px-3 py-1 text-xs text-muted-foreground">Vehículos registrados de terceros</div>
+ 
+             {/* Vehículos disponibles */}
+             {availableVehicles
+               .filter(vehicle => !allSelectedIds.includes(vehicle.id))
+               .map(vehicle => (
+                 <SelectItem key={vehicle.id} value={vehicle.id}>
+                   {vehicle.customer.firstName} {vehicle.customer.lastName} ({vehicle.garageNumber})
+                 </SelectItem>
+               ))}
            </SelectContent>
          </Select>
          <FormMessage />

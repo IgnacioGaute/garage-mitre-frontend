@@ -58,16 +58,16 @@ export function NavigationMenuDemo({ setIsExpanded }: { setIsExpanded: (state: b
       </Link>
     </DropdownMenuGroup>
 
-    {/* <DropdownMenuSeparator />
+    <DropdownMenuSeparator />
 
     <DropdownMenuGroup>
-      <Link href="/private-parking">
+      <Link href="/privates">
         <DropdownMenuItem className="cursor-pointer flex items-center gap-2 pl-4">
         <ShieldCheck size={24} />
-          Estacionamiento Privado
+          Inquilinos de Terceros
         </DropdownMenuItem>
       </Link>
-    </DropdownMenuGroup> */}
+    </DropdownMenuGroup>
   </div>
         )}
       </SidebarMenuItem>

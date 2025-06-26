@@ -29,7 +29,7 @@ import { Trash } from 'lucide-react';
 
 const DELETE_RENTER_TEXT = 'Eliminar Inquilino';
 
-export function DeleteRenterDialog({ customer }: { customer: Customer }) {
+export function DeletePrivateDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 

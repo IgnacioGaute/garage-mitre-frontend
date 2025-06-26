@@ -25,11 +25,12 @@ import { toast } from 'sonner';
 import { Customer } from '@/types/cutomer.type';
 import { deleteCustomerSchema, DeleteCustomerSchemaType } from '@/schemas/customer.schema';
 import { deleteCustomerAction } from '@/actions/customers/delete-customer.action';
+import { softDeleteCustomerAction } from '@/actions/customers/soft-delete-customer.action';
 import { Trash } from 'lucide-react';
 
 const DELETE_RENTER_TEXT = 'Eliminar Inquilino';
 
-export function DeleteRenterDialog({ customer }: { customer: Customer }) {
+export function SoftDeletePrivateDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -46,16 +47,16 @@ export function DeleteRenterDialog({ customer }: { customer: Customer }) {
       return;
     }
 
-    startTransition(async () => {
-      const data = await deleteCustomerAction(customer.id);
-    
-      if ('error' in data) {
-        toast.error(data.error.message);
-      } else {
-        toast.success('Inquilino y vehículos eliminados exitosamente');
-        form.reset();
-        setOpen(false);
-      }
+    startTransition(() => {
+      softDeleteCustomerAction(customer.id).then((data) => {
+        if (!data || data.error) {
+          toast.error(data.error);
+        } else {
+          toast.success(data.success);
+          form.reset();
+          setOpen(false);
+        }
+      });
     });
   };
 
@@ -78,7 +79,7 @@ export function DeleteRenterDialog({ customer }: { customer: Customer }) {
           <DialogHeader>
             <DialogTitle>Eliminar Inquilino</DialogTitle>
             <DialogDescription>
-              Ingrese {DELETE_RENTER_TEXT} para confirmar.Se eliminara de forma permanente.
+              Ingrese {DELETE_RENTER_TEXT} para confirmar.
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>

@@ -23,39 +23,39 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Customer } from '@/types/cutomer.type';
-import { deleteCustomerSchema, DeleteCustomerSchemaType } from '@/schemas/customer.schema';
-import { deleteCustomerAction } from '@/actions/customers/delete-customer.action';
-import { Trash } from 'lucide-react';
+import { deleteCustomerSchema, DeleteCustomerSchemaType, RestoredCustomerSchemaType, restoredCustomerSchema } from '@/schemas/customer.schema';
+import { restoredCustomerAction } from '@/actions/customers/restored-customer.action';
+import { RecycleIcon, Rotate3DIcon } from 'lucide-react';
 
-const DELETE_RENTER_TEXT = 'Eliminar Inquilino';
+const RESTORED_RENTER_TEXT = 'Restaurar Inquilino';
 
-export function DeleteRenterDialog({ customer }: { customer: Customer }) {
+export function RestoredPrivateDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<DeleteCustomerSchemaType>({
-    resolver: zodResolver(deleteCustomerSchema),
+  const form = useForm<RestoredCustomerSchemaType>({
+    resolver: zodResolver(restoredCustomerSchema),
     defaultValues: {
       confirmation: '',
     },
   });
 
-  const onSubmit = (values: DeleteCustomerSchemaType) => {
-    if (values.confirmation !== DELETE_RENTER_TEXT) {
+  const onSubmit = (values: RestoredCustomerSchemaType) => {
+    if (values.confirmation !== RESTORED_RENTER_TEXT) {
       toast.error('Los detalles de confirmación no coinciden.');
       return;
     }
 
-    startTransition(async () => {
-      const data = await deleteCustomerAction(customer.id);
-    
-      if ('error' in data) {
-        toast.error(data.error.message);
-      } else {
-        toast.success('Inquilino y vehículos eliminados exitosamente');
-        form.reset();
-        setOpen(false);
-      }
+    startTransition(() => {
+      restoredCustomerAction(customer.id).then((data) => {
+        if (!data || data.error) {
+          toast.error(data.error);
+        } else {
+          toast.success(data.success);
+          form.reset();
+          setOpen(false);
+        }
+      });
     });
   };
 
@@ -69,16 +69,16 @@ export function DeleteRenterDialog({ customer }: { customer: Customer }) {
             size="sm"
             onClick={() => setOpen(true)}
           >
-            <Trash className="w-4 h-4" />
-            Eliminar Inquilino
+            <Rotate3DIcon className="w-4 h-4" />
+            Restaurar Inquilino
           </Button>
         </DialogTrigger>
 
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Eliminar Inquilino</DialogTitle>
+            <DialogTitle>Restaurar Inquilino</DialogTitle>
             <DialogDescription>
-              Ingrese {DELETE_RENTER_TEXT} para confirmar.Se eliminara de forma permanente.
+              Ingrese {RESTORED_RENTER_TEXT} para confirmar.
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -92,7 +92,7 @@ export function DeleteRenterDialog({ customer }: { customer: Customer }) {
                     <FormControl>
                       <Input
                         disabled={isPending}
-                        placeholder={DELETE_RENTER_TEXT}
+                        placeholder={RESTORED_RENTER_TEXT}
                         {...field}
                       />
                     </FormControl>
@@ -115,7 +115,7 @@ export function DeleteRenterDialog({ customer }: { customer: Customer }) {
                   size="sm"
                   disabled={isPending}
                 >
-                  Eliminar
+                  Restaurar
                 </Button>
               </div>
             </form>

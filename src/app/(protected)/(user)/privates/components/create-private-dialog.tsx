@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/command";
 import { Checkbox } from '@/components/ui/checkbox';
 
-export function CreateRenterDialog({ customersRenters } : { customersRenters:Vehicle[] }) {
+export function CreatePrivateDialog({ customersRenters } : { customersRenters:Vehicle[] }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [phase, setPhase] = useState<'customer' | 'vehicleRenters'>('customer');
@@ -57,7 +57,7 @@ export function CreateRenterDialog({ customersRenters } : { customersRenters:Veh
       comments:'',
       customerNumber: undefined,
       numberOfVehicles: 1,
-      customerType: 'RENTER',
+      customerType: 'PRIVATE',
       hasDebt: false,
       monthsDebt: [],
       vehicleRenters: [],
@@ -432,11 +432,17 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
             </SelectTrigger>
           </FormControl>
           <SelectContent>
-            {/* Propietarios manuales */}
-            <SelectItem value="JOSE_RICARDO_AZNAR">José Ricardo Aznar</SelectItem>
-            <SelectItem value="CARLOS_ALBERTO_AZNAR">Carlos Alberto Aznar</SelectItem>
-            <SelectItem value="NIDIA_ROSA_MARIA_FONTELA">Nidia Rosa Maria Fontela</SelectItem>
-            <SelectItem value="ALDO_RAUL_FONTELA">Aldo Raúl Fontela</SelectItem>
+            {/* Separador visual */}
+            <div className="px-3 py-1 text-xs text-muted-foreground">Vehículos registrados de terceros</div>
+
+            {/* Vehículos disponibles */}
+            {availableVehicles
+              .filter(vehicle => !allSelectedIds.includes(vehicle.id))
+              .map(vehicle => (
+                <SelectItem key={vehicle.id} value={vehicle.id}>
+                  {vehicle.customer.firstName} {vehicle.customer.lastName} ({vehicle.garageNumber})
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
         <FormMessage />
