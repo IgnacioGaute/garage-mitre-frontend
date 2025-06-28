@@ -568,3 +568,31 @@ export const createParkingType = async (
     }
   };
 
+
+    export const deleteReceipt = async (id: string, authToken?: string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/receipts/${id}`, {
+        headers: await getAuthHeaders(authToken),
+        method: 'DELETE',
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        revalidateTag(getCacheTag('receipts', 'all'));
+        return data;
+      } else {
+        console.error(data);
+        return {
+          error: {
+            code: data.code || 'UNKNOWN_ERROR',
+            message: data.message || 'Error desconocido'
+          },
+        };
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+

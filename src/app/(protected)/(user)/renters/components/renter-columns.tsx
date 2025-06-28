@@ -19,9 +19,9 @@ import { Customer } from '@/types/cutomer.type';
 import { useSession } from 'next-auth/react';
 import { SoftDeleteRenterDialog } from './soft-delete-renter-dialog';
 import { RestoredRenterDialog } from './restored-renter-dialog';
-import { PaymentSummaryCell } from '../../components/automatic-open-summary';
+import { PaymentSummaryCell } from '../../components/receipts/automatic-open-summary';
 import { Vehicle } from '@/types/vehicle.type';
-import { ViewCustomerRenterDialog } from '../../components/view-customer-renter-dialog';
+import { ViewCustomerRenterDialog } from '../../components/customers/view-customer-renter-dialog';
 
 const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
   if (rowA.original.deletedAt && !rowB.original.deletedAt) return 1;

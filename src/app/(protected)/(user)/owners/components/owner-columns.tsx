@@ -15,13 +15,13 @@ import { ColumnDef, SortingFn } from '@tanstack/react-table';
 import { Ban, MoreHorizontal, Printer } from 'lucide-react';
 import { UpdateOwnerDialog } from './update-owner-dialog';
 import { DeleteOwnerDialog } from './delete-owner-dialog';
-import { ViewCustomerDialog } from '../../components/view-customer-dialog';
+import { ViewCustomerDialog } from '../../components/customers/view-customer-dialog';
 import { Customer } from '@/types/cutomer.type';
 import { useSession } from 'next-auth/react';
 import { ParkingType } from '@/types/parking-type';
 import { SoftDeleteOwnerDialog } from './soft-delete-owner-dialog';
 import { RestoredOwnerDialog } from './restored-owner-dialog';
-import { PaymentSummaryCell } from '../../components/automatic-open-summary';
+import { PaymentSummaryCell } from '../../components/receipts/automatic-open-summary';
 
 
 const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {

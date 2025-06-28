@@ -4,7 +4,7 @@ import { findReceipts, getCustomers, getParkingTypes } from '@/services/customer
 import { OwnersTable } from './components/owners-table';
 import { OwnerColumns } from './components/owner-columns';
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
-import { DropdownMenuAction } from '../components/drop-menu-actions';
+import { DropdownMenuAction } from '../components/customers/drop-menu-actions';
 
 
 export default async function OwnerPage() {

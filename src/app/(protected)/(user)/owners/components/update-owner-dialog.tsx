@@ -337,7 +337,7 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
                                                     </span>
                                                   )}
                                                 </span>
-                                                <Checkbox checked={isSelected} className="hover:text-white" />
+                                                <Checkbox checked={isSelected} disabled={option.isDisabled || isPreselected} />
                                               </CommandItem>
                                             );
                                           })}
@@ -347,33 +347,40 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
                                     </PopoverContent>
                                   </Popover>
                 
-                                  <div className="mt-4 space-y-3">
-                                    {form.watch('monthsDebt')?.map((entry, index) => {
-                                      const label = monthOptions.find(opt =>
-                                        formattedMonth(opt.value) === entry.month
-                                      )?.label ?? entry.month;
-                
-                                      return (
-                                        <div key={entry.month} className="flex items-center mt-5 gap-4">
-                                          <span className="w-40 text-sm text-white">{label} :</span>
-                                          $
-                                          <Input
-                                            type="number"
-                                            min={0}
-                                            step={1}
-                                            className="w-40"
-                                            value={entry.amount}
-                                            onChange={(e) =>
-                                              form.setValue(
-                                                `monthsDebt.${index}.amount`,
-                                                parseFloat(e.target.value) || 0
-                                              )
-                                            }
-                                          />
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
+                            <div className="mt-4 space-y-3">
+                              {form.watch('monthsDebt')
+                                ?.filter(entry => {
+                                  // Busco ese mes en customer.monthsDebt para ver su status
+                                  const monthStatus = customer.monthsDebt?.find(m => m.month === entry.month)?.status;
+                                  return monthStatus !== 'PAID'; // Solo muestro si no está pagado
+                                })
+                                .map((entry, index) => {
+                                  const label = monthOptions.find(opt =>
+                                    formattedMonth(opt.value) === entry.month
+                                  )?.label ?? entry.month;
+
+                                  return (
+                                    <div key={entry.month} className="flex items-center mt-5 gap-4">
+                                      <span className="w-40 text-sm text-white">{label} :</span>
+                                      $
+                                      <Input
+                                        type="number"
+                                        min={0}
+                                        step={1}
+                                        className="w-40"
+                                        value={entry.amount}
+                                        onChange={(e) =>
+                                          form.setValue(
+                                            `monthsDebt.${index}.amount`,
+                                            parseFloat(e.target.value) || 0
+                                          )
+                                        }
+                                      />
+                                    </div>
+                                  );
+                                })}
+                            </div>
+
                 
                                   <FormMessage />
                                 </FormItem>

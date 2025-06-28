@@ -4,7 +4,7 @@ import { RentersTable } from './components/renters-table';
 import { renterColumns } from './components/renter-columns';
 import { findReceipts, getCustomers, getCustomerVehicleRenter } from '@/services/customers.service';
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
-import { DropdownMenuAction } from '../components/drop-menu-actions';
+import { DropdownMenuAction } from '../components/customers/drop-menu-actions';
 
 
 export default async function RenterPage() {

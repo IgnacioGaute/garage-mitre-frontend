@@ -119,11 +119,9 @@ export function OpenScannerDialog({ open, onConfirm, onClose, customer, receipt 
                             <SelectValue placeholder="Tipo" />
                           </SelectTrigger>
                           <SelectContent>
-                            {PAYMENT_TYPE.map(type => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
+                            <SelectItem value="TRANSFER">Transferencia</SelectItem>
+                            <SelectItem value="CASH">Efectivo</SelectItem>
+                            <SelectItem value="CHECK">Cheque</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormControl>

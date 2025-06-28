@@ -60,7 +60,10 @@ const hasOnlyReceiptPayment =
                   <li key={`payment-${idx}`} className="p-3 border rounded-md">
                     <div><strong>Tipo:</strong> {translatePaymentType(p.paymentType)}</div>
                     <div><strong>Monto:</strong> ${p.price}</div>
-                    <div><strong>Fecha:</strong> {p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : 'Sin fecha'}</div>
+                    <div><strong>Fecha:</strong> {p.paymentDate && new Date(
+                          new Date(p.paymentDate).getTime() +
+                          new Date().getTimezoneOffset() * 60000
+                        ).toLocaleDateString()}</div>
                   </li>
                 ))}
               </ul>
@@ -73,7 +76,10 @@ const hasOnlyReceiptPayment =
               <li className="p-3 border rounded-md">
                 <div><strong>Tipo:</strong> {translatePaymentType(receipt.paymentType)}</div>
                 <div><strong>Monto:</strong> ${receipt.price}</div>
-                <div><strong>Fecha:</strong> {receipt.paymentDate ? new Date(receipt.paymentDate).toLocaleDateString() : 'Sin fecha'}</div>
+                <div><strong>Fecha:</strong> {receipt.paymentDate && new Date(
+                          new Date(receipt.paymentDate).getTime() +
+                          new Date().getTimezoneOffset() * 60000
+                        ).toLocaleDateString()}</div>
               </li>
             </ul>
           </div>
@@ -88,7 +94,10 @@ const hasOnlyReceiptPayment =
                   <li key={`history-${idx}`} className="p-3 border rounded-md">
                     <div><strong>Tipo:</strong> {translatePaymentType(p.paymentType)}</div>
                     <div><strong>Monto:</strong> ${p.price}</div>
-                    <div><strong>Fecha:</strong> {p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : 'Sin fecha'}</div>
+                    <div><strong>Fecha:</strong> {p.paymentDate && new Date(
+                          new Date(p.paymentDate).getTime() +
+                          new Date().getTimezoneOffset() * 60000
+                        ).toLocaleDateString()}</div>
                   </li>
                 ))}
               </ul>

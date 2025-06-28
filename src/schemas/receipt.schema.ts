@@ -15,3 +15,9 @@ export const receiptSchema = z.object({
 });
 
 export type ReceiptSchemaType = z.infer<typeof receiptSchema>;
+
+
+export const deleteReceiptSchema = z.object({
+  confirmation: z.string().min(0, 'Ingrese la confirmación "Eliminar Recibo"'),
+});
+export type DeleteReceiptSchemaType = z.infer<typeof deleteReceiptSchema>;

@@ -12,7 +12,7 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Customer, CustomerType } from "@/types/cutomer.type";
 import { MoreVertical } from "lucide-react";
-import GenerateReceiptsButton from "./all-receipts-button";
+import GenerateReceiptsButton from "../receipts/all-receipts-button";
 import { ExportCustomersExcel } from "./export-customers-excel";
 import { ExportGarageNumberExcel } from "./export-garage-number-excel";
 import { findAllPendingReceipts } from "@/services/customers.service";

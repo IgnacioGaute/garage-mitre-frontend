@@ -1,7 +1,7 @@
 
 import { CreditCardIcon } from 'lucide-react';
 import { findReceipts, getCustomers, getCustomerThird, getCustomerVehicleRenter } from '@/services/customers.service';
-import { DropdownMenuAction } from '../components/drop-menu-actions';
+import { DropdownMenuAction } from '../components/customers/drop-menu-actions';
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
 import { privateColumns } from './components/private-columns';
 import { PrivatesTable } from './components/privates-table';

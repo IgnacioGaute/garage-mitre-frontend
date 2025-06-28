@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/card";
 import { TicketRegistration } from "@/types/ticket-registration.type";
 import { CreateTicketRegistrationDialog } from "../tickets-days-or-weeks/create-ticket-registration-for-day-dialog";
-import ScannerButton from "./scanner-button";
+import ScannerButton from "../../components/scanner-button";
+
 
 export default function CardTicket({
   initialRegistrations,

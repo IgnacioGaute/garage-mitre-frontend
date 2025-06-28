@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { getCustomerById } from "@/services/customers.service";
 import { historialReceiptsAction } from "@/actions/receipts/create-receipt.action";
 import { useSession } from "next-auth/react";
-import { OpenScannerDialog } from "../../components/open-scanner-dialog";
+import { OpenScannerDialog } from "./open-scanner-dialog";
 import { Customer } from "@/types/cutomer.type";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

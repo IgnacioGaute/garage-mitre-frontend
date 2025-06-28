@@ -1,4 +1,4 @@
-import { Receipt } from "./receipt.type";
+import { PaymentStatusType, Receipt } from "./receipt.type";
 import { VehicleRenter } from "./vehicle-renter";
 import { Vehicle } from "./vehicle.type";
 
@@ -23,6 +23,7 @@ export type Customer = {
     monthsDebt?: {
       month: string;
       amount: number;
+      status?: PaymentStatusType;
     }[];
     deletedAt: Date;
     createdAt: Date;

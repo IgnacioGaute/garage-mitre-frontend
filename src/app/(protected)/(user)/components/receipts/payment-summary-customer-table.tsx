@@ -20,7 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { getCustomerById } from '@/services/customers.service';
-import { BadgeCheck, Clock, ArrowUp, Printer, Ban, Save } from 'lucide-react';
+import { BadgeCheck, Clock, ArrowUp, Printer, Ban, Save, MoreHorizontal } from 'lucide-react';
 import { Customer } from '@/types/cutomer.type';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { generateReceiptsWithoutRegistering } from '@/utils/generate-receipt-without-registering';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { cancelReceiptAction } from '@/actions/receipts/cancel-receipt.action';
 import { ReceiptSchemaType } from '@/schemas/receipt.schema';
@@ -36,6 +36,7 @@ import { historialReceiptsAction } from '@/actions/receipts/create-receipt.actio
 import { PaymentTypeReceiptDialog } from './payment-type-receipt-dialog';
 import { Receipt } from '@/types/receipt.type';
 import { ReceiptMovementsDrawer } from './receipt-movements-drower';
+import { DeleteReceiptDialog } from './delete-receipt-dialog';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -53,6 +54,7 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
   const [currentPage, setCurrentPage] = useState(1);
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(false);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
   const [selectedPayments, setSelectedPayments] = useState<ReceiptSchemaType['payments']>([
     { paymentType: 'CASH' },
@@ -366,6 +368,25 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
                     </TableCell>
                     <TableCell>
                       <ReceiptMovementsDrawer receipt={receiptOwner} />
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu
+                        open={openDropdownId === receiptOwner.id}
+                        onOpenChange={(open) =>
+                          setOpenDropdownId(open ? receiptOwner.id : null)
+                        }
+                      >
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuLabel className="text-sm sm:text-base">Acciones</DropdownMenuLabel>
+                          <DeleteReceiptDialog receipt={receiptOwner} />
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))
