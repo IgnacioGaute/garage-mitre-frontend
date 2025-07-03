@@ -111,8 +111,8 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
           for (const vehicle of vehicles) {
             const description =
             customer.customerType === 'OWNER'
-              ? `Cochera ${vehicle.garageNumber}`
-              : `Cochera ${vehicle.garageNumber} ${vehicle.vehicle ? `(${vehicle.vehicle.customer.lastName} ${vehicle.vehicle.customer.firstName})` : ``}`;
+              ? `Expensas comunes`
+              : `Chocheras mensuales`;
         
             const pendingPriceDebt = vehicles.length > 0
               ? (pendingPrice / vehicles.length).toLocaleString('es-AR')

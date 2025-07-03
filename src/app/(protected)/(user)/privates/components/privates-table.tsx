@@ -128,7 +128,7 @@ export function PrivatesTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={table.getVisibleFlatColumns().length}
                   className="h-24 text-center text-sm sm:text-base"
                 >
                   No hay resultados para mostrar.

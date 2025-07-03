@@ -128,7 +128,7 @@ export async function generateAllReceipts(type: CustomerType, selectedDate?: Dat
           let y = 220;
         if (customer.customerType === 'OWNER') {
           for (const garage of customer.vehicles) {
-            const description = `Cochera ${garage.garageNumber}`;
+            const description = `Expensas comunes`;
             page.drawText(`1`,      { x:  70, y, size: fontSize, color: textColor });
             page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
             page.drawText(`$${garage.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
@@ -139,7 +139,7 @@ export async function generateAllReceipts(type: CustomerType, selectedDate?: Dat
             const plateOwner = renter.vehicle?.customer
               ? `(${renter.vehicle.customer.lastName} ${renter.vehicle.customer.firstName})`
         : '';
-      const description = `Cochera ${renter.garageNumber} ${plateOwner}`;
+      const description = `Chocheras mensuales`;
       page.drawText(`1`,      { x:  70, y, size: fontSize, color: textColor });
       page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
       page.drawText(`$${renter.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });

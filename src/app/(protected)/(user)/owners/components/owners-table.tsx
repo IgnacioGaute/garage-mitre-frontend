@@ -136,8 +136,8 @@ export function OwnersTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center text-sm sm:text-base"
+                  colSpan={table.getVisibleFlatColumns().length}
+                  className="h-24 w-full text-center text-sm sm:text-base"
                 >
                   No hay resultados para mostrar.
                 </TableCell>
