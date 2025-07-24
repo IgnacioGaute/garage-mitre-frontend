@@ -180,7 +180,7 @@ export default async function generateBoxList(
       size: fontSize,
       font: fontBold,
     });
-    page.drawText('Saldo', {
+    page.drawText('Salidas', {
       x: 515,
       y: yPosition,
       size: fontSize,
@@ -348,14 +348,16 @@ export default async function generateBoxList(
               ? `- ${formatNumber(parsedPrice)}`
               : `  ${formatNumber(parsedPrice)}`;
           const pricePositive= formatNumber(parsedPrice)
-          page.drawText(priceText, {
-            x: 440,
-            y: yPosition,
-            size: fontSize,
-            font,
-          });
+          if(paymentType === 'EF' || paymentType === 'CH' ){
+            page.drawText(priceText, {
+              x: 440,
+              y: yPosition,
+              size: fontSize,
+              font,
+            });
+          }
           if(paymentType === 'TR'){
-            page.drawText(pricePositive, {
+            page.drawText(priceText, {
              x: 515,
              y: yPosition,
              size: fontSize,
@@ -428,7 +430,7 @@ export default async function generateBoxList(
             { x: 200, y: yPosition, size: fontSize, font }
           );
           page.drawText(`- ${formatNumber(price)}`, {
-            x: 440,
+            x: 515,
             y: yPosition,
             size: fontSize,
             font,
