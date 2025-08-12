@@ -21,7 +21,7 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
         const effectivePendingReceipt  = pendingReceipt ?? customer.receipts.find((receipt: any) => receipt.status === "PENDING");
 
       
-        if (effectivePendingReceipt) {
+        if (effectivePendingReceipt && customer.customerType !== 'PRIVATE') {
           switch (effectivePendingReceipt.receiptTypeKey) {
             case 'JOSE_RICARDO_AZNAR':
               pdfFile = '/Jose-Ricardo-Aznar.pdf';
@@ -35,15 +35,12 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
             case 'ALDO_RAUL_FONTELA':
               pdfFile = '/Aldo-Raul-Fontela.pdf';
               break;
-            case 'GARAGE_MITRE':
-              pdfFile = '/Garage-Mitre.pdf';
-              break;
             default:
               pdfFile = '/Consorcio-Garage-Mitre.pdf'; // fallback
               break;
           }
         }else{
-          pdfFile = '/Consorcio-Garage-Mitre.pdf';
+          pdfFile = '/Garage-Mitre.pdf';
         }
       }
       
@@ -98,7 +95,9 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
         customer.customerType === 'OWNER' ? customer.vehicles : customer.vehicleRenters;
 
         const renderCommonContent = (page: any) => {
-          page.drawText(pendingReceipt?.receiptNumber ?? '', { x: 420, y: 380, size: fontSize, color: textColor });
+          if(customer.customerType === 'OWNER' || customer.customerType === 'RENTER'){
+            page.drawText(pendingReceipt?.receiptNumber ?? '', { x: 420, y: 380, size: fontSize, color: textColor });
+          }
           page.drawText(`${customer.lastName} ${customer.firstName}`, {
             x: 85,
             y: 285,

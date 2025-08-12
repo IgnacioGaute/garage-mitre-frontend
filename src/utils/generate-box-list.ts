@@ -363,7 +363,7 @@ export default async function generateBoxList(
              size: fontSize,
              font,
            });
-           page.drawText(priceText, {
+           page.drawText(`  ${pricePositive}`, {
             x: 440,
             y: yPosition,
             size: fontSize,
