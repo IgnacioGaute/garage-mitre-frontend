@@ -54,7 +54,7 @@ export default async function generateBoxList(
       renterReceiptTypes.includes(receiptPayment.receipt?.receiptTypeKey)
     );
     const privates = receiptPayments.filter(
-      receiptPayment => receiptPayment.receipt?.receiptTypeKey === 'GARAGE_MITRE'
+      receiptPayment => receiptPayment.receipt?.customer.customerType === 'PRIVATE'
     );
 
     const paymentHistoryOwners = paymentHistoryOnAccount.filter(
@@ -196,6 +196,13 @@ export default async function generateBoxList(
     yPosition -= 15;
 
     const drawSection = (title: string, total: number) => {
+      // Verificar si necesitamos una nueva página antes de dibujar la sección
+      if (yPosition < 50) {
+        page = pdfDoc.addPage([595.28, 841.89]); // Mismo tamaño que la primera página
+        const { height: newHeight } = page.getSize();
+        yPosition = newHeight - 50; // Posición inicial para nueva página
+      }
+      
       const rectWidth = 525;
       page.drawRectangle({
         x: 40,
@@ -230,10 +237,13 @@ export default async function generateBoxList(
       yPosition -= 5;
       if (items.length > 0) {
         items.forEach(item => {
-          if (yPosition < 30) {
-            page = pdfDoc.addPage([600, 800]);
-            yPosition = height - 80;
+          // Verificar si necesitamos una nueva página antes de dibujar el item
+          if (yPosition < 50) {
+            page = pdfDoc.addPage([595.28, 841.89]); // Mismo tamaño que la primera página
+            const { height: newHeight } = page.getSize();
+            yPosition = newHeight - 50; // Posición inicial para nueva página
           }
+          
           const [desc, priceStr, dateNow, paymentType] = dataExtractor(item);
           const price = Number(priceStr);
           page.drawText(`${dateNow}`, {
@@ -294,10 +304,13 @@ export default async function generateBoxList(
 
       if (items.length > 0) {
         items.forEach(item => {
-          if (yPosition < 30) {
-            page = pdfDoc.addPage([600, 800]);
-            yPosition = height - 80;
+          // Verificar si necesitamos una nueva página antes de dibujar el item
+          if (yPosition < 50) {
+            page = pdfDoc.addPage([595.28, 841.89]); // Mismo tamaño que la primera página
+            const { height: newHeight } = page.getSize();
+            yPosition = newHeight - 50; // Posición inicial para nueva página
           }
+          
 
           const [desc, priceStr, dateNow, paymentType, vehicleOwner] = dataExtractor(
             item
@@ -407,10 +420,11 @@ export default async function generateBoxList(
       yPosition -= 5;
       if (items.length > 0) {
         items.forEach(item => {
-          if (yPosition < 30) {
-            page = pdfDoc.addPage([600, 800]);
+          // Verificar si necesitamos una nueva página antes de dibujar el item
+          if (yPosition < 50) {
+            page = pdfDoc.addPage([595.28, 841.89]); // Mismo tamaño que la primera página
             const { height: newHeight } = page.getSize();
-            yPosition = newHeight - 80;
+            yPosition = newHeight - 50; // Posición inicial para nueva página
           }
           const [desc, priceStr, dateNow, paymentType] = dataExtractor(item);
           const price = Number(priceStr);
@@ -559,6 +573,13 @@ addDataSectionReceipt(
   }
     );
     const drawSectionTotal = (title: string, total: number) => {
+      // Verificar si necesitamos una nueva página antes de dibujar la sección total
+      if (yPosition < 50) {
+        page = pdfDoc.addPage([595.28, 841.89]); // Mismo tamaño que la primera página
+        const { height: newHeight } = page.getSize();
+        yPosition = newHeight - 50; // Posición inicial para nueva página
+      }
+      
       const rectWidth = 525; 
       page.drawRectangle({
         x: 40,
