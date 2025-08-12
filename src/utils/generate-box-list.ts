@@ -409,7 +409,8 @@ export default async function generateBoxList(
         items.forEach(item => {
           if (yPosition < 30) {
             page = pdfDoc.addPage([600, 800]);
-            yPosition = height - 80;
+            const { height: newHeight } = page.getSize();
+            yPosition = newHeight - 80;
           }
           const [desc, priceStr, dateNow, paymentType] = dataExtractor(item);
           const price = Number(priceStr);
