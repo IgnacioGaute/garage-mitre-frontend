@@ -176,6 +176,7 @@ const handleConfirm = async (data: ReceiptSchemaType) => {
       variant="default"
       size="sm"
       onClick={() => setManualInputVisible((prev) => !prev)}
+      className="bg-yellow-400 text-black hover:bg-yellow-500 cursor-pointer text-lg font-bold"
     >
       {manualInputVisible
         ? "Cancelar ingreso manual"
@@ -204,6 +205,7 @@ const handleConfirm = async (data: ReceiptSchemaType) => {
             setManualBarCode("");
             setManualInputVisible(false);
           }}
+          className="bg-yellow-400 text-black hover:bg-yellow-500 cursor-pointer text-lg font-bold"
         >
           Confirmar código
         </Button>

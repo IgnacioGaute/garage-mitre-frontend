@@ -473,12 +473,12 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
  
              {/* Vehículos disponibles */}
              {availableVehicles
-               .filter(vehicle => !allSelectedIds.includes(vehicle.id))
-               .map(vehicle => (
-                 <SelectItem key={vehicle.id} value={vehicle.id}>
-                   {vehicle.customer.firstName} {vehicle.customer.lastName} ({vehicle.garageNumber})
-                 </SelectItem>
-               ))}
+                .filter(vehicle => !allSelectedIds.includes(vehicle.id))
+                .map(vehicle => (
+                  <SelectItem key={vehicle.id} value={vehicle.id}>
+                    {vehicle.customer?.firstName ?? 'Sin nombre'} {vehicle.customer?.lastName ?? ''} ({vehicle.garageNumber})
+                  </SelectItem>
+                ))}
            </SelectContent>
          </Select>
          <FormMessage />

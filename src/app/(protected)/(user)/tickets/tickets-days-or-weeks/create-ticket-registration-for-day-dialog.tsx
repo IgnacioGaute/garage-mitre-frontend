@@ -68,16 +68,18 @@ const onSubmit = async (values: TicketRegistrationForDaySchemaType) => {
   setIsDialogOpen(false);
 };
   return (
-    <div className="text-center mt-4">
-      <p
-        className="text-gray-600 hover:text-white cursor-pointer underline"
-        onClick={() => {
-          setIsOpen(true);
-          setIsDialogOpen(true);
-        }}
-      >
-        Crear Ticket Por Día/semana
-      </p>
+    <div className="text-center mt-8">
+      <Button
+      variant="default"
+      size="sm"
+      onClick={() => {
+        setIsOpen(true);
+        setIsDialogOpen(true);
+      }}
+      className="bg-yellow-400 text-black hover:bg-yellow-500 text-black cursor-pointer text-lg font-bold"
+    >
+      Crear Ticket Por Día/semana
+    </Button>
 
       <Dialog
         open={isOpen}

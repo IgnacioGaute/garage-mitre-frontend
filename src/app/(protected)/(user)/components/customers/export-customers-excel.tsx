@@ -44,6 +44,14 @@ type ExportRow = {
 
 export const ExportCustomersExcel = ({ receipts, type }: Props) => {
 
+  console.log("Receipts antes de filtrar", receipts.map(r => ({
+    id: r.id,
+    startDate: r.startDate,
+    month: dayjs(r.startDate).tz('America/Argentina/Buenos_Aires').month(),
+    year: dayjs(r.startDate).tz('America/Argentina/Buenos_Aires').year(),
+    customerType: r.customer?.customerType
+  })));
+
   const [selectedYear, setSelectedYear] = useState<string>(
     dayjs().format('YYYY')
   );

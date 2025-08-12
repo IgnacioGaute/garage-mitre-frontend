@@ -361,6 +361,12 @@ export default async function generateBoxList(
              size: fontSize,
              font,
            });
+           page.drawText(priceText, {
+            x: 440,
+            y: yPosition,
+            size: fontSize,
+            font,
+          });
           }
 
           yPosition -= 10;
