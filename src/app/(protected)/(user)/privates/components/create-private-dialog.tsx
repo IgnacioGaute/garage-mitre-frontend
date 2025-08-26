@@ -440,7 +440,7 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
               .filter(vehicle => !allSelectedIds.includes(vehicle.id))
               .map(vehicle => (
                 <SelectItem key={vehicle.id} value={vehicle.id}>
-                  {vehicle.customer.firstName} {vehicle.customer.lastName} ({vehicle.garageNumber})
+                  {vehicle.customer?.firstName ?? 'Sin nombre'} {vehicle.customer?.lastName ?? ''} ({vehicle.garageNumber})
                 </SelectItem>
               ))}
           </SelectContent>
