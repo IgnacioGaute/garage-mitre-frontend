@@ -72,7 +72,7 @@ export function ViewCustomerRenterDialog({ customer }: { customer: Customer }) {
                       {customer.customerType !== 'OWNER' && (
                         <TableCell>
                           {vehicleRenter.vehicle
-                            ? `${vehicleRenter.vehicle.customer.firstName} ${vehicleRenter.vehicle.customer.lastName}`
+                            ? `${vehicleRenter.vehicle.customer?.firstName ?? 'Sin nombre'} ${vehicleRenter.vehicle.customer?.lastName ?? ''} (${vehicleRenter.vehicle.garageNumber})`
                             : pendingReceipt?.receiptTypeKey
                               ? receiptTypeNames[pendingReceipt.receiptTypeKey] ?? pendingReceipt.receiptTypeKey
                               : ''}
