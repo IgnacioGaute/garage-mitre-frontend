@@ -416,7 +416,11 @@ export default async function generateBoxList(
       dataExtractor: (item: any) => string[]
     ) => {
       const totalExp = items.reduce((sum, item) => sum + item.price, 0);
-      const total = -totalExp;
+      const total = items.reduce(
+        (sum, item) => sum + (item.type === 'EGRESOS' ? -item.price : item.price),
+        0
+      );
+      
       yPosition -= 5;
       if (items.length > 0) {
         items.forEach(item => {
@@ -426,7 +430,7 @@ export default async function generateBoxList(
             const { height: newHeight } = page.getSize();
             yPosition = newHeight - 50; // Posición inicial para nueva página
           }
-          const [desc, priceStr, dateNow, paymentType] = dataExtractor(item);
+          const [desc, priceStr, dateNow, type] = dataExtractor(item);
           const price = Number(priceStr);
           page.drawText(`${dateNow}`, {
             x: 50,
@@ -440,16 +444,22 @@ export default async function generateBoxList(
             size: fontSize,
             font,
           });
-          page.drawText(
-            paymentType === '' ? `${paymentType}` : `(${paymentType})`,
-            { x: 200, y: yPosition, size: fontSize, font }
-          );
-          page.drawText(`- ${formatNumber(price)}`, {
-            x: 515,
-            y: yPosition,
-            size: fontSize,
-            font,
-          });
+
+          if(type === 'EGRESOS'){
+            page.drawText(`- ${formatNumber(price)}`, {
+              x: 515,
+              y: yPosition,
+              size: fontSize,
+              font,
+            });
+          }else{
+            page.drawText(`${formatNumber(price)}`, {
+              x: 440,
+              y: yPosition,
+              size: fontSize,
+              font,
+            });
+          }
 
           yPosition -= 10;
 
@@ -617,13 +627,13 @@ addDataSectionReceipt(
     const subtotalSinGastos = totalPrice + expenseSum;
     drawSectionTotal('Total Recibos y Tickets', subtotalSinGastos);
     addDataSectionExpense(
-      'Total Gastos',
+      'Total Varios',
       otherPaymentsRegistration,
       payment => [
         payment.description,
         payment.price.toString(),
         formatDateA(payment.dateNow),
-        '',
+        payment.type,
       ]
     );
 

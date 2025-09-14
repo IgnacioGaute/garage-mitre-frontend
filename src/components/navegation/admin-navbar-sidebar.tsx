@@ -50,7 +50,7 @@ export const adminNavItems = [
     icon: <DollarSignIcon />,
   },
   {
-    title: 'Registrar Gastos',
+    title: 'Varios',
     url: '/admin/other-payments',
     icon: <Banknote  />,
   },

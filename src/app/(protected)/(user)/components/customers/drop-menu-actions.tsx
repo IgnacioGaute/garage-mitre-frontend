@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Receipt } from "@/types/receipt.type";
+import { ExportReceiptsExcel } from "./export-receipt-excel";
 
 
 export function DropdownMenuAction({ customers, type, receipts }: { customers: Customer[], type: CustomerType, receipts: Receipt[] }) {
@@ -99,6 +100,10 @@ useEffect(() => {
           </Button>
           <ExportCustomersExcel receipts={receipts} type={type}/>
           <ExportGarageNumberExcel customers={activeCustomers} />
+          <ExportReceiptsExcel
+          receipts={receipts}
+          type={type}
+          />
         </DropdownMenuContent>
       </DropdownMenu>
 

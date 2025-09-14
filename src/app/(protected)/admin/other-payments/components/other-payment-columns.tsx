@@ -35,6 +35,18 @@ export const expenseColumns: ColumnDef<OtherPayment>[] = [
       <div className="min-w-[100px] text-sm">{row.getValue('price')}</div>
     ),
   },
+
+  {
+    accessorKey: 'type',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Tipo" />
+    ),
+    cell: ({ row }) => {
+      const type = row.getValue('type');
+      const displayType = type === 'EGRESOS' ? 'Egreso' : 'Ingreso';
+      return <div className="min-w-[100px] text-sm">{displayType}</div>;
+    },
+  },  
   {
     id: 'actions',
     cell: ({ row }) => {

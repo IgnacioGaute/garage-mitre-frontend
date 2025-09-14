@@ -15,6 +15,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { otherPaymentSchema, OtherPaymentSchemaType } from "@/schemas/other-payment.schema";
 import { createOtherPaymentAction } from "@/actions/other-payment/create-other-payment.action";
+import { PAYMENT_TYPE } from "@/types/other-payment.type";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 export default function CardOtherPayment({ className }: { className?: string }) {
     const [error, setError] = useState<string | undefined>('');
@@ -24,8 +27,9 @@ export default function CardOtherPayment({ className }: { className?: string }) 
     const form = useForm<OtherPaymentSchemaType>({
         resolver: zodResolver(otherPaymentSchema),
         defaultValues: {
+            type: PAYMENT_TYPE[0],
             description: "",
-            price: undefined
+            price: undefined,
         },
     });
 
@@ -61,19 +65,45 @@ const onSubmit = (values: OtherPaymentSchemaType) => {
     return (
         <Card className={`w-3/5 h-full flex flex-col ${className} mx-auto my-auto flex justify-center`}>
             <CardHeader>
-                <CardTitle>Gastos</CardTitle>
-                <CardDescription>Registra gastos adicionales</CardDescription>
+                <CardTitle>Varios</CardTitle>
+                <CardDescription>Registra Ingresos o Egresos</CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 flex flex-col h-full">
+
+                    <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo</FormLabel>
+                  <FormControl>
+                    <Select
+                      disabled={isPending}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="EGRESOS">Egreso</SelectItem>
+                        <SelectItem value="INGRESOS">Ingreso</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
                         <FormField
                             control={form.control}
                             name="description"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="flex items-center gap-2">
-                                        Descripcion del gasto 
+                                        Descripcion 
                                     </FormLabel>
                                     <FormControl>
                                         <Input disabled={isPending} {...field} />
@@ -99,7 +129,7 @@ const onSubmit = (values: OtherPaymentSchemaType) => {
                         />
                         <div className="flex-grow"></div> 
                         <Button className="w-full" type="submit" disabled={isPending}>
-                            Crear Gasto
+                            Crear
                         </Button>
                     </form>
                 </Form>

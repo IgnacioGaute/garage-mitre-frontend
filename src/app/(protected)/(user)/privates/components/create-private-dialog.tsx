@@ -432,18 +432,33 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
             </SelectTrigger>
           </FormControl>
           <SelectContent>
-            {/* Separador visual */}
-            <div className="px-3 py-1 text-xs text-muted-foreground">Vehículos registrados de terceros</div>
+  {/* Encabezado de disponibles */}
+  <div className="px-3 py-1 text-xs text-muted-foreground">Disponibles</div>
+  {customersRenters
+    .filter(v => !v.rentActive) // solo disponibles
+    .map(vehicle => (
+      <SelectItem key={vehicle.id} value={vehicle.id}>
+        {vehicle.customer?.firstName ?? 'Sin nombre'} {vehicle.customer?.lastName ?? ''} ({vehicle.garageNumber})
+      </SelectItem>
+    ))}
 
-            {/* Vehículos disponibles */}
-            {availableVehicles
-              .filter(vehicle => !allSelectedIds.includes(vehicle.id))
-              .map(vehicle => (
-                <SelectItem key={vehicle.id} value={vehicle.id}>
-                  {vehicle.customer?.firstName ?? 'Sin nombre'} {vehicle.customer?.lastName ?? ''} ({vehicle.garageNumber})
-                </SelectItem>
-              ))}
-          </SelectContent>
+  {/* Encabezado de no disponibles */}
+  <div className="px-3 py-1 text-xs text-muted-foreground">Garage de Propietario Ocupado</div>
+  {customersRenters
+    .filter(v => v.rentActive) // no disponibles
+    .map(vehicle => (
+      <SelectItem
+        key={vehicle.id}
+        value={vehicle.id}
+        disabled
+        className="text-gray-400 cursor-not-allowed"
+      >
+        {vehicle.customer?.firstName ?? 'Sin nombre'} {vehicle.customer?.lastName ?? ''}  
+         ({vehicle.garageNumber}) – ({vehicle.vehicleRenters?.[0]?.customer?.firstName ?? 'Ocupado'} {vehicle.vehicleRenters?.[0]?.customer?.lastName ?? 'Ocupado'})
+      </SelectItem>
+    ))}
+</SelectContent>
+
         </Select>
         <FormMessage />
       </div>

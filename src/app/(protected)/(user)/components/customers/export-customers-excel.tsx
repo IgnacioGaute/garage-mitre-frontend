@@ -44,13 +44,6 @@ type ExportRow = {
 
 export const ExportCustomersExcel = ({ receipts, type }: Props) => {
 
-  console.log("Receipts antes de filtrar", receipts.map(r => ({
-    id: r.id,
-    startDate: r.startDate,
-    month: dayjs(r.startDate).tz('America/Argentina/Buenos_Aires').month(),
-    year: dayjs(r.startDate).tz('America/Argentina/Buenos_Aires').year(),
-    customerType: r.customer?.customerType
-  })));
 
   const [selectedYear, setSelectedYear] = useState<string>(
     dayjs().format('YYYY')
@@ -98,7 +91,31 @@ for (const receipt of filteredReceipts) {
   if (!customerMap.has(fullNameKey)) {
     let ownerLabel = '';
 
-    if (receipt.receiptTypeKey === 'OWNER') {
+    // Primero verificar el tipo de customer para manejar correctamente los PRIVATE
+    if (receipt.customer.customerType === 'PRIVATE') {
+      // Para customers PRIVATE, buscar el owner real a través de vehicleRenters
+      const vehicleRenter = receipt.customer.vehicleRenters?.[0];
+      if (vehicleRenter) {
+        // Si el owner es un string con nombres específicos
+        const manualOwners = [
+          'JOSE_RICARDO_AZNAR',
+          'CARLOS_ALBERTO_AZNAR', 
+          'NIDIA_ROSA_MARIA_FONTELA',
+          'ALDO_RAUL_FONTELA'
+        ];
+        
+        if (manualOwners.includes(vehicleRenter.owner)) {
+          ownerLabel = receiptTypeNames[vehicleRenter.owner] ?? vehicleRenter.owner;
+        } else if (vehicleRenter.vehicle?.customer) {
+          // Si el owner es un customer real
+          ownerLabel = `${vehicleRenter.vehicle.customer.firstName} ${vehicleRenter.vehicle.customer.lastName}`;
+        } else {
+          ownerLabel = vehicleRenter.owner;
+        }
+      } else {
+        ownerLabel = 'Sin owner asignado';
+      }
+    } else if (receipt.receiptTypeKey === 'OWNER') {
       ownerLabel = 'Garage Mitre';
     } else if (receipt.receiptTypeKey === 'GARAGE_MITRE') {
       const vehicleCustomer = receipt.customer.vehicleRenters?.[0]?.vehicle?.customer;
@@ -136,6 +153,17 @@ for (const receipt of filteredReceipts) {
 
   // Generar Excel
   const worksheet = XLSX.utils.json_to_sheet(finalRows);
+  
+  // Configurar ancho de columnas para mejor visualización
+  const columnWidths = [
+    { wch: 20 }, // Apellido
+    { wch: 20 }, // Nombre
+    { wch: 15 }, // ¿Pagó este mes?
+    { wch: 15 }, // Monto Actual
+    { wch: 25 }  // Dueño
+  ];
+  worksheet['!cols'] = columnWidths;
+  
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Clientes');
   const excelBuffer = XLSX.write(workbook, {
