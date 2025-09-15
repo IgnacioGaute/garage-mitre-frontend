@@ -623,8 +623,19 @@ addDataSectionReceipt(
       (sum, item) => sum + item.price,
       0
     );
+    const totalTickets = [...tickets, ...ticketDays].reduce((sum, t) => sum + t.price, 0);
 
-    const subtotalSinGastos = totalPrice + expenseSum;
+    const totalReceipts = [...combinedRenters, ...combinedOwners, ...combinedPrivates].reduce(
+      (sum, rp) => {
+        if (rp.paymentType === 'TRANSFER') return sum; // ignorar transferencias
+        return sum + rp.price;
+      },
+      0
+    );
+
+const totalTicketsAndReceipts = totalTickets + totalReceipts;
+
+    const subtotalSinGastos = totalTicketsAndReceipts;
     drawSectionTotal('Total Recibos y Tickets', subtotalSinGastos);
     addDataSectionExpense(
       'Total Varios',
