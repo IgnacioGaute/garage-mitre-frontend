@@ -28,9 +28,11 @@ export async function generateAllReceipts(type: CustomerType, selectedDate?: Dat
         pdfFile = '/Consorcio-Garage-Mitre.pdf';
       } else {
         const pendingReceipt = customer.receipts.find((receipt: any) => receipt.status === "PENDING");
+        const effectivePendingReceipt  = pendingReceipt ?? customer.receipts.find((receipt: any) => receipt.status === "PENDING");
+
       
-        if (pendingReceipt) {
-          switch (pendingReceipt.receiptTypeKey) {
+        if (effectivePendingReceipt && customer.customerType !== 'PRIVATE') {
+          switch (effectivePendingReceipt.receiptTypeKey) {
             case 'JOSE_RICARDO_AZNAR':
               pdfFile = '/Jose-Ricardo-Aznar.pdf';
               break;
@@ -43,15 +45,12 @@ export async function generateAllReceipts(type: CustomerType, selectedDate?: Dat
             case 'ALDO_RAUL_FONTELA':
               pdfFile = '/Aldo-Raul-Fontela.pdf';
               break;
-            case 'GARAGE_MITRE':
-              pdfFile = '/Garage-Mitre.pdf';
-              break;
             default:
               pdfFile = '/Consorcio-Garage-Mitre.pdf'; // fallback
               break;
           }
         }else{
-          pdfFile = '/Consorcio-Garage-Mitre.pdf';
+          pdfFile = '/Garage-Mitre.pdf';
         }
       }
       
@@ -116,7 +115,9 @@ export async function generateAllReceipts(type: CustomerType, selectedDate?: Dat
 
         const renderCommonContent = (page: any) => {
 
-          page.drawText(pendingReceipt?.receiptNumber ?? '', { x: 420, y: 380, size: fontSize, color: textColor });
+          if(customer.customerType === 'OWNER' || customer.customerType === 'RENTER'){
+            page.drawText(pendingReceipt?.receiptNumber ?? '', { x: 420, y: 380, size: fontSize, color: textColor });
+          }
           page.drawText(`${customer.lastName} ${customer.firstName}`, {
             x: 85,
             y: 285,
