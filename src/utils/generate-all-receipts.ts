@@ -127,28 +127,41 @@ export async function generateAllReceipts(type: CustomerType, selectedDate?: Dat
           page.drawText(todayFormatted, { x: 450, y: 350, size: fontSize, color: textColor });
         
           let y = 220;
-        if (customer.customerType === 'OWNER') {
-          for (const garage of customer.vehicles) {
-            const description = `Expensas comunes  ${garage.garageNumber}`;
-            page.drawText(`1`,      { x:  70, y, size: fontSize, color: textColor });
-            page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
-            page.drawText(`$${garage.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
-            y -= 30;
+
+          let total = 0;
+
+          if (customer.customerType === 'OWNER') {
+            for (const garage of customer.vehicles) {
+              const description = `Expensas comunes ${garage.garageNumber}`;
+              page.drawText(`1`, { x: 70, y, size: fontSize, color: textColor });
+              page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
+              page.drawText(`$${garage.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
+              
+              total += garage.amount;
+              y -= 30;
+            }
+          } else {
+            for (const renter of customer.vehicleRenters) {
+              const plateOwner = renter.vehicle?.customer
+                ? `(${renter.vehicle.customer.lastName} ${renter.vehicle.customer.firstName})`
+                : '';
+              const description = `Cochera mensual ${renter.garageNumber} ${plateOwner}`;
+          
+              page.drawText(`1`, { x: 70, y, size: fontSize, color: textColor });
+              page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
+              page.drawText(`$${renter.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
+          
+              total += renter.amount;
+              y -= 30;
+            }
           }
-        } else {
-          for (const renter of customer.vehicleRenters) {
-            const plateOwner = renter.vehicle?.customer
-              ? `(${renter.vehicle.customer.lastName} ${renter.vehicle.customer.firstName})`
-        : '';
-      const description = `Chocheras mensuales ${renter.garageNumber}`;
-      page.drawText(`1`,      { x:  70, y, size: fontSize, color: textColor });
-      page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
-      page.drawText(`$${renter.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
-      y -= 30;
-    }
-  }
         
-          page.drawText(`$${pendingPrice.toLocaleString('es-AR')}`, { x: 425, y: 45, size: fontSize, color: textColor });
+          page.drawText(`$${total.toLocaleString('es-AR')}`, {
+            x: 425,
+            y: 45,
+            size: fontSize,
+            color: textColor,
+          });
         };
         
         const renderBarcodeContent = (page: any) => {

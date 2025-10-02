@@ -144,7 +144,6 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
           });
           
         
-          page.drawText(`$${pendingPrice.toLocaleString('es-AR')}`, { x: 425, y: 45, size: fontSize, color: textColor });
         };
         
         const renderBarcodeContent = (page: any) => {
