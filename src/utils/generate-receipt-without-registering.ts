@@ -104,25 +104,29 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
             size: fontSize,
             color: textColor,
           });
-          page.drawText(today, { x: 450, y: 350, size: fontSize, color: textColor });
+          page.drawText(effectivePendingReceipt.startDate, { x: 450, y: 350, size: fontSize, color: textColor });
         
           let y = 220;
-          for (const vehicle of vehicles) {
-            const description =
-            customer.customerType === 'OWNER'
-              ? `Expensas comunes ${vehicle.garageNumber}`
-              : `Chocheras mensuales ${vehicle.garageNumber}`;
-        
-            const pendingPriceDebt = vehicles.length > 0
-              ? (pendingPrice / vehicles.length).toLocaleString('es-AR')
-              : pendingPrice.toLocaleString('es-AR')
-
-            page.drawText(`1`, { x: 70, y, size: fontSize, color: textColor });
-            page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
-            page.drawText(`$${isSameMonthDebt ? pendingPriceDebt : vehicle.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
-        
-            y -= 30;
-          }
+          if (customer.customerType === 'OWNER') {
+            for (const garage of customer.vehicles) {
+              const description = `Expensas comunes  ${garage.garageNumber}`;
+              page.drawText(`1`,      { x:  70, y, size: fontSize, color: textColor });
+              page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
+              page.drawText(`$${garage.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
+              y -= 30;
+            }
+          } else {
+            for (const renter of customer.vehicleRenters) {
+              const plateOwner = renter.vehicle?.customer
+                ? `(${renter.vehicle.customer.lastName} ${renter.vehicle.customer.firstName})`
+          : '';
+        const description = `Chocheras mensuales ${renter.garageNumber}`;
+        page.drawText(`1`,      { x:  70, y, size: fontSize, color: textColor });
+        page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
+        page.drawText(`$${renter.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
+        y -= 30;
+      }
+    }
         
           page.drawText(`$${pendingPrice.toLocaleString('es-AR')}`, { x: 425, y: 45, size: fontSize, color: textColor });
         };
