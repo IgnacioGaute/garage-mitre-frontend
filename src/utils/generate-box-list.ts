@@ -76,7 +76,6 @@ export default async function generateBoxList(
     // 🧮 Totales
     let totalEfectivo = 0;
     let totalTransferencias = 0;
-    let totalGastosEgresos = 0;
 
     // Creamos el PDF...
     const pdfDoc = await PDFDocument.create();
