@@ -18,7 +18,8 @@ export const customerSchema = z.object({
   })
 ).optional(),
   vehicles: z.array(vehicleSchema).optional(),
-  vehicleRenters: z.array(vehicleRenterSchema).optional(),  
+  vehicleRenters: z.array(vehicleRenterSchema).optional(),
+  credit: z.number().min(0).default(0),  
 });
 
 
@@ -42,7 +43,8 @@ export const updateCustomerSchema = z.object({
   })
 ),
   vehicles: z.array(vehicleSchema).optional(),
-  vehicleRenters: z.array(vehicleRenterSchema).optional(),  
+  vehicleRenters: z.array(vehicleRenterSchema).optional(),
+  credit: z.number().min(0).default(0),
   });
   export type UpdateCustomerSchemaType = z.infer<typeof updateCustomerSchema>;
 

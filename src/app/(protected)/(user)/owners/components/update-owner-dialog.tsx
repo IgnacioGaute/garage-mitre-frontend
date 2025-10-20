@@ -62,6 +62,7 @@ export function UpdateOwnerDialog({ customer }: { customer: Customer }) {
       customerType: customer.customerType ?? 'OWNER',
       hasDebt: customer.hasDebt || false,
       monthsDebt: customer.monthsDebt || [],
+      credit: customer.credit || 0,
       vehicles: customer.vehicles?.map((vehicle) => ({
         id:vehicle.id ?? "",
         garageNumber: vehicle.garageNumber ?? "",
@@ -402,6 +403,29 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
                     </FormItem>
                   )}
                 />
+
+            <FormField
+              control={form.control}
+              name="credit"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Crédito Existente ($)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      disabled={isPending}
+                      placeholder="Actualizar Monto"
+                      {...field}
+                      value={field.value ?? 0}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
               </>
             )}
 

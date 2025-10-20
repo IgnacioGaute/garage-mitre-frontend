@@ -30,11 +30,6 @@ import { NavMain } from './nav-main';
 
 export const userNavItems = [
   {
-    title: 'Tickets',
-    url: '/admin/tickets',
-    icon: <Ticket />,
-  },
-  {
     title: 'Registrar Gastos',
     url: '/admin/other-payments',
     icon: <Banknote  />,

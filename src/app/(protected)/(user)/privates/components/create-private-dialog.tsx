@@ -61,6 +61,7 @@ export function CreatePrivateDialog({ customersRenters } : { customersRenters:Ve
       hasDebt: false,
       monthsDebt: [],
       vehicleRenters: [],
+      credit: 0
     },
   });
 
@@ -381,6 +382,27 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
                       <FormLabel>Comentario</FormLabel>
                       <FormControl>
                         <Textarea disabled={isPending} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                                <FormField
+                  control={form.control}
+                  name="credit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Crédito Inicial ($)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          disabled={isPending}
+                          placeholder="Ingrese monto inicial de crédito"
+                          {...field}
+                          value={field.value ?? 0}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

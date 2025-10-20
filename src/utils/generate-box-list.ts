@@ -73,7 +73,10 @@ export default async function generateBoxList(
     const combinedRenters = [...renters, ...paymentHistoryRenters];
     const combinedPrivates = [...privates, ...paymentHistoryPrivates];
 
-
+    // 🧮 Totales
+    let totalEfectivo = 0;
+    let totalTransferencias = 0;
+    let totalGastosEgresos = 0;
 
     // Creamos el PDF...
     const pdfDoc = await PDFDocument.create();
@@ -195,14 +198,13 @@ export default async function generateBoxList(
     });
     yPosition -= 15;
 
-    const drawSection = (title: string, total: number) => {
-      // Verificar si necesitamos una nueva página antes de dibujar la sección
+    const drawSection = (title: string, totalEntrada: number, totalSalida: number = 0) => {
       if (yPosition < 50) {
-        page = pdfDoc.addPage([595.28, 841.89]); // Mismo tamaño que la primera página
+        page = pdfDoc.addPage([595.28, 841.89]);
         const { height: newHeight } = page.getSize();
-        yPosition = newHeight - 50; // Posición inicial para nueva página
+        yPosition = newHeight - 50;
       }
-      
+
       const rectWidth = 525;
       page.drawRectangle({
         x: 40,
@@ -218,14 +220,26 @@ export default async function generateBoxList(
         size: fontSize,
         font: fontBold,
       });
-      page.drawText(formatNumber(total), {
+
+      // Entradas a la izquierda
+      page.drawText(formatNumber(totalEntrada), {
+        x: 440,
+        y: yPosition - 15,
+        size: fontSize,
+        font: fontBold,
+      });
+
+      // Salidas a la derecha
+      page.drawText(totalSalida !== 0 ? `- ${formatNumber(totalSalida)}` : '0', {
         x: 515,
         y: yPosition - 15,
         size: fontSize,
         font: fontBold,
       });
+
       yPosition -= 30;
     };
+
 
     const addDataSection = (
       title: string,
@@ -317,12 +331,12 @@ export default async function generateBoxList(
           );
           const price = Number(priceStr);
           const parsedPrice = Number(price);
-
-          if (paymentType === 'TR') {
+          if (paymentType === 'TR' || paymentType === 'CR') {
             transferTotal += parsedPrice;
           } else if (paymentType === 'EF' || paymentType === 'CH') {
             cashTotal += parsedPrice;
           }
+          
 
           page.drawText(`${dateNow}`, {
             x: 50,
@@ -357,32 +371,35 @@ export default async function generateBoxList(
           }
 
           const priceText =
-            paymentType === 'TR'
-              ? `- ${formatNumber(parsedPrice)}`
-              : `  ${formatNumber(parsedPrice)}`;
-          const pricePositive= formatNumber(parsedPrice)
-          if(paymentType === 'EF' || paymentType === 'CH' ){
-            page.drawText(priceText, {
-              x: 440,
-              y: yPosition,
-              size: fontSize,
-              font,
-            });
-          }
-          if(paymentType === 'TR'){
-            page.drawText(priceText, {
-             x: 515,
-             y: yPosition,
-             size: fontSize,
-             font,
-           });
-           page.drawText(`  ${pricePositive}`, {
+          paymentType === 'TR' || paymentType === 'CR'
+            ? `- ${formatNumber(parsedPrice)}`
+            : `  ${formatNumber(parsedPrice)}`;
+        const pricePositive = formatNumber(parsedPrice);
+        
+        if (paymentType === 'EF' || paymentType === 'CH') {
+          page.drawText(priceText, {
             x: 440,
             y: yPosition,
             size: fontSize,
             font,
           });
-          }
+        }
+        
+        if (paymentType === 'TR' || paymentType === 'CR') {
+          page.drawText(priceText, {
+            x: 515,
+            y: yPosition,
+            size: fontSize,
+            font,
+          });
+          page.drawText(`  ${pricePositive}`, {
+            x: 440,
+            y: yPosition,
+            size: fontSize,
+            font,
+          });
+        }
+        
 
           yPosition -= 10;
           page.drawLine({
@@ -394,10 +411,11 @@ export default async function generateBoxList(
           drawVerticalLines(yPosition);
           yPosition -= 12;
 
-          total = cashTotal;
+          total = cashTotal + transferTotal;
+
         });
 
-        drawSection(title, total);
+        drawSection(title, total, transferTotal);
       } else {
         page.drawText(`No hay ${title.toLowerCase()} registrados.`, {
           x: 120,
@@ -409,6 +427,7 @@ export default async function generateBoxList(
         drawSection(title, 0);
       }
     };
+    
 
     const addDataSectionExpense = (
       title: string,
@@ -481,7 +500,6 @@ export default async function generateBoxList(
         });
         yPosition -= 15;
       }
-      drawSection(title, total);
     };
 
     const receiptTypeNames: Record<string, string> = {
@@ -495,7 +513,7 @@ export default async function generateBoxList(
       'Total de Tickets Vehiculos X hora',
       tickets,
       ticket => [
-        ticket.description,
+        `${ticket.description} (${ticket.codeBarTicket || '—'})`,
         ticket.price.toString(),
         formatDateA(ticket.dateNow),
         '',
@@ -520,16 +538,18 @@ addDataSectionReceipt(
     const owner = `${receiptTypeNames[receipt.receiptTypeKey] || receipt.receiptTypeKey}`;
     
     return [
-      `${receipt.customer.firstName} ${receipt.customer.lastName}`,
+      `${receipt.customer.lastName} ${receipt.customer.firstName}`,
       total,
       formatDateA(receipt.dateNow),
       receiptPayment.paymentType === 'TRANSFER'
-        ? 'TR'
-        : receiptPayment.paymentType === 'CASH'
-        ? 'EF'
-        : receiptPayment.paymentType === 'CHECK'
-        ? 'CH'
-        : 'Desconocido',
+      ? 'TR'
+      : receiptPayment.paymentType === 'CASH'
+      ? 'EF'
+      : receiptPayment.paymentType === 'CHECK'
+      ? 'CH'
+      : receiptPayment.paymentType === 'CREDIT'
+      ? 'CR'
+      : 'Desconocido',    
       owner,
     ];
   }
@@ -543,16 +563,19 @@ addDataSectionReceipt(
     const total = receiptPayment.price; // <- ahora usás el monto parcial del ReceiptPayment
     
     return [
-      `${receipt.customer.firstName} ${receipt.customer.lastName}`,
+      `${receipt.customer.lastName} ${receipt.customer.firstName}`,
       total,
       formatDateA(receipt.dateNow),
       receiptPayment.paymentType === 'TRANSFER'
-        ? 'TR'
-        : receiptPayment.paymentType === 'CASH'
-        ? 'EF'
-        : receiptPayment.paymentType === 'CHECK'
-        ? 'CH'
-        : 'Desconocido',
+      ? 'TR'
+      : receiptPayment.paymentType === 'CASH'
+      ? 'EF'
+      : receiptPayment.paymentType === 'CHECK'
+      ? 'CH'
+      : receiptPayment.paymentType === 'CREDIT'
+      ? 'CR'
+      : 'Desconocido'
+    ,
     ];
   }
     );
@@ -568,29 +591,33 @@ addDataSectionReceipt(
     : '';
     
     return [
-      `${receipt.customer.firstName} ${receipt.customer.lastName}`,
+      `${receipt.customer.lastName} ${receipt.customer.firstName}`,
       total,
       formatDateA(receipt.dateNow),
       receiptPayment.paymentType === 'TRANSFER'
-        ? 'TR'
-        : receiptPayment.paymentType === 'CASH'
-        ? 'EF'
-        : receiptPayment.paymentType === 'CHECK'
-        ? 'CH'
-        : 'Desconocido',
+      ? 'TR'
+      : receiptPayment.paymentType === 'CASH'
+      ? 'EF'
+      : receiptPayment.paymentType === 'CHECK'
+      ? 'CH'
+      : receiptPayment.paymentType === 'CREDIT'
+      ? 'CR'
+      : 'Desconocido'
+    ,
       vehicleOwner,
     ];
   }
     );
-    const drawSectionTotal = (title: string, total: number) => {
-      // Verificar si necesitamos una nueva página antes de dibujar la sección total
+    
+    
+    const drawSectionTotal = (title: string, totalEntrada: number, totalSalida: number = 0) => {
       if (yPosition < 50) {
-        page = pdfDoc.addPage([595.28, 841.89]); // Mismo tamaño que la primera página
+        page = pdfDoc.addPage([595.28, 841.89]);
         const { height: newHeight } = page.getSize();
-        yPosition = newHeight - 50; // Posición inicial para nueva página
+        yPosition = newHeight - 50;
       }
-      
-      const rectWidth = 525; 
+
+      const rectWidth = 525;
       page.drawRectangle({
         x: 40,
         y: yPosition - 20,
@@ -598,45 +625,79 @@ addDataSectionReceipt(
         height: 15,
         color: rgb(0.8, 0.8, 0.8),
       });
+
       page.drawText(title, {
         x: 105,
         y: yPosition - 15,
         size: fontSize,
         font: fontBold,
       });
-      page.drawText(formatNumber(total), {
-        x: 515,
-        y: yPosition - 15,
-        size: fontSize,
-        font: fontBold,
-      });
-      page.drawText(formatNumber(total), {
+
+      // Entradas
+      page.drawText(formatNumber(totalEntrada), {
         x: 440,
         y: yPosition - 15,
         size: fontSize,
         font: fontBold,
       });
 
+      // Salidas en negativo si corresponde
+      if (totalSalida !== 0) {
+        page.drawText(`- ${formatNumber(totalSalida)}`, {
+          x: 515,
+          y: yPosition - 15,
+          size: fontSize,
+          font: fontBold,
+        });
+      }
+
       yPosition -= 30;
     };
-    const expenseSum = otherPaymentsRegistration.reduce(
-      (sum, item) => sum + item.price,
-      0
-    );
-    const totalTickets = [...tickets, ...ticketDays].reduce((sum, t) => sum + t.price, 0);
 
+    // 🧾 Totales por receipt
     const totalReceipts = [...combinedRenters, ...combinedOwners, ...combinedPrivates].reduce(
       (sum, rp) => {
-        if (rp.paymentType === 'TRANSFER') return sum; // ignorar transferencias
-        return sum + rp.price;
+        if (rp.paymentType === 'TRANSFER' || rp.paymentType === 'CREDIT') {
+          totalTransferencias += rp.price;
+          return sum;
+        } else {
+          totalEfectivo += rp.price;
+          return sum + rp.price;
+        }
       },
       0
     );
+    
+    
 
-const totalTicketsAndReceipts = totalTickets + totalReceipts;
+    // 🧾 Total Tickets
+    const totalTickets = [...tickets, ...ticketDays].reduce((sum, t) => sum + t.price, 0);
 
+    const totalTicketsAndReceipts = totalTickets + totalReceipts;
     const subtotalSinGastos = totalTicketsAndReceipts;
-    drawSectionTotal('Total Recibos y Tickets', subtotalSinGastos);
+
+    let totalEgresos = 0; // egresos de otros pagos
+    let totalIngresosVarios = 0; // ingresos de otros pagos
+
+    // Calcular egresos e ingresos de "otros pagos"
+    otherPaymentsRegistration.forEach(op => {
+      if (op.type === 'EGRESOS') {
+        totalEgresos += op.price;
+      } else {
+        totalIngresosVarios += op.price;
+      }
+    });
+
+
+    // Entradas = efectivo + transferencias + tickets
+    const totalEntradas = totalTickets + totalEfectivo + totalTransferencias;
+    // Salidas = transferencias + egresos
+    const totalSalidas = totalEgresos;
+
+    const total = totalEntradas - totalSalidas;
+
+    // 🧾 Totales visibles en PDF
+    drawSectionTotal('Total Recibos y Tickets', subtotalSinGastos, totalTransferencias);
     addDataSectionExpense(
       'Total Varios',
       otherPaymentsRegistration,
@@ -647,6 +708,7 @@ const totalTicketsAndReceipts = totalTickets + totalReceipts;
         payment.type,
       ]
     );
+    drawSectionTotal('Total Varios', totalIngresosVarios, totalEgresos);
 
     drawSectionTotal('Total', totalPrice);
 
@@ -669,6 +731,7 @@ const totalTicketsAndReceipts = totalTickets + totalReceipts;
 
     toast.success('Lista de caja generada y descargada correctamente');
     return pdfBytes;
+
   } catch (error) {
     console.error('Error generando la lista de caja:', error);
     toast.error('Error al generar la lista de caja');

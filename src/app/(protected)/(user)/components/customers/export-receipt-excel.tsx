@@ -93,6 +93,13 @@ export const ExportReceiptsExcel = ({ receipts, type }: Props) => {
       return;
     }
 
+    // 🧭 Ordenar alfabéticamente por Apellido y luego Nombre
+finalRows.sort((a, b) => {
+  const lastNameCompare = a.Apellido.localeCompare(b.Apellido, 'es', { sensitivity: 'base' });
+  if (lastNameCompare !== 0) return lastNameCompare;
+  return a.Nombre.localeCompare(b.Nombre, 'es', { sensitivity: 'base' });
+});
+
     // Generar Excel
     const worksheet = XLSX.utils.json_to_sheet(finalRows);
     

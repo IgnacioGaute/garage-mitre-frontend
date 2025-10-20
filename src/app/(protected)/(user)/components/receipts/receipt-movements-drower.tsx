@@ -46,9 +46,12 @@ const hasOnlyReceiptPayment =
         <DrawerHeader className="mb-4">
           <DrawerTitle className="text-xl">Movimientos del Recibo</DrawerTitle>
           <p className="text-sm">Total inicial: ${receipt.startAmount}</p>
-          {(receipt.paymentHistoryOnAccount?.length > 0 && receipt.status === 'PENDING') && (
-              <p className="text-sm">Total Restante: ${receipt.price}</p>
-          )}
+          {receipt.status === 'PENDING' && receipt.price > 0 && (
+          <p className="text-sm font-medium text-red-600">
+            Total Restante: ${receipt.price}
+          </p>
+        )}
+
         </DrawerHeader>
 
         <div className="space-y-6">
@@ -116,5 +119,7 @@ function translatePaymentType(type: string) {
     ? 'Efectivo'
     : type === 'CHECK'
     ? 'Cheque'
+        : type === 'CREDIT'
+    ? 'Credito'
     : 'Desconocido';
 }

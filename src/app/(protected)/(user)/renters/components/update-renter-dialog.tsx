@@ -72,6 +72,8 @@ export function UpdateRenterDialog({ customer, customersRenters }: { customer: C
         amount: vehicle.amount ?? 0,
         owner: vehicle.owner ?? ""
       })) ?? [],
+      credit: customer.credit || 0,
+
     },
   });
   
@@ -422,6 +424,29 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
                     </FormItem>
                   )}
                 />
+
+                
+            <FormField
+              control={form.control}
+              name="credit"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Crédito Existente ($)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      disabled={isPending}
+                      placeholder="Actualizar Monto"
+                      {...field}
+                      value={field.value ?? 0}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
               </>
             )}
 

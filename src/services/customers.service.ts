@@ -204,20 +204,29 @@ export const createCustomer = async (
     customerId: string,
     values: ReceiptSchemaType
   ): Promise<ReceiptResponse> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // ⏳ 10 segundos
+  
     try {
-      const response = await fetch(`${BASE_URL}/receipts/${receiptId}/customers/${customerId}`, {
-        method: 'PATCH',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
+      const response = await fetch(
+        `${BASE_URL}/receipts/${receiptId}/customers/${customerId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+          signal: controller.signal,
+        }
+      );
+  
+      clearTimeout(timeout);
   
       const data = await response.json();
   
       if (response.ok) {
         return {
-          receiptNumber: data.receiptNumber, // asegurate que tu backend devuelva esto
+          receiptNumber: data.receiptNumber,
           success: true,
           barcode: data.barcode
         };
@@ -232,11 +241,15 @@ export const createCustomer = async (
         };
       }
     } catch (error) {
-      console.error(error);
+      clearTimeout(timeout);
+      console.error("❌ Error en historialReceipts:", error);
       return {
         error: {
           code: 'NETWORK_ERROR',
-          message: 'Ocurrió un error al conectar con el servidor.',
+          message:
+            (error as any)?.name === 'AbortError'
+              ? 'Tiempo de espera agotado (timeout)'
+              : 'Ocurrió un error al conectar con el servidor.',
         },
         success: false,
       };

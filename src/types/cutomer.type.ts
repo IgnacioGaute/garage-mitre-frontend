@@ -25,6 +25,7 @@ export type Customer = {
       amount: number;
       status?: PaymentStatusType;
     }[];
+    credit: number;
     deletedAt: Date;
     createdAt: Date;
     updatedAt: Date;
