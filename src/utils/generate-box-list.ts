@@ -40,9 +40,23 @@ export default async function generateBoxList(
       ? otherPayments
       : [];
 
-    const owners = receiptPayments.filter(
-      receiptPayment => receiptPayment && receiptPayment.receipt.customer?.customerType === 'OWNER'
-    );
+      console.log("TP detectados", receiptPayments.filter(rp =>
+        rp.paymentType === 'TP' ||
+        rp.receipt?.paymentType === 'TP' ||
+        rp.receipt?.receiptTypeKey === 'TP'
+      ));
+
+      const owners = receiptPayments.filter(
+        receiptPayment =>
+          receiptPayment &&
+          (
+            receiptPayment.receipt.customer?.customerType === 'OWNER' ||
+            receiptPayment.paymentType === 'TP' ||                  // ✅ acá está el fix
+            receiptPayment.receipt?.paymentType === 'TP' ||
+            receiptPayment.receipt?.receiptTypeKey === 'TP'
+          )
+      );
+      
 
     const renterReceiptTypes = [
       'JOSE_RICARDO_AZNAR',
@@ -54,8 +68,13 @@ export default async function generateBoxList(
       renterReceiptTypes.includes(receiptPayment.receipt?.receiptTypeKey)
     );
     const privates = receiptPayments.filter(
-      receiptPayment => receiptPayment.receipt?.customer.customerType === 'PRIVATE'
+      receiptPayment =>
+        receiptPayment.receipt?.customer.customerType === 'PRIVATE' &&
+        receiptPayment.paymentType !== 'TP' &&
+        receiptPayment.receipt?.paymentType !== 'TP' &&
+        receiptPayment.receipt?.receiptTypeKey !== 'TP'
     );
+    
 
     const paymentHistoryOwners = paymentHistoryOnAccount.filter(
   p => p.receipt?.customer?.customerType === 'OWNER'
@@ -203,7 +222,7 @@ export default async function generateBoxList(
         const { height: newHeight } = page.getSize();
         yPosition = newHeight - 50;
       }
-
+    
       const rectWidth = 525;
       page.drawRectangle({
         x: 40,
@@ -212,32 +231,73 @@ export default async function generateBoxList(
         height: 15,
         color: rgb(0.9, 0.9, 0.9),
       });
-
+    
       page.drawText(title, {
         x: 105,
         y: yPosition - 15,
         size: fontSize,
         font: fontBold,
       });
-
-      // Entradas a la izquierda
-      page.drawText(formatNumber(totalEntrada), {
-        x: 440,
-        y: yPosition - 15,
-        size: fontSize,
-        font: fontBold,
-      });
-
-      // Salidas a la derecha
-      page.drawText(totalSalida !== 0 ? `- ${formatNumber(totalSalida)}` : '0', {
-        x: 515,
-        y: yPosition - 15,
-        size: fontSize,
-        font: fontBold,
-      });
-
+    
+      if (totalEntrada !== 0) {
+        page.drawText(formatNumber(totalEntrada), {
+          x: 440,
+          y: yPosition - 15,
+          size: fontSize,
+          font: fontBold,
+        });
+      }
+    
+      if (totalSalida !== 0) {
+        page.drawText(`- ${formatNumber(totalSalida)}`, {
+          x: 515,
+          y: yPosition - 15,
+          size: fontSize,
+          font: fontBold,
+        });
+      }
+    
       yPosition -= 30;
     };
+    
+    const drawSubtotalSection = (totalEntrada: number, totalSalida: number = 0) => {
+      const subtotal = totalEntrada - totalSalida;
+    
+      if (subtotal === 0) return; // 👈 corta la función si el subtotal es cero
+    
+      if (yPosition < 50) {
+        page = pdfDoc.addPage([595.28, 841.89]);
+        const { height: newHeight } = page.getSize();
+        yPosition = newHeight - 50;
+      }
+    
+      const rectWidth = 525;
+    
+      page.drawRectangle({
+        x: 40,
+        y: yPosition - 18,
+        width: rectWidth,
+        height: 15,
+        color: rgb(0.94, 0.94, 0.94),
+      });
+    
+      page.drawText('Subtotal', {
+        x: 105,
+        y: yPosition - 13,
+        size: fontSize,
+        font: fontBold,
+      });
+    
+      page.drawText(formatNumber(subtotal), {
+        x: 440,
+        y: yPosition - 13,
+        size: fontSize,
+        font: fontBold,
+      });
+    
+      yPosition -= 35;
+    };
+    
 
 
     const addDataSection = (
@@ -302,6 +362,8 @@ export default async function generateBoxList(
         yPosition -= 15;
       }
       drawSection(title, total);
+drawSubtotalSection(total);
+
     };
 
     const addDataSectionReceipt = (
@@ -330,7 +392,7 @@ export default async function generateBoxList(
           );
           const price = Number(priceStr);
           const parsedPrice = Number(price);
-          if (paymentType === 'TR' || paymentType === 'CR') {
+          if (paymentType === 'TR' || paymentType === 'CR'|| paymentType === 'TP') {
             transferTotal += parsedPrice;
           } else if (paymentType === 'EF' || paymentType === 'CH') {
             cashTotal += parsedPrice;
@@ -370,7 +432,7 @@ export default async function generateBoxList(
           }
 
           const priceText =
-          paymentType === 'TR' || paymentType === 'CR'
+          paymentType === 'TR' || paymentType === 'CR' || paymentType === 'TP'
             ? `- ${formatNumber(parsedPrice)}`
             : `  ${formatNumber(parsedPrice)}`;
         const pricePositive = formatNumber(parsedPrice);
@@ -384,7 +446,7 @@ export default async function generateBoxList(
           });
         }
         
-        if (paymentType === 'TR' || paymentType === 'CR') {
+        if (paymentType === 'TR' || paymentType === 'CR'|| paymentType === 'TP') {
           page.drawText(priceText, {
             x: 515,
             y: yPosition,
@@ -415,6 +477,8 @@ export default async function generateBoxList(
         });
 
         drawSection(title, total, transferTotal);
+drawSubtotalSection(total, transferTotal);
+
       } else {
         page.drawText(`No hay ${title.toLowerCase()} registrados.`, {
           x: 120,
@@ -433,44 +497,41 @@ export default async function generateBoxList(
       items: OtherPayment[],
       dataExtractor: (item: any) => string[]
     ) => {
-      const totalExp = items.reduce((sum, item) => sum + item.price, 0);
-      const total = items.reduce(
-        (sum, item) => sum + (item.type === 'EGRESOS' ? -item.price : item.price),
-        0
-      );
-      
-      yPosition -= 5;
+      yPosition -= 10;
+    
       if (items.length > 0) {
         items.forEach(item => {
-          // Verificar si necesitamos una nueva página antes de dibujar el item
           if (yPosition < 50) {
-            page = pdfDoc.addPage([595.28, 841.89]); // Mismo tamaño que la primera página
+            page = pdfDoc.addPage([595.28, 841.89]);
             const { height: newHeight } = page.getSize();
-            yPosition = newHeight - 50; // Posición inicial para nueva página
+            yPosition = newHeight - 40;
           }
+    
           const [desc, priceStr, dateNow, type] = dataExtractor(item);
           const price = Number(priceStr);
+    
           page.drawText(`${dateNow}`, {
             x: 50,
             y: yPosition,
             size: fontSize,
             font,
           });
+    
           page.drawText(`${desc}`, {
             x: 112,
             y: yPosition,
             size: fontSize,
             font,
           });
-
-          if(type === 'EGRESOS'){
+    
+          if (type === 'EGRESOS') {
             page.drawText(`- ${formatNumber(price)}`, {
               x: 515,
               y: yPosition,
               size: fontSize,
               font,
             });
-          }else{
+          } else {
             page.drawText(`${formatNumber(price)}`, {
               x: 440,
               y: yPosition,
@@ -478,18 +539,19 @@ export default async function generateBoxList(
               font,
             });
           }
-
+    
           yPosition -= 10;
-
+    
           page.drawLine({
             start: { x: 50, y: yPosition },
             end: { x: 550, y: yPosition },
             color: rgb(0.7, 0.7, 0.7),
           });
-
+    
           drawVerticalLines(yPosition);
           yPosition -= 12;
         });
+        yPosition -= 10;
       } else {
         page.drawText(`No hay ${title.toLowerCase()} registrados.`, {
           x: 120,
@@ -497,9 +559,10 @@ export default async function generateBoxList(
           size: fontSize,
           font,
         });
-        yPosition -= 15;
+        yPosition -= 10;
       }
     };
+    
 
     const receiptTypeNames: Record<string, string> = {
       JOSE_RICARDO_AZNAR: 'Ricardo Aznar',
@@ -548,6 +611,8 @@ addDataSectionReceipt(
       ? 'CH'
       : receiptPayment.paymentType === 'CREDIT'
       ? 'CR'
+      : receiptPayment.paymentType === 'TP'
+      ? 'TP'
       : 'Desconocido',    
       owner,
     ];
@@ -573,6 +638,8 @@ addDataSectionReceipt(
       ? 'CH'
       : receiptPayment.paymentType === 'CREDIT'
       ? 'CR'
+            : receiptPayment.paymentType === 'TP'
+      ? 'TP'
       : 'Desconocido'
     ,
     ];
@@ -601,6 +668,8 @@ addDataSectionReceipt(
       ? 'CH'
       : receiptPayment.paymentType === 'CREDIT'
       ? 'CR'
+            : receiptPayment.paymentType === 'TP'
+      ? 'TP'
       : 'Desconocido'
     ,
       vehicleOwner,
@@ -609,14 +678,21 @@ addDataSectionReceipt(
     );
     
     
-    const drawSectionTotal = (title: string, totalEntrada: number, totalSalida: number = 0) => {
+    const drawSectionTotal = (
+      title: string,
+      totalEntrada: number,
+      totalSalida: number = 0,
+      showSubtotal: boolean = false
+    ) => {
       if (yPosition < 50) {
         page = pdfDoc.addPage([595.28, 841.89]);
         const { height: newHeight } = page.getSize();
         yPosition = newHeight - 50;
       }
-
+    
       const rectWidth = 525;
+    
+      // 🟨 Rectángulo de fondo
       page.drawRectangle({
         x: 40,
         y: yPosition - 20,
@@ -624,23 +700,26 @@ addDataSectionReceipt(
         height: 15,
         color: rgb(0.8, 0.8, 0.8),
       });
-
+    
+      // 🏷️ Título
       page.drawText(title, {
         x: 105,
         y: yPosition - 15,
         size: fontSize,
         font: fontBold,
       });
-
-      // Entradas
-      page.drawText(formatNumber(totalEntrada), {
-        x: 440,
-        y: yPosition - 15,
-        size: fontSize,
-        font: fontBold,
-      });
-
-      // Salidas en negativo si corresponde
+    
+      // ✅ Entradas — solo si es distinto de 0
+      if (totalEntrada !== 0) {
+        page.drawText(formatNumber(totalEntrada), {
+          x: 440,
+          y: yPosition - 15,
+          size: fontSize,
+          font: fontBold,
+        });
+      }
+    
+      // ✅ Salidas — solo si es distinto de 0
       if (totalSalida !== 0) {
         page.drawText(`- ${formatNumber(totalSalida)}`, {
           x: 515,
@@ -649,19 +728,60 @@ addDataSectionReceipt(
           font: fontBold,
         });
       }
+    
+      yPosition -= 20;
+    
+      // ✅ Subtotal (solo si showSubtotal y distinto de 0)
+      if (showSubtotal) {
+        const subtotal = totalEntrada - totalSalida;
+        if (subtotal !== 0) {
+          const rectWidth = 525;
+      
+          // 🟨 Fondo gris clarito para Subtotal
+          page.drawRectangle({
+            x: 40,
+            y: yPosition - 18,
+            width: rectWidth,
+            height: 15,
+            color: rgb(0.94, 0.94, 0.94),
+          });
+// 🏷️ Texto alineado igual que los títulos de sección
+page.drawText('Subtotal', {
+  x: 105,
+  y: yPosition - 15,  // 👈 bajado 2 px para centrar verticalmente
+  size: fontSize,
+  font: fontBold,
+});
 
-      yPosition -= 30;
+page.drawText(formatNumber(subtotal), {
+  x: 440,
+  y: yPosition - 15,  // 👈 igual que el texto anterior
+  size: fontSize,
+  font: fontBold,
+});
+
+// ⬇️ Bajá solo 25px en lugar de 35
+yPosition -= 25;
+        }
+      }
+      
     };
-
+    
+    
     // 🧾 Totales por receipt
     const totalReceipts = [...combinedRenters, ...combinedOwners, ...combinedPrivates].reduce(
       (sum, rp) => {
-        if (rp.paymentType === 'TRANSFER' || rp.paymentType === 'CREDIT') {
+        if (rp.paymentType === 'TRANSFER' || rp.paymentType === 'CREDIT' || rp.paymentType === 'TP'  ) {
           totalTransferencias += rp.price;
           return sum;
-        } else {
+        } else if (
+          rp.paymentType === 'CASH' ||
+          rp.paymentType === 'CHECK' 
+        ) {
           totalEfectivo += rp.price;
           return sum + rp.price;
+        } else {
+          return sum;
         }
       },
       0
@@ -696,7 +816,7 @@ addDataSectionReceipt(
     const total = totalEntradas - totalSalidas;
 
     // 🧾 Totales visibles en PDF
-    drawSectionTotal('Total Recibos y Tickets', subtotalSinGastos, totalTransferencias);
+    drawSectionTotal('Total Recibos y Tickets', subtotalSinGastos);
     addDataSectionExpense(
       'Total Varios',
       otherPaymentsRegistration,
@@ -707,7 +827,9 @@ addDataSectionReceipt(
         payment.type,
       ]
     );
-    drawSectionTotal('Total Varios', totalIngresosVarios, totalEgresos);
+    yPosition -= 10;
+    drawSectionTotal('Total Varios', totalIngresosVarios, totalEgresos, true);
+
 
     drawSectionTotal('Total', totalPrice);
 

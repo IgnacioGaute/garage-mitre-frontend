@@ -310,7 +310,7 @@ export function PaymentSummaryTable({
 
                     {/* Monto */}
                     <TableCell className="text-right pr-6 align-middle">
-                      <span className="block pr-5">${receiptOwner.price}</span>
+                      <span className="block pr-5">${receiptOwner.startAmount}</span>
                     </TableCell>
 
                     {/* Imprimir */}

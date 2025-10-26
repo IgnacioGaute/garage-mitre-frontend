@@ -140,23 +140,6 @@ export function NavUser({
               </Link>
                   <DropdownMenuSeparator />
                 </>
-                <DropdownMenuItem
-                  onSelect={(e) => {
-                    e.preventDefault(); 
-                    setOpenTicketDialog(true);
-                  }}
-                  className="cursor-pointer flex items-center gap-2"
-                >
-                  <TicketIcon />
-                  Ver Registros de Tickets
-                </DropdownMenuItem>
-                <TicketTableDialog
-                  ticketRegistrationForDay={ticketRegistrationsDayOrWeek}
-                  open={openTicketDialog}
-                  setOpen={setOpenTicketDialog}
-                />
-                 <DropdownMenuSeparator />
-
                 <>
                 <Link href={userNav.role === 'ADMIN' ? '/admin/users' : '/admin/tickets'}>
                     <DropdownMenuGroup>
