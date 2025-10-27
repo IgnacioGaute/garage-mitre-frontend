@@ -35,7 +35,7 @@ export function ExpenseTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([]); // 👈 si el usuario cambia el orden, se actualiza
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
@@ -52,6 +52,12 @@ export function ExpenseTable<TData, TValue>({
       sorting,
     },
     initialState: {
+      sorting: [
+        {
+          id: 'dateNow', // 👈 el nombre de la columna que representa la fecha
+          desc: true,    // 👈 orden descendente (últimos primero)
+        },
+      ],
       pagination: {
         pageSize: 10,
       },
@@ -77,18 +83,16 @@ export function ExpenseTable<TData, TValue>({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} className="first:pl-4 last:pr-4">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} className="first:pl-4 last:pr-4">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
@@ -111,10 +115,7 @@ export function ExpenseTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={columns.length} className="h-24 text-center">
                   No hay resultados para mostrar.
                 </TableCell>
               </TableRow>
