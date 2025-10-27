@@ -85,8 +85,9 @@ export default async function generateBoxList(
     );
 
     const paymentHistoryPrivates = paymentHistoryOnAccount.filter(
-      p => p.receipt?.receiptTypeKey === 'GARAGE_MITRE'
+      p => p.receipt?.customer?.customerType === 'PRIVATE'
     );
+    
 
     const combinedOwners = [...owners, ...paymentHistoryOwners];
     const combinedRenters = [...renters, ...paymentHistoryRenters];
@@ -263,9 +264,10 @@ export default async function generateBoxList(
     const drawSubtotalSection = (totalEntrada: number, totalSalida: number = 0) => {
       const subtotal = totalEntrada - totalSalida;
     
-      if (subtotal === 0) return; // 👈 corta la función si el subtotal es cero
+      // 👉 si es cero, no dibuja nada (intencional)
+      if (subtotal === 0) return;
     
-      if (yPosition < 50) {
+      if (yPosition < 60) {
         page = pdfDoc.addPage([595.28, 841.89]);
         const { height: newHeight } = page.getSize();
         yPosition = newHeight - 50;
@@ -273,29 +275,31 @@ export default async function generateBoxList(
     
       const rectWidth = 525;
     
+      // 🟨 Fondo gris clarito alineado como las secciones
       page.drawRectangle({
         x: 40,
-        y: yPosition - 18,
+        y: yPosition - 20,
         width: rectWidth,
         height: 15,
         color: rgb(0.94, 0.94, 0.94),
       });
     
+      // 🏷️ Texto alineado igual que el resto
       page.drawText('Subtotal', {
         x: 105,
-        y: yPosition - 13,
+        y: yPosition - 15,
         size: fontSize,
         font: fontBold,
       });
     
       page.drawText(formatNumber(subtotal), {
         x: 440,
-        y: yPosition - 13,
+        y: yPosition - 15,
         size: fontSize,
         font: fontBold,
       });
     
-      yPosition -= 35;
+      yPosition -= 25; // ✅ consistente con el resto
     };
     
 
@@ -619,32 +623,38 @@ addDataSectionReceipt(
   }
 );
 
-    addDataSectionReceipt(
-      'Total de Recibo pago Expensas',
-      combinedOwners,
+addDataSectionReceipt(
+  'Total de Recibo pago Expensas',
+  combinedOwners,
   (receiptPayment) => {
     const receipt = receiptPayment.receipt;
-    const total = receiptPayment.price; // <- ahora usás el monto parcial del ReceiptPayment
-    
+    const total = receiptPayment.price;
+
+    // 👇 Acá buscás si hay un propietario vinculado al vehículo del private
+    const vehicleCustomer = receipt.customer?.vehicleRenters?.[0]?.vehicle?.customer;
+    const ownerName = vehicleCustomer
+      ? `${vehicleCustomer.lastName} ${vehicleCustomer.firstName}`
+      : `${receipt.customer.lastName} ${receipt.customer.firstName}`;
+
     return [
-      `${receipt.customer.lastName} ${receipt.customer.firstName}`,
+      ownerName, // 👈 acá ya no mostrás el nombre del private si hay owner vinculado
       total,
       formatDateA(receipt.dateNow),
       receiptPayment.paymentType === 'TRANSFER'
-      ? 'TR'
-      : receiptPayment.paymentType === 'CASH'
-      ? 'EF'
-      : receiptPayment.paymentType === 'CHECK'
-      ? 'CH'
-      : receiptPayment.paymentType === 'CREDIT'
-      ? 'CR'
-            : receiptPayment.paymentType === 'TP'
-      ? 'TP'
-      : 'Desconocido'
-    ,
+        ? 'TR'
+        : receiptPayment.paymentType === 'CASH'
+        ? 'EF'
+        : receiptPayment.paymentType === 'CHECK'
+        ? 'CH'
+        : receiptPayment.paymentType === 'CREDIT'
+        ? 'CR'
+        : receiptPayment.paymentType === 'TP'
+        ? 'TP'
+        : 'Desconocido'
     ];
   }
-    );
+);
+
     addDataSectionReceipt(
       'Total de Recibo pago Alquiler Terceros',
       combinedPrivates,

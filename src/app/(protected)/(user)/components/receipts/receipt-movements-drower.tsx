@@ -121,5 +121,5 @@ function translatePaymentType(type: string) {
     ? 'Cheque'
         : type === 'CREDIT'
     ? 'Credito'
-    : 'Desconocido';
+    : 'Transferencia';
 }
