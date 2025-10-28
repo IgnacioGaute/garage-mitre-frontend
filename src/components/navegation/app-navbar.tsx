@@ -17,6 +17,7 @@ export async function AppNavbar({ children, adminSidebar, userSidebar }: AppNavb
   const user = await currentUser();
   const ticketRegistrationsDayOrWeek = await getTicketsRegistrationForDay()
 
+
   return (
     <>
     {user?.role === 'ADMIN' ? (
@@ -46,7 +47,7 @@ export async function AppNavbar({ children, adminSidebar, userSidebar }: AppNavb
                   name: `${user?.firstName ?? ''} ${user?.lastName ?? ''}`,
                   role: user?.role || 'USER',
                 }}
-                ticketRegistrationsDayOrWeek={ticketRegistrationsDayOrWeek?.data || []}
+                ticketRegistrationsDayOrWeek={ticketRegistrationsDayOrWeek || []}
               />
             </div>
           </div>

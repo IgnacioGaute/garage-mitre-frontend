@@ -71,14 +71,15 @@ export function TicketDayOrWeekTable<TData, TValue>({
         />
 
       </div>
-      <ScrollArea className="bg-transparent border-0">
-  <div className="max-w-4xl mx-auto rounded-lg overflow-hidden border border-border shadow-sm">
+      <ScrollArea className="bg-transparent border-0 min-h-[250px] max-h-[500px] overflow-auto">
+  <div className="min-w-[100px] rounded-lg border border-border shadow-sm">
+
     <Table className="w-full">
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
             {headerGroup.headers.map((header) => (
-              <TableHead key={header.id} className="px-3 py-2 text-sm">
+              <TableHead key={header.id} className="px-3 py-2 text-sm whitespace-nowrap">
                 {header.isPlaceholder
                   ? null
                   : flexRender(
@@ -98,7 +99,7 @@ export function TicketDayOrWeekTable<TData, TValue>({
               data-state={row.getIsSelected() && 'selected'}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id} className="px-3 py-2 text-sm">
+                <TableCell key={cell.id} className="px-3 py-2 text-sm whitespace-nowrap">
                   {flexRender(
                     cell.column.columnDef.cell,
                     cell.getContext(),
@@ -118,7 +119,9 @@ export function TicketDayOrWeekTable<TData, TValue>({
     </Table>
   </div>
   <ScrollBar orientation="horizontal" />
+  <ScrollBar orientation="vertical" />
 </ScrollArea>
+
 
       <DataTablePagination table={table} />
     </div>

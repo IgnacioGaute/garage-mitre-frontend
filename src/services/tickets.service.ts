@@ -295,7 +295,7 @@ export const getTicketRegistrations = async (authToken?: string) => {
     const data = await response.json();
 
     if (response.ok) {
-      return data as PaginatedResponse<TicketRegistrationForDay>;
+      return data as TicketRegistrationForDay
     } else {
       console.error(data);
       return null;

@@ -399,7 +399,15 @@ export default async function generateBoxList(
       items: (Ticket | Receipt | TicketRegistration | TicketRegistrationForDay | OtherPayment)[],
       dataExtractor: (item: any) => string[]
     ) => {
-      const total = items.reduce((sum, item) => sum + item.price, 0);
+      // 🧮 Filtrar solo los items pagados si existe la propiedad paid
+      const filteredItems = items.filter((item: any) => {
+        // si no existe item.paid, no filtramos — se incluye
+        if (typeof item.paid === 'undefined') return true;
+        // si existe, solo incluimos si es true
+        return item.paid === true;
+      });
+    
+      const total = filteredItems.reduce((sum, item) => sum + item.price, 0);
       const cleanTotal = total || 0;
     
       yPosition -= 5;
@@ -442,13 +450,15 @@ export default async function generateBoxList(
             });
           }
     
-          // 💰 Monto
-          page.drawText(`  ${formatNumber(price)}`, {
-            x: 440,
-            y: yPosition,
-            size: fontSize,
-            font,
-          });
+          // 💰 Solo mostrar el precio si está pago
+          if ((item as any).paid === undefined || (item as any).paid === true) {
+            page.drawText(`  ${formatNumber(price)}`, {
+              x: 440,
+              y: yPosition,
+              size: fontSize,
+              font,
+            });
+          }
     
           // 📏 Separador
           yPosition -= 10;
@@ -478,6 +488,7 @@ export default async function generateBoxList(
       // 🟩 Total de la sección
       drawSectionTotal(title, cleanTotal, 0, false, true);
     };
+    
 
 
 const addDataSectionReceipt = (
@@ -801,7 +812,10 @@ addDataSectionReceipt(
     
 
     // 🧾 Total Tickets
-    const totalTickets = [...tickets, ...ticketDays].reduce((sum, t) => sum + t.price, 0);
+    const totalTickets = [...tickets, ...ticketDays]
+    .filter((t: any) => t.paid === undefined || t.paid === true)
+    .reduce((sum, t) => sum + t.price, 0);
+  
 
     const totalTicketsAndReceipts = totalTickets + totalReceipts;
     const subtotalSinGastos = totalTicketsAndReceipts;

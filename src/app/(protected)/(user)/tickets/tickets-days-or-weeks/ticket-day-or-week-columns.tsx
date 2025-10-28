@@ -44,24 +44,6 @@ export const ticketDayOrWeekColumns: ColumnDef<TicketRegistrationForDay>[] = [
       <div className="min-w-[50px] text-sm">{row.getValue('lastNameCustomer')}</div>
     ),
   },
-  {
-    accessorKey: 'firstNameCustomer',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Nombre" />
-    ),
-    cell: ({ row }) => (
-      <div className="min-w-[50px] text-sm">{row.getValue('firstNameCustomer')}</div>
-    ),
-  },
-  {
-    accessorKey: 'vehiclePlateCustomer',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Patente" />
-    ),
-    cell: ({ row }) => (
-      <div className="min-w-[50px] text-sm">{row.getValue('vehiclePlateCustomer')}</div>
-    ),
-  },
     {
     accessorKey: 'price',
     header: ({ column }) => (
