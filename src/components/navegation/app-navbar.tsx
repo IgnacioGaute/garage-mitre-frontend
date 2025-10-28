@@ -15,7 +15,11 @@ interface AppNavbarProps {
 
 export async function AppNavbar({ children, adminSidebar, userSidebar }: AppNavbarProps) {
   const user = await currentUser();
-  const ticketRegistrationsDayOrWeek = await getTicketsRegistrationForDay()
+  const tickets = await getTicketsRegistrationForDay();
+  const ticketRegistrationsDayOrWeek = Array.isArray(tickets) ? tickets : [];
+  
+
+
 
 
   return (
@@ -49,6 +53,7 @@ export async function AppNavbar({ children, adminSidebar, userSidebar }: AppNavb
                 }}
                 ticketRegistrationsDayOrWeek={ticketRegistrationsDayOrWeek || []}
               />
+
             </div>
           </div>
         </header>
