@@ -160,11 +160,11 @@ export function NavUser({
                 
                 <>
                 
-                <Link href={userNav.role === 'ADMIN' ? '/admin/users' : '/admin/tickets'}>
+                <Link href={userNav.role === 'ADMIN' ? '/admin/users' : '/admin/other-payments'}>
                     <DropdownMenuGroup>
                       <DropdownMenuItem className="cursor-pointer flex items-center gap-2">
                         <Shield />
-                        {userNav.role === 'ADMIN' ? 'Administar' : 'Administrar Tickets y Gastos'}
+                        {userNav.role === 'ADMIN' ? 'Administar' : 'Administrar Gastos'}
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
                   </Link>
