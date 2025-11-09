@@ -133,11 +133,32 @@ const colTotalesX = 545  // antes 505
     const today = formatDate(new Date())
     const ensureSpace = (neededHeight = 70) => {
       if (yPosition < neededHeight) {
+        // 🆕 Crear nueva página
         page = pdfDoc.addPage([595.28, 841.89])
         const { height: newHeight } = page.getSize()
-        yPosition = newHeight - 100
+        yPosition = newHeight - 80
+    
+        // 🧭 Redibujar encabezado de tabla automáticamente
+        page.drawText("Garage Mitre", {
+          x: 50,
+          y: yPosition + 40,
+          size: fontSize + 2,
+          font: fontBold,
+        })
+    
+        page.drawText("Planilla de Caja (continuación)", {
+          x: 250,
+          y: yPosition + 40,
+          size: fontSize + 2,
+          font: fontBold,
+        })
+    
+        yPosition -= 10
+    
+        drawTableHeader()
       }
     }
+    
     const drawVerticalLines = (y: number) => {
       const columnPositions = [120, 300, 380] // líneas más a la derecha
       columnPositions.forEach((x) => {
