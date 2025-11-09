@@ -95,15 +95,17 @@ export default async function generateBoxList(boxList: BoxList, userName: string
     let yPosition = height - 50
 
     // Ajuste de márgenes y columnas
-    const tableLeft = 30
-    const tableRight = 520
+// Ajuste de márgenes y columnas
+const tableLeft = 60      // antes 30
+const tableRight = 550    // antes 520
 
-    const colFechaX = 40
-    const colDescX = 155
-    const colEntradasX = 290
-    const colSalidasX = 355
-    const colSubtotalesX = 430
-    const colTotalesX = 505
+const colFechaX = 40      // antes 40
+const colDescX = 125      // antes 155
+const colEntradasX = 290  // antes 290
+const colSalidasX = 370  // antes 355
+const colSubtotalesX = 475 // antes 430
+const colTotalesX = 545  // antes 505
+
 
     const formatNumber = (num: number): string => {
       if (num === 0) return "0"
@@ -137,16 +139,17 @@ export default async function generateBoxList(boxList: BoxList, userName: string
       }
     }
     const drawVerticalLines = (y: number) => {
-      const columnPositions = [130, 275, 345, 415, 490, 560]
+      const columnPositions = [120, 300, 380] // líneas más a la derecha
       columnPositions.forEach((x) => {
         page.drawLine({
           start: { x, y: y + 22 },
           end: { x, y: y - 22 },
           thickness: 0.5,
-          color: rgb(0.85, 0.85, 0.85),
+          color: rgb(0.80, 0.80, 0.80),
         })
       })
     }
+    
 
     // ==============================
     //  Encabezado superior
@@ -200,13 +203,15 @@ export default async function generateBoxList(boxList: BoxList, userName: string
     //  Encabezado de tabla (como la foto)
     // ==============================
     const drawTableHeader = () => {
-      page.drawRectangle({
-        x: tableLeft,
-        y: yPosition - 28,
-        width: tableRight - tableLeft + 40,
-        height: 26,
-        color: rgb(0.92, 0.92, 0.92),
-      })
+// 🧭 Ocupa toda la hoja A4 (de borde a borde)
+page.drawRectangle({
+  x: 0, // ✅ empieza en el borde izquierdo
+  y: yPosition - 28,
+  width: 595.28, // ✅ cubre todo el ancho de la hoja A4
+  height: 26,
+  color: rgb(0.80, 0.80, 0.80),
+})
+
       const headerY = yPosition - 19
       page.drawText("Fecha", { x: colFechaX, y: headerY, size: fontSize, font: fontBold })
       page.drawText("Descripción", { x: colDescX, y: headerY, size: fontSize, font: fontBold })
@@ -225,11 +230,11 @@ export default async function generateBoxList(boxList: BoxList, userName: string
     const drawSectionHeaderRow = (title: string) => {
       ensureSpace(80)
       page.drawRectangle({
-        x: tableLeft,
+        x: 0, // ✅ empieza en el borde izquierdo
         y: yPosition - 16,
-        width: tableRight - tableLeft + 40,
-        height: 16,
-        color: rgb(0.95, 0.95, 0.95),
+        width: 595.28, // ✅ cubre todo el ancho de la hoja A4
+        height: 18,
+        color: rgb(0.80, 0.80, 0.80),
       })
 
       const upperTitle = title.toUpperCase()
@@ -261,11 +266,11 @@ export default async function generateBoxList(boxList: BoxList, userName: string
       ensureSpace(50)
       const neto = totalEntrada - totalSalida
       page.drawRectangle({
-        x: tableLeft,
-        y: yPosition - 26,
-        width: tableRight - tableLeft + 40,
+        x: 0, // ✅ empieza en el borde izquierdo
+        y: yPosition - 28,
+        width: 595.28, // ✅ cubre todo el ancho de la hoja A4
         height: 26,
-        color: rgb(0.94, 0.94, 0.94),
+        color: rgb(0.80, 0.80, 0.80),
       })
       const textY = yPosition - 18
       page.drawText("Subtotal", { x: colFechaX, y: textY, size: fontSize, font: fontBold })
@@ -283,14 +288,15 @@ export default async function generateBoxList(boxList: BoxList, userName: string
     const drawTotalGeneralRow = (total: number) => {
       ensureSpace(80)
       page.drawRectangle({
-        x: tableLeft,
-        y: yPosition - 32,
-        width: tableRight - tableLeft + 40,
-        height: 34,
-        color: rgb(0.82, 0.82, 0.82),
+        x: 0, // ✅ empieza en el borde izquierdo
+        y: yPosition - 40,
+        width: 595.28, // ✅ cubre todo el ancho de la hoja A4
+        height: 32,
+        color: rgb(0.80, 0.80, 0.80),
       })
+      
       const textY = yPosition - 22
-      page.drawText("Total General", { x: colDescX + 10, y: textY, size: fontSize + 0.5, font: fontBold })
+      page.drawText("Total General", { x: 40, y: textY, size: fontSize + 0.5, font: fontBold })
       page.drawText(formatNumber(total), { x: colTotalesX, y: textY, size: fontSize + 0.5, font: fontBold })
       yPosition -= 46
     }
@@ -338,49 +344,51 @@ export default async function generateBoxList(boxList: BoxList, userName: string
       items: ReceiptPayment[],
       dataExtractor: (item: any) => [string, number, string, string, string?],
     ) => {
-      yPosition -= 6
+      yPosition -= 5
       drawSectionHeaderRow(title)
-
+    
       let total = 0
       let cashTotal = 0
       let transferTotal = 0
-
+    
       if (items.length > 0) {
         items.forEach((item) => {
           ensureSpace(40)
-
+    
           const [desc, priceStr, dateNow, paymentType, vehicleOwner] = dataExtractor(item)
           const price = Number(priceStr)
-
-          if (paymentType === "TR" || paymentType === "CR" || paymentType === "TP") {
+    
+          // 🧮 Acumuladores según tipo de pago
+          if (paymentType === "TR" || paymentType === "CR" || paymentType === "AT") {
             transferTotal += price
           } else if (paymentType === "EF" || paymentType === "CH") {
             cashTotal += price
           }
-
+    
+          // 📅 Fecha
           page.drawText(dateNow, {
             x: colFechaX,
             y: yPosition - 5,
             size: fontSize,
             font,
           })
-
+    
+          // 🧾 Descripción + tipo + propietario
           let descText = desc
-          if (vehicleOwner) {
-            descText += ` (${vehicleOwner})`
-          }
-
+          if (paymentType) descText += ` (${paymentType})`
+          if (vehicleOwner) descText += ` (${vehicleOwner})`
+    
           const maxDescWidth = colEntradasX - colDescX - 30
           const truncatedDesc = truncateText(descText, maxDescWidth, font, fontSize)
-
+    
           page.drawText(truncatedDesc, {
             x: colDescX + 10,
             y: yPosition - 5,
             size: fontSize,
             font,
           })
-
-          // Entradas (EF/CH)
+    
+          // ✅ EFECTIVO → solo en entradas, positivo
           if (paymentType === "EF" || paymentType === "CH") {
             page.drawText(formatNumber(price), {
               x: colEntradasX + 20,
@@ -389,16 +397,17 @@ export default async function generateBoxList(boxList: BoxList, userName: string
               font,
             })
           }
-
-          // Salidas (TR/CR/TP) y reflejo en entradas
-          if (paymentType === "TR" || paymentType === "CR" || paymentType === "TP") {
+    
+          // ✅ TRANSFERENCIA → en ambas columnas (entrada y salida)
+          if (paymentType === "TR" || paymentType === "CR" || paymentType === "AT") {
+            // Entrada
             page.drawText(formatNumber(price), {
               x: colEntradasX + 20,
               y: yPosition - 5,
               size: fontSize,
               font,
             })
-
+            // Salida
             page.drawText(`- ${formatNumber(price)}`, {
               x: colSalidasX + 20,
               y: yPosition - 5,
@@ -406,13 +415,13 @@ export default async function generateBoxList(boxList: BoxList, userName: string
               font,
             })
           }
-
+    
           drawVerticalLines(yPosition)
           yPosition -= 22
-
           drawRowSeparator()
         })
-
+    
+        // 🧾 Total general: entradas (efectivo + transferencias) sin invertir signo
         total = cashTotal + transferTotal
       } else {
         page.drawText("No se registraron datos", {
@@ -422,12 +431,13 @@ export default async function generateBoxList(boxList: BoxList, userName: string
           font,
         })
         yPosition -= 24
-
         drawRowSeparator()
       }
-
+    
+      // 🧮 Subtotal: entradas y salidas separadas correctamente
       drawSubtotalRow(total, transferTotal)
     }
+    
 
     // Varios (otros pagos, ingresos/egresos)
     const addDataSectionExpense = (title: string, items: OtherPayment[], dataExtractor: (item: any) => string[]) => {
@@ -540,7 +550,7 @@ export default async function generateBoxList(boxList: BoxList, userName: string
               : receiptPayment.paymentType === "CREDIT"
                 ? "CR"
                 : receiptPayment.paymentType === "TP"
-                  ? "TP"
+                  ? "AT"
                   : "Desconocido"
 
       return [
@@ -572,7 +582,7 @@ export default async function generateBoxList(boxList: BoxList, userName: string
               : receiptPayment.paymentType === "CREDIT"
                 ? "CR"
                 : receiptPayment.paymentType === "TP"
-                  ? "TP"
+                  ? "AT"
                   : "Desconocido"
 
       return [ownerName, total, formatDateA(receipt.dateNow), paymentType]
@@ -583,7 +593,12 @@ export default async function generateBoxList(boxList: BoxList, userName: string
       const receipt = receiptPayment.receipt
       const total = receiptPayment.price
       const vehicleCustomer = receipt.customer.vehicleRenters?.[0]?.vehicle?.customer
-      const vehicleOwner = vehicleCustomer ? `${vehicleCustomer.firstName} ${vehicleCustomer.lastName}` : ""
+      const vehicleOwner = vehicleCustomer ? `${vehicleCustomer.lastName} ${vehicleCustomer.firstName}` : ""
+      const lastReceiptPrice =
+  vehicleCustomer?.receipts?.length
+    ? vehicleCustomer.receipts[vehicleCustomer.receipts.length - 1].price
+    : 0
+    const totalParcial = total - lastReceiptPrice
 
       const paymentType =
         receiptPayment.paymentType === "TRANSFER"
@@ -595,12 +610,12 @@ export default async function generateBoxList(boxList: BoxList, userName: string
               : receiptPayment.paymentType === "CREDIT"
                 ? "CR"
                 : receiptPayment.paymentType === "TP"
-                  ? "TP"
+                  ? "AT"
                   : "Desconocido"
 
       return [
         `${receipt.customer.lastName} ${receipt.customer.firstName}`,
-        total,
+        totalParcial,
         formatDateA(receipt.dateNow),
         paymentType,
         vehicleOwner,
@@ -685,14 +700,7 @@ export default async function generateBoxList(boxList: BoxList, userName: string
   }
 }
 
-// Helper function to truncate text
+// Helper function to handle text wrapping (ya no trunca)
 const truncateText = (text: string, maxWidth: number, font: any, fontSize: number): string => {
-  const textWidth = font.widthOfTextAtSize(text, fontSize)
-  if (textWidth <= maxWidth) return text
-
-  let truncated = text
-  while (font.widthOfTextAtSize(truncated + "...", fontSize) > maxWidth && truncated.length > 0) {
-    truncated = truncated.slice(0, -1)
-  }
-  return truncated + "..."
+  return text // 🔥 devuelve siempre el texto completo
 }

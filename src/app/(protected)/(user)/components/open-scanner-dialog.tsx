@@ -38,6 +38,8 @@ interface PaymentTypeReceiptDialogProps {
   onClose: () => void;
   receipt?: Receipt;
   customer?: Customer;
+  customerType?: string; 
+
 }
 
 export function OpenScannerDialog({
@@ -46,6 +48,7 @@ export function OpenScannerDialog({
   onClose,
   receipt,
   customer,
+  customerType
 }: PaymentTypeReceiptDialogProps) {
   const [isPending, setIsPending] = useState(false);
 
@@ -98,6 +101,10 @@ export function OpenScannerDialog({
       setIsPending(false);
     }
   };
+  const typeOfCustomer =
+  receipt?.customer?.customerType ||
+  customerType ||
+  null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -181,19 +188,26 @@ export function OpenScannerDialog({
                     <FormItem className="flex-1">
                       <FormLabel>Tipo de pago</FormLabel>
                       <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <SelectTrigger>
                             <SelectValue placeholder="Tipo" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="TRANSFER">Transferencia</SelectItem>
-                            <SelectItem value="CASH">Efectivo</SelectItem>
-                            <SelectItem value="CHECK">Cheque</SelectItem>
-                            <SelectItem value="CREDIT">Crédito</SelectItem>
+                            {typeOfCustomer === "PRIVATE" ? (
+                              <>
+                                <SelectItem value="TRANSFER">Transferencia</SelectItem>
+                                <SelectItem value="CASH">Efectivo</SelectItem>
+                              </>
+                            ) : (
+                              <>
+                                <SelectItem value="TRANSFER">Transferencia</SelectItem>
+                                <SelectItem value="CASH">Efectivo</SelectItem>
+                                <SelectItem value="CHECK">Cheque</SelectItem>
+                                <SelectItem value="CREDIT">Crédito</SelectItem>
+                              </>
+                            )}
                           </SelectContent>
+
                         </Select>
                       </FormControl>
                       <FormMessage />

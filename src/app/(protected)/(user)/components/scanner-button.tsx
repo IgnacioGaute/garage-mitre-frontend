@@ -218,6 +218,7 @@ const handleConfirm = async (data: ReceiptSchemaType) => {
       onClose={() => setDialogOpen(false)}
       customer={customer}
       receipt={receipt}
+      customerType={customer?.customerType}
     />
   </div>
 );

@@ -220,7 +220,7 @@ export function PaymentSummaryTable({
       case 'CREDIT':
         return 'Crédito';
       default:
-        return 'Desconocido';
+        return 'Automatico';
     }
   }
 
@@ -310,8 +310,14 @@ export function PaymentSummaryTable({
 
                     {/* Monto */}
                     <TableCell className="text-right pr-6 align-middle">
-                      <span className="block pr-5">${receiptOwner.startAmount}</span>
+                      <span className="block pr-5">
+                        $
+                        {receiptOwner.price && receiptOwner.price > 0
+                          ? receiptOwner.price
+                          : receiptOwner.startAmount}
+                      </span>
                     </TableCell>
+
 
                     {/* Imprimir */}
                     <TableCell className="text-center">
@@ -440,6 +446,7 @@ export function PaymentSummaryTable({
         onClose={() => setOpenPaymentDialog(false)}
         receipt={selectedReceiptForPayment ?? undefined}
         customer={customer}
+        customerType={customer.customerType}
       />
     </>
   );
