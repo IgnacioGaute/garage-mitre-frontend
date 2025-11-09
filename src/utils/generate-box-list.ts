@@ -99,10 +99,10 @@ export default async function generateBoxList(boxList: BoxList, userName: string
 const tableLeft = 60      // antes 30
 const tableRight = 550    // antes 520
 
-const colFechaX = 40      // antes 40
-const colDescX = 125      // antes 155
-const colEntradasX = 290  // antes 290
-const colSalidasX = 370  // antes 355
+const colFechaX = 30      // antes 40
+const colDescX = 79      // antes 155
+const colEntradasX = 315  // antes 290
+const colSalidasX = 395  // antes 355
 const colSubtotalesX = 475 // antes 430
 const colTotalesX = 545  // antes 505
 
@@ -131,14 +131,19 @@ const colTotalesX = 545  // antes 505
     }
 
     const today = formatDate(new Date())
+    let isFirstPage = true // 👈 agregalo al principio de la función generateBoxList()
+
     const ensureSpace = (neededHeight = 70) => {
       if (yPosition < neededHeight) {
-        // 🆕 Crear nueva página
+        // 🆕 Crear nueva página solo si ya no hay espacio
         page = pdfDoc.addPage([595.28, 841.89])
         const { height: newHeight } = page.getSize()
         yPosition = newHeight - 80
     
-        // 🧭 Redibujar encabezado de tabla automáticamente
+        // ⚙️ A partir de la segunda hoja
+        isFirstPage = false
+    
+        // 🧭 Encabezado de continuación
         page.drawText("Garage Mitre", {
           x: 50,
           y: yPosition + 40,
@@ -153,14 +158,41 @@ const colTotalesX = 545  // antes 505
           font: fontBold,
         })
     
-        yPosition -= 10
+        // 🔢 Número de página
+        const currentPage = pdfDoc.getPageCount()
+        page.drawText(`Página ${currentPage}`, {
+          x: 500,
+          y: yPosition + 40,
+          size: fontSize - 1,
+          font,
+        })
     
-        drawTableHeader()
+        // Pequeño espacio visual
+        yPosition -= 20
+    
+        // 🔁 Redibujar encabezado de tabla
+        page.drawRectangle({
+          x: 0,
+          y: yPosition - 28,
+          width: 595.28,
+          height: 26,
+          color: rgb(0.80, 0.80, 0.80),
+        })
+    
+        const headerY = yPosition - 19
+        page.drawText("Fecha", { x: colFechaX, y: headerY, size: fontSize, font: fontBold })
+        page.drawText("Descripción", { x: colDescX, y: headerY, size: fontSize, font: fontBold })
+        page.drawText("Entradas", { x: colEntradasX, y: headerY, size: fontSize, font: fontBold })
+        page.drawText("Salidas", { x: colSalidasX, y: headerY, size: fontSize, font: fontBold })
+        page.drawText("Subtotales", { x: colSubtotalesX, y: headerY, size: fontSize, font: fontBold })
+        page.drawText("Totales", { x: colTotalesX, y: headerY, size: fontSize, font: fontBold })
+    
+        yPosition -= 40
       }
     }
     
     const drawVerticalLines = (y: number) => {
-      const columnPositions = [120, 300, 380] // líneas más a la derecha
+      const columnPositions = [85, 300, 380] // líneas más a la derecha
       columnPositions.forEach((x) => {
         page.drawLine({
           start: { x, y: y + 22 },
@@ -346,6 +378,8 @@ page.drawRectangle({
           yPosition -= 24
           drawRowSeparator()
         })
+        drawVerticalLines(yPosition)
+
       } else {
         page.drawText("No se registraron datos", {
           x: colDescX + 10,
