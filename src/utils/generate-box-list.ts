@@ -434,7 +434,8 @@ page.drawRectangle({
         items.forEach((item) => {
           ensureSpace(40)
     
-          let [desc, priceStr, dateNow, paymentType, vehicleOwner] = dataExtractor(item)
+          const [desc, priceStr, dateNow, paymentType, vehicleOwner] = dataExtractor(item)
+
           const price = Number(priceStr)
     
           // 🧮 Acumuladores según tipo de pago
@@ -454,7 +455,8 @@ page.drawRectangle({
     
           // 🧾 Descripción + tipo + propietario
           // 🔁 Si es MIX, mostrarlo como (AT) en texto pero manejarlo como EFECTIVO
-          let displayType = paymentType === "MIX" ? "AT" : paymentType
+          const displayType = paymentType === "MIX" ? "AT" : paymentType
+
     
           let descText = desc
           if (displayType) descText += ` (${displayType})`
