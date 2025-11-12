@@ -32,51 +32,75 @@ export default async function generateBoxList(boxList: BoxList, userName: string
     const ticketDays = Array.isArray(ticketRegistrationForDays) ? ticketRegistrationForDays : []
     const validReceipts = Array.isArray(receipts) ? receipts : []
     const otherPaymentsRegistration = Array.isArray(otherPayments) ? otherPayments : []
-
+    
+    // ✅ Filtramos nulos al inicio para evitar errores en todo el flujo
+    const safeReceiptPayments = Array.isArray(receiptPayments)
+      ? receiptPayments.filter((rp) => rp && rp.receipt && rp.receipt.customer)
+      : []
+    
+    const safePaymentHistory = Array.isArray(paymentHistoryOnAccount)
+      ? paymentHistoryOnAccount.filter((p) => p && p.receipt && p.receipt.customer)
+      : []
+    
     console.log(
       "TP detectados",
-      receiptPayments.filter(
-        (rp) => rp.paymentType === "TP" || rp.receipt?.paymentType === "TP" || rp.receipt?.receiptTypeKey === "TP",
+      safeReceiptPayments.filter(
+        (rp) =>
+          rp.paymentType === "TP" ||
+          rp.receipt?.paymentType === "TP" ||
+          rp.receipt?.receiptTypeKey === "TP",
       ),
     )
-
-    const owners = receiptPayments.filter(
+    
+    // 🏠 Propietarios (owners)
+    const owners = safeReceiptPayments.filter(
       (receiptPayment) =>
-        receiptPayment &&
-        (receiptPayment.receipt.customer?.customerType === "OWNER" ||
-          receiptPayment.paymentType === "TP" ||
-          receiptPayment.receipt?.paymentType === "TP" ||
-          receiptPayment.receipt?.receiptTypeKey === "TP"),
+        receiptPayment.receipt?.customer?.customerType === "OWNER" ||
+        receiptPayment.paymentType === "TP" ||
+        receiptPayment.receipt?.paymentType === "TP" ||
+        receiptPayment.receipt?.receiptTypeKey === "TP",
     )
-
+    
+    // 🧾 Tipos de recibo asociados a inquilinos
     const renterReceiptTypes = [
       "JOSE_RICARDO_AZNAR",
       "CARLOS_ALBERTO_AZNAR",
       "NIDIA_ROSA_MARIA_FONTELA",
       "ALDO_RAUL_FONTELA",
     ]
-    const renters = receiptPayments.filter((receiptPayment) =>
-      renterReceiptTypes.includes(receiptPayment.receipt?.receiptTypeKey),
+    
+    // 👥 Inquilinos (renters)
+    const renters = safeReceiptPayments.filter((receiptPayment) =>
+      renterReceiptTypes.includes(receiptPayment.receipt?.receiptTypeKey ?? ""),
     )
-    const privates = receiptPayments.filter(
+    
+    // 🧍 Privados (privates)
+    const privates = safeReceiptPayments.filter(
       (receiptPayment) =>
-        receiptPayment.receipt?.customer.customerType === "PRIVATE" &&
+        receiptPayment.receipt?.customer?.customerType === "PRIVATE" &&
         receiptPayment.paymentType !== "TP" &&
         receiptPayment.receipt?.paymentType !== "TP" &&
         receiptPayment.receipt?.receiptTypeKey !== "TP",
     )
-
-    const paymentHistoryOwners = paymentHistoryOnAccount.filter((p) => p.receipt?.customer?.customerType === "OWNER")
-
-    const paymentHistoryRenters = paymentHistoryOnAccount.filter((p) =>
-      renterReceiptTypes.includes(p.receipt?.receiptTypeKey),
+    
+    // 💳 Pagos en cuenta (paymentHistory)
+    const paymentHistoryOwners = safePaymentHistory.filter(
+      (p) => p.receipt?.customer?.customerType === "OWNER",
     )
-
-    const paymentHistoryPrivates = paymentHistoryOnAccount.filter((p) => p.receipt?.customer.customerType === "PRIVATE")
-
+    
+    const paymentHistoryRenters = safePaymentHistory.filter(
+      (p) => renterReceiptTypes.includes(p.receipt?.receiptTypeKey ?? ""),
+    )
+    
+    const paymentHistoryPrivates = safePaymentHistory.filter(
+      (p) => p.receipt?.customer?.customerType === "PRIVATE",
+    )
+    
+    // 🧩 Combinaciones finales
     const combinedOwners = [...owners, ...paymentHistoryOwners]
     const combinedRenters = [...renters, ...paymentHistoryRenters]
     const combinedPrivates = [...privates, ...paymentHistoryPrivates]
+    
 
     // 🧮 Totales globales
     let totalEfectivo = 0
@@ -410,13 +434,13 @@ page.drawRectangle({
         items.forEach((item) => {
           ensureSpace(40)
     
-          const [desc, priceStr, dateNow, paymentType, vehicleOwner] = dataExtractor(item)
+          let [desc, priceStr, dateNow, paymentType, vehicleOwner] = dataExtractor(item)
           const price = Number(priceStr)
     
           // 🧮 Acumuladores según tipo de pago
           if (paymentType === "TR" || paymentType === "CR" || paymentType === "AT") {
             transferTotal += price
-          } else if (paymentType === "EF" || paymentType === "CH") {
+          } else if (paymentType === "EF" || paymentType === "CH" || paymentType === "MIX") {
             cashTotal += price
           }
     
@@ -429,8 +453,11 @@ page.drawRectangle({
           })
     
           // 🧾 Descripción + tipo + propietario
+          // 🔁 Si es MIX, mostrarlo como (AT) en texto pero manejarlo como EFECTIVO
+          let displayType = paymentType === "MIX" ? "AT" : paymentType
+    
           let descText = desc
-          if (paymentType) descText += ` (${paymentType})`
+          if (displayType) descText += ` (${displayType})`
           if (vehicleOwner) descText += ` (${vehicleOwner})`
     
           const maxDescWidth = colEntradasX - colDescX - 30
@@ -443,8 +470,8 @@ page.drawRectangle({
             font,
           })
     
-          // ✅ EFECTIVO → solo en entradas, positivo
-          if (paymentType === "EF" || paymentType === "CH") {
+          // ✅ EFECTIVO / CHEQUE / MIX → solo ENTRADAS (positivo)
+          if (paymentType === "EF" || paymentType === "CH" || paymentType === "MIX") {
             page.drawText(formatNumber(price), {
               x: colEntradasX + 20,
               y: yPosition - 5,
@@ -453,16 +480,15 @@ page.drawRectangle({
             })
           }
     
-          // ✅ TRANSFERENCIA → en ambas columnas (entrada y salida)
+          // ✅ TRANSFERENCIAS / CRÉDITOS / AT → entrada + salida
           if (paymentType === "TR" || paymentType === "CR" || paymentType === "AT") {
-            // Entrada
             page.drawText(formatNumber(price), {
               x: colEntradasX + 20,
               y: yPosition - 5,
               size: fontSize,
               font,
             })
-            // Salida
+    
             page.drawText(`- ${formatNumber(price)}`, {
               x: colSalidasX + 20,
               y: yPosition - 5,
@@ -476,7 +502,6 @@ page.drawRectangle({
           drawRowSeparator()
         })
     
-        // 🧾 Total general: entradas (efectivo + transferencias) sin invertir signo
         total = cashTotal + transferTotal
       } else {
         page.drawText("No se registraron datos", {
@@ -489,7 +514,6 @@ page.drawRectangle({
         drawRowSeparator()
       }
     
-      // 🧮 Subtotal: entradas y salidas separadas correctamente
       drawSubtotalRow(total, transferTotal)
     }
     
@@ -627,6 +651,7 @@ page.drawRectangle({
         ? `${vehicleCustomer.lastName} ${vehicleCustomer.firstName}`
         : `${receipt.customer.lastName} ${receipt.customer.firstName}`
 
+
       const paymentType =
         receiptPayment.paymentType === "TRANSFER"
           ? "TR"
@@ -638,6 +663,8 @@ page.drawRectangle({
                 ? "CR"
                 : receiptPayment.paymentType === "TP"
                   ? "AT"
+                   : receiptPayment.paymentType === "MIX"
+                  ? "MIX"
                   : "Desconocido"
 
       return [ownerName, total, formatDateA(receipt.dateNow), paymentType]
