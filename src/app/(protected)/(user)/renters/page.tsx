@@ -1,4 +1,5 @@
-
+export const dynamic = "force-dynamic"
+export const fetchCache = "force-no-store"
 import { CreditCardIcon } from 'lucide-react';
 import { RentersTable } from './components/renters-table';
 import { renterColumns } from './components/renter-columns';

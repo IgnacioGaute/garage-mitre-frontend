@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+export const fetchCache = "force-no-store"
 import { ParkingCircle, FileSpreadsheet } from 'lucide-react';
 import { getParkingTypes } from '@/services/customers.service';
 import { ParkingTypeTable } from './components/parking-types-table';

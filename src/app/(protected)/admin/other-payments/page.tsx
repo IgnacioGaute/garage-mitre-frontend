@@ -1,4 +1,5 @@
-
+export const dynamic = "force-dynamic"
+export const fetchCache = "force-no-store"
 import { Banknote, CreditCardIcon, User, Wallet } from 'lucide-react';
 import CardOtherPayment from './components/create-other-payment-card';
 import { expenseColumns } from './components/other-payment-columns';

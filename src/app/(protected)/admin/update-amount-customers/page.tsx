@@ -1,4 +1,5 @@
-
+export const dynamic = "force-dynamic"
+export const fetchCache = "force-no-store"
 import { Banknote, CreditCardIcon, DollarSignIcon, User, Wallet } from 'lucide-react';
 import UpdateAmountCustomerCard from './components/update-amount-customer-card';
 

@@ -1,4 +1,5 @@
-
+export const dynamic = "force-dynamic"
+export const fetchCache = "force-no-store"
 import { CreditCardIcon, User, Wallet } from 'lucide-react';
 import { getCustomers, getinterests, getParkingTypes } from '@/services/customers.service';
 import { getUsers } from '@/services/users.service';

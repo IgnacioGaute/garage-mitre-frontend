@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+export const fetchCache = "force-no-store"
 import { Ticket, FileSpreadsheet } from 'lucide-react';
 import { getTickets, getTicketsPrice } from '@/services/tickets.service';
 import { TicketsTable } from './components/tickets-table';

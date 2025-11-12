@@ -1,4 +1,5 @@
-
+export const dynamic = "force-dynamic"
+export const fetchCache = "force-no-store"
 import { CreditCardIcon } from 'lucide-react';
 import { findReceipts, getCustomers, getCustomerThird, getCustomerVehicleRenter } from '@/services/customers.service';
 import { DropdownMenuAction } from '../components/customers/drop-menu-actions';

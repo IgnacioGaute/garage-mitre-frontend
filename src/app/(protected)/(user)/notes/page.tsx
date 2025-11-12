@@ -1,4 +1,5 @@
-
+export const dynamic = "force-dynamic"
+export const fetchCache = "force-no-store"
 import { AlertCircle, CreditCardIcon } from 'lucide-react';
 import { NotesTable } from './components/notes-table';
 import { noteColumns } from './components/note-columns';
