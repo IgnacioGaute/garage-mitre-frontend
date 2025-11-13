@@ -34,3 +34,33 @@ export const findBoxByDate = async (date: string, authToken?: string): Promise<B
     return null;
   }
 };
+
+
+export const updateBoxByDate = async (
+  date: string,
+  totalPrice: number,
+  authToken?: string
+): Promise<BoxList | null> => {
+  try {
+    const response = await fetch(`${BASE_URL}/box-lists/update-by-date/${date}`, {
+      method: "PATCH",
+      headers: await getAuthHeaders(authToken),
+      body: JSON.stringify({ totalPrice }),
+    });
+
+    if (!response.ok) {
+      console.error(`❌ Error al actualizar BoxList para la fecha: ${date}`);
+      return null;
+    }
+
+    const data = await response.json();
+    return data as BoxList;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(`Error al actualizar BoxList: ${error.message}`);
+    } else {
+      console.error("Error desconocido al actualizar BoxList", error);
+    }
+    return null;
+  }
+};
