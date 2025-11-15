@@ -417,109 +417,169 @@ page.drawRectangle({
       drawSubtotalRow(total, 0)
     }
 
-    // Recibos (entradas + salidas / transferencias)
     const addDataSectionReceipt = (
       title: string,
       items: ReceiptPayment[],
-      dataExtractor: (item: any) => [string, number, string, string, string?],
+      dataExtractor: (
+        item: any
+      ) => [string, number, string, string, string?, number?],
     ) => {
-      yPosition -= 5
-      drawSectionHeaderRow(title)
+      yPosition -= 5;
+      drawSectionHeaderRow(title);
     
-      let total = 0
-      let cashTotal = 0
-      let transferTotal = 0
+      let totalEntradas = 0;
+      let totalSalidas = 0;
     
       if (items.length > 0) {
         items.forEach((item) => {
-          ensureSpace(40)
+          ensureSpace(40);
     
-          const [desc, priceStr, dateNow, paymentType, vehicleOwner] = dataExtractor(item)
-
-          const price = Number(priceStr)
+          const [
+            desc,
+            priceStr,
+            dateNow,
+            paymentType,
+            vehicleOwner,
+            totalSalExpe,
+          ] = dataExtractor(item);
     
-          // 🧮 Acumuladores según tipo de pago
-          if (paymentType === "TR" || paymentType === "CR" || paymentType === "AT") {
-            transferTotal += price
-          } else if (paymentType === "EF" || paymentType === "CH" || paymentType === "MIX") {
-            cashTotal += price
-          }
+          const price = Number(priceStr);
     
-          // 📅 Fecha
+          // Fecha
           page.drawText(dateNow, {
             x: colFechaX,
             y: yPosition - 5,
             size: fontSize,
             font,
-          })
+          });
     
-          // 🧾 Descripción + tipo + propietario
-          // 🔁 Si es MIX, mostrarlo como (AT) en texto pero manejarlo como EFECTIVO
-          const displayType = paymentType === "MIX" ? "AT" : paymentType
-
+          // Texto descripción
+          const displayType = paymentType === "MIX" ? "AT" : paymentType;
     
-          let descText = desc
-          if (displayType) descText += ` (${displayType})`
-          if (vehicleOwner) descText += ` (${vehicleOwner})`
+          let descText = desc;
+          if (displayType) descText += ` (${displayType})`;
+          if (vehicleOwner) descText += ` (${vehicleOwner})`;
     
-          const maxDescWidth = colEntradasX - colDescX - 30
-          const truncatedDesc = truncateText(descText, maxDescWidth, font, fontSize)
+          const maxDescWidth = colEntradasX - colDescX - 30;
+          const truncatedDesc = truncateText(
+            descText,
+            maxDescWidth,
+            font,
+            fontSize
+          );
     
           page.drawText(truncatedDesc, {
             x: colDescX + 10,
             y: yPosition - 5,
             size: fontSize,
             font,
-          })
+          });
     
-          // ✅ EFECTIVO / CHEQUE / MIX → solo ENTRADAS (positivo)
-          if (paymentType === "EF" || paymentType === "CH" || paymentType === "MIX") {
+          // ======================================================
+          // 🟢 REGLA EXPENSAS — AT FUNCIONA COMO EFECTIVO
+          // ======================================================
+          const isExpensa = title.toLowerCase() === "expensas";
+    
+          const treatAsCash =
+            paymentType === "EF" ||
+            paymentType === "CH" ||
+            paymentType === "MIX" ||
+            (isExpensa && paymentType === "AT");
+    
+          if (treatAsCash) {
+            // Entrada
+            totalEntradas += price;
+    
             page.drawText(formatNumber(price), {
               x: colEntradasX + 20,
               y: yPosition - 5,
               size: fontSize,
               font,
-            })
+            });
+    
+            // SIN SALIDA
+            drawVerticalLines(yPosition);
+            yPosition -= 22;
+            drawRowSeparator();
+            return;
           }
     
-          // ✅ TRANSFERENCIAS / CRÉDITOS / AT → entrada + salida
-          if (paymentType === "TR" || paymentType === "CR" || paymentType === "AT") {
-            page.drawText(formatNumber(price), {
-              x: colEntradasX + 20,
+          // ======================================================
+          // 🔵 REGLA TERCEROS — salida con TOTAL COMPLETO
+          // ======================================================
+          const isTercero = title.toLowerCase() === "terceros";
+    
+          // Entrada normal
+          totalEntradas += price;
+    
+          page.drawText(formatNumber(price), {
+            x: colEntradasX + 20,
+            y: yPosition - 5,
+            size: fontSize,
+            font,
+          });
+    
+          // Salida para TERCEROS
+          if (isTercero && totalSalExpe) {
+            totalSalidas += totalSalExpe;
+    
+            page.drawText(`- ${formatNumber(totalSalExpe)}`, {
+              x: colSalidasX + 20,
               y: yPosition - 5,
               size: fontSize,
               font,
-            })
+            });
+          }
+    
+          // ======================================================
+          // 🔵 EXPENSAS + TR → salida con TOTAL COMPLETO
+          // ======================================================
+          else if (isExpensa && paymentType === "TR") {
+            totalSalidas += totalSalExpe || 0;
+    
+            page.drawText(`- ${formatNumber(totalSalExpe || 0)}`, {
+              x: colSalidasX + 20,
+              y: yPosition - 5,
+              size: fontSize,
+              font,
+            });
+          }
+    
+          // ======================================================
+          // 🔵 CASO NORMAL
+          // ======================================================
+          else {
+            totalSalidas += price;
     
             page.drawText(`- ${formatNumber(price)}`, {
               x: colSalidasX + 20,
               y: yPosition - 5,
               size: fontSize,
               font,
-            })
+            });
           }
     
-          drawVerticalLines(yPosition)
-          yPosition -= 22
-          drawRowSeparator()
-        })
-    
-        total = cashTotal + transferTotal
+          drawVerticalLines(yPosition);
+          yPosition -= 22;
+          drawRowSeparator();
+        });
       } else {
         page.drawText("No se registraron datos", {
           x: colDescX + 10,
           y: yPosition - 5,
           size: fontSize,
           font,
-        })
-        yPosition -= 24
-        drawRowSeparator()
+        });
+        yPosition -= 24;
+        drawRowSeparator();
       }
     
-      drawSubtotalRow(total, transferTotal)
-    }
+      // ============================
+      // 📌 SUBTOTALES CORRECTOS
+      // ============================
+      drawSubtotalRow(totalEntradas, totalSalidas);
+    };
     
-
     // Varios (otros pagos, ingresos/egresos)
     const addDataSectionExpense = (title: string, items: OtherPayment[], dataExtractor: (item: any) => string[]) => {
       yPosition -= 6
@@ -677,7 +737,7 @@ page.drawRectangle({
       const receipt = receiptPayment.receipt
       const total = receiptPayment.price
       const vehicleCustomer = receipt.customer.vehicleRenters?.[0]?.vehicle?.customer
-      const vehicleOwner = vehicleCustomer ? `${vehicleCustomer.lastName} ${vehicleCustomer.firstName}` : ""
+      const vehicleOwner = vehicleCustomer ? `${vehicleCustomer.lastName}` : ""
       const lastReceiptPrice =
   vehicleCustomer?.receipts?.length
     ? vehicleCustomer.receipts[vehicleCustomer.receipts.length - 1].price
@@ -703,6 +763,7 @@ page.drawRectangle({
         formatDateA(receipt.dateNow),
         paymentType,
         vehicleOwner,
+        total
       ]
     })
 

@@ -304,7 +304,7 @@ export function PaymentSummaryTable({
                             ))
                           : receiptOwner.paymentType
                           ? translatePaymentType(receiptOwner.paymentType)
-                          : 'Transferencia'}
+                          : ''}
                       </div>
                     </TableCell>
 
