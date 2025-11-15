@@ -534,16 +534,18 @@ page.drawRectangle({
           // ======================================================
           // 🔵 EXPENSAS + TR → salida con TOTAL COMPLETO
           // ======================================================
-          else if (isExpensa && paymentType === "TR") {
-            totalSalidas += totalSalExpe || 0;
-    
-            page.drawText(`- ${formatNumber(totalSalExpe || 0)}`, {
+          // 🔵 TR GENERALES — siempre salida = price
+          else if (paymentType === "TR" && !isTercero) {
+            totalSalidas += price;
+
+            page.drawText(`- ${formatNumber(price)}`, {
               x: colSalidasX + 20,
               y: yPosition - 5,
               size: fontSize,
               font,
             });
           }
+
     
           // ======================================================
           // 🔵 CASO NORMAL
