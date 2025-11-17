@@ -30,10 +30,12 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
   const [error, setError] = useState<string | null>(null);
   const [newTotal, setNewTotal] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // ✅ Moverlo acá
+  const [isEditing, setIsEditing] = useState(false);
   const { data: session } = useSession();
 
-  // 🧭 Obtener datos del boxlist según la fecha seleccionada
+  // ✅ ROLE CHECK
+  const isAdmin = session?.user?.role === "ADMIN";
+
   const fetchData = async (date: Date) => {
     try {
       const formattedDay = dayjs(date)
@@ -62,30 +64,12 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
   }, [selectedDate]);
 
   useEffect(() => {
-    if (open) {
-      fetchData(selectedDate);
-    }
+    if (open) fetchData(selectedDate);
   }, [open]);
 
-  // 📄 Generar PDF
-  const handlePrintPdf = async () => {
-    if (!boxData) {
-      setError("No hay datos disponibles para generar el PDF.");
-      return;
-    }
-
-    try {
-      const pdfBytes = await generateBoxList(boxData, session?.user.email || "");
-      console.log("PDF generado con éxito:", pdfBytes);
-    } catch (err) {
-      console.error("Error generating or sending PDF:", err);
-      setError("Error al generar o enviar el PDF.");
-    }
-  };
-
-  // 💾 Guardar nuevo total
+  // Guardar nuevo total
   const handleUpdateTotal = async () => {
-    if (!boxData) return;
+    if (!boxData || !isAdmin) return; // ⛔ SOLO ADMIN
     setIsSaving(true);
 
     const formattedDate = dayjs(selectedDate)
@@ -115,6 +99,21 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
     }
   };
 
+  const handlePrintPdf = async () => {
+    if (!boxData) {
+      setError("No hay datos disponibles para generar el PDF.");
+      return;
+    }
+
+    try {
+      const pdfBytes = await generateBoxList(boxData, session?.user.email || "");
+      console.log("PDF generado con éxito:", pdfBytes);
+    } catch (err) {
+      console.error("Error generating or sending PDF:", err);
+      setError("Error al generar o enviar el PDF.");
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
@@ -133,12 +132,16 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
               <p className="text-xs font-semibold uppercase tracking-wide">
                 Total del día
               </p>
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                className="text-gray-500 hover:text-accent transition"
-              >
-                <Edit2 size={14} />
-              </button>
+
+              {/* ✏️ SOLO ADMIN VE EL ICONO */}
+              {isAdmin && (
+                <button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="text-gray-500 hover:text-accent transition"
+                >
+                  <Edit2 size={14} />
+                </button>
+              )}
             </div>
 
             {!isEditing ? (
@@ -146,27 +149,29 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
                 ${boxData.totalPrice.toLocaleString("es-AR")}
               </p>
             ) : (
-              <div className="flex items-center gap-2 mt-1">
-                <input
-                  type="number"
-                  value={newTotal}
-                  onChange={(e) => setNewTotal(e.target.value)}
-                  className="w-24 text-center text-lg font-semibold border-b border-gray-400 bg-transparent focus:outline-none focus:border-accent"
-                />
-                <button
-                  onClick={handleUpdateTotal}
-                  disabled={isSaving}
-                  className={`flex items-center gap-1 text-xs px-3 py-1 rounded-md text-white transition
-                    ${
-                      isSaving
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-accent hover:bg-accent-hover"
-                    }`}
-                >
-                  <Check size={12} />
-                  {isSaving ? "..." : "Guardar"}
-                </button>
-              </div>
+              isAdmin && (
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="number"
+                    value={newTotal}
+                    onChange={(e) => setNewTotal(e.target.value)}
+                    className="w-24 text-center text-lg font-semibold border-b border-gray-400 bg-transparent focus:outline-none focus:border-accent"
+                  />
+                  <button
+                    onClick={handleUpdateTotal}
+                    disabled={isSaving}
+                    className={`flex items-center gap-1 text-xs px-3 py-1 rounded-md text-white transition
+                      ${
+                        isSaving
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-accent hover:bg-accent-hover"
+                      }`}
+                  >
+                    <Check size={12} />
+                    {isSaving ? "..." : "Guardar"}
+                  </button>
+                </div>
+              )
             )}
           </div>
         )}
