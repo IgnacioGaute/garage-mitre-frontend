@@ -84,6 +84,26 @@ export function PaymentSummaryTable({
   const totalPages = Math.ceil(receipts.length / pageSize);
   const [updatedCustomer, setUpdatedCustomer] = useState<Customer | null>(null);
 
+  const sortReceiptsMostRecentFirst = (list: Receipt[]) => {
+  return [...list].sort((a, b) => {
+    // Usá la fecha que tenga más sentido para tu “reciente”.
+    // Si querés por pago: paymentDate. Si querés por creación: dateNow.
+    const aDate = a.paymentDate ?? a.dateNow ?? a.startDate ?? null
+    const bDate = b.paymentDate ?? b.dateNow ?? b.startDate ?? null
+
+    const timeA = aDate ? Date.parse(aDate as any) : 0
+    const timeB = bDate ? Date.parse(bDate as any) : 0
+
+    if (isNaN(timeA) && isNaN(timeB)) return 0
+    if (isNaN(timeA)) return 1
+    if (isNaN(timeB)) return -1
+
+    // ✅ DESC: más nuevo primero
+    return timeB - timeA
+  })
+}
+
+
   useEffect(() => {
     if (autoOpen) {
       setOpen(false);
@@ -95,32 +115,24 @@ export function PaymentSummaryTable({
     if (open) {
       startTransition(async () => {
         try {
-          const updatedOwner = await getCustomerById(
-            customer.id,
-            session?.token
-          );
+          const updatedOwner = await getCustomerById(customer.id, session?.token)
           if (updatedOwner) {
-            setUpdatedCustomer(updatedOwner);
-            const sortedReceipts = (updatedOwner.receipts || []).sort(
-              (a, b) => {
-                const dateA = a.dateNow ? Date.parse(a.dateNow) : 0;
-                const dateB = b.dateNow ? Date.parse(b.dateNow) : 0;
-                if (isNaN(dateA) && isNaN(dateB)) return 0;
-                if (isNaN(dateA)) return 1;
-                if (isNaN(dateB)) return -1;
-                return dateA - dateB;
-              }
-            );
-            setReceipts(sortedReceipts);
-            const newTotalPages = Math.ceil(sortedReceipts.length / pageSize);
-            setCurrentPage(newTotalPages > 0 ? newTotalPages : 1);
+            setUpdatedCustomer(updatedOwner)
+
+            // ✅ Orden nuevo (más reciente arriba)
+            const sortedReceipts = sortReceiptsMostRecentFirst(updatedOwner.receipts || [])
+            setReceipts(sortedReceipts)
+
+            // ✅ Como está ordenado newest-first, arrancá arriba
+            setCurrentPage(1)
           }
         } catch (error) {
-          console.error('Error fetching owner receipts:', error);
+          console.error("Error fetching owner receipts:", error)
         }
-      });
+      })
     }
-  }, [open, customer.id]);
+  }, [open, customer.id])
+
 
   const activeCustomer = updatedCustomer || customer;
 
@@ -160,25 +172,22 @@ export function PaymentSummaryTable({
 
   const refreshReceipts = async () => {
     try {
-      const updatedOwner = await getCustomerById(customer.id, session?.token);
+      const updatedOwner = await getCustomerById(customer.id, session?.token)
       if (updatedOwner) {
-        setUpdatedCustomer(updatedOwner);
-        const sortedReceipts = (updatedOwner.receipts || []).sort((a, b) => {
-          const dateA = a.dateNow ? Date.parse(a.dateNow) : 0;
-          const dateB = b.dateNow ? Date.parse(b.dateNow) : 0;
-          if (isNaN(dateA) && isNaN(dateB)) return 0;
-          if (isNaN(dateA)) return 1;
-          if (isNaN(dateB)) return -1;
-          return dateA - dateB;
-        });
-        setReceipts(sortedReceipts);
-        const newTotalPages = Math.ceil(sortedReceipts.length / pageSize);
-        setCurrentPage(newTotalPages > 0 ? newTotalPages : 1);
+        setUpdatedCustomer(updatedOwner)
+
+        // ✅ Orden nuevo (más reciente arriba)
+        const sortedReceipts = sortReceiptsMostRecentFirst(updatedOwner.receipts || [])
+        setReceipts(sortedReceipts)
+
+        // ✅ Página 1
+        setCurrentPage(1)
       }
     } catch (error) {
-      console.error('Error actualizando recibos:', error);
+      console.error("Error actualizando recibos:", error)
     }
-  };
+  }
+
 
   const handleRegister = (receipt: Receipt) => {
     setSelectedReceiptForPayment(receipt);

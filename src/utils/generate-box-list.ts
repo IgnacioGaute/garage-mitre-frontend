@@ -7,6 +7,37 @@ import type { TicketRegistration } from "@/types/ticket-registration.type"
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib"
 import { toast } from "sonner"
 
+type SubtotalSummaryItem = {
+  key: string
+  label: string
+  entradas: number
+  salidas: number
+  neto: number
+}
+
+// ✅ Orden alfabético por apellido (y nombre) en español, ignorando mayúsculas/acentos
+const collator = new Intl.Collator("es", { sensitivity: "base" })
+const norm = (v?: string | null) => (v ?? "").toString().trim()
+
+const sortByLastName = <T>(
+  arr: T[],
+  getName: (item: T) => { lastName?: string | null; firstName?: string | null } | null | undefined,
+) => {
+  return [...arr].sort((a, b) => {
+    const an = getName(a)
+    const bn = getName(b)
+
+    const aLast = norm(an?.lastName)
+    const bLast = norm(bn?.lastName)
+    const lastCmp = collator.compare(aLast, bLast)
+    if (lastCmp !== 0) return lastCmp
+
+    const aFirst = norm(an?.firstName)
+    const bFirst = norm(bn?.firstName)
+    return collator.compare(aFirst, bFirst)
+  })
+}
+
 export default async function generateBoxList(boxList: BoxList, userName: string): Promise<Uint8Array> {
   try {
     if (!boxList) {
@@ -32,16 +63,16 @@ export default async function generateBoxList(boxList: BoxList, userName: string
     const ticketDays = Array.isArray(ticketRegistrationForDays) ? ticketRegistrationForDays : []
     const validReceipts = Array.isArray(receipts) ? receipts : []
     const otherPaymentsRegistration = Array.isArray(otherPayments) ? otherPayments : []
-    
+
     // ✅ Filtramos nulos al inicio para evitar errores en todo el flujo
     const safeReceiptPayments = Array.isArray(receiptPayments)
       ? receiptPayments.filter((rp) => rp && rp.receipt && rp.receipt.customer)
       : []
-    
+
     const safePaymentHistory = Array.isArray(paymentHistoryOnAccount)
       ? paymentHistoryOnAccount.filter((p) => p && p.receipt && p.receipt.customer)
       : []
-    
+
     console.log(
       "TP detectados",
       safeReceiptPayments.filter(
@@ -51,7 +82,7 @@ export default async function generateBoxList(boxList: BoxList, userName: string
           rp.receipt?.receiptTypeKey === "TP",
       ),
     )
-    
+
     // 🏠 Propietarios (owners)
     const owners = safeReceiptPayments.filter(
       (receiptPayment) =>
@@ -60,7 +91,7 @@ export default async function generateBoxList(boxList: BoxList, userName: string
         receiptPayment.receipt?.paymentType === "TP" ||
         receiptPayment.receipt?.receiptTypeKey === "TP",
     )
-    
+
     // 🧾 Tipos de recibo asociados a inquilinos
     const renterReceiptTypes = [
       "JOSE_RICARDO_AZNAR",
@@ -68,12 +99,12 @@ export default async function generateBoxList(boxList: BoxList, userName: string
       "NIDIA_ROSA_MARIA_FONTELA",
       "ALDO_RAUL_FONTELA",
     ]
-    
+
     // 👥 Inquilinos (renters)
     const renters = safeReceiptPayments.filter((receiptPayment) =>
       renterReceiptTypes.includes(receiptPayment.receipt?.receiptTypeKey ?? ""),
     )
-    
+
     // 🧍 Privados (privates)
     const privates = safeReceiptPayments.filter(
       (receiptPayment) =>
@@ -82,25 +113,33 @@ export default async function generateBoxList(boxList: BoxList, userName: string
         receiptPayment.receipt?.paymentType !== "TP" &&
         receiptPayment.receipt?.receiptTypeKey !== "TP",
     )
-    
+
     // 💳 Pagos en cuenta (paymentHistory)
-    const paymentHistoryOwners = safePaymentHistory.filter(
-      (p) => p.receipt?.customer?.customerType === "OWNER",
+    const paymentHistoryOwners = safePaymentHistory.filter((p) => p.receipt?.customer?.customerType === "OWNER")
+
+    const paymentHistoryRenters = safePaymentHistory.filter((p) =>
+      renterReceiptTypes.includes(p.receipt?.receiptTypeKey ?? ""),
     )
-    
-    const paymentHistoryRenters = safePaymentHistory.filter(
-      (p) => renterReceiptTypes.includes(p.receipt?.receiptTypeKey ?? ""),
-    )
-    
-    const paymentHistoryPrivates = safePaymentHistory.filter(
-      (p) => p.receipt?.customer?.customerType === "PRIVATE",
-    )
-    
+
+    const paymentHistoryPrivates = safePaymentHistory.filter((p) => p.receipt?.customer?.customerType === "PRIVATE")
+
     // 🧩 Combinaciones finales
     const combinedOwners = [...owners, ...paymentHistoryOwners]
     const combinedRenters = [...renters, ...paymentHistoryRenters]
     const combinedPrivates = [...privates, ...paymentHistoryPrivates]
-    
+
+    // ✅ Ordenados alfabéticamente por apellido (y nombre)
+    // Alquiler y Terceros: se ordenan por el customer del recibo
+    const combinedRentersSorted = sortByLastName(combinedRenters, (rp: any) => rp?.receipt?.customer)
+    const combinedPrivatesSorted = sortByLastName(combinedPrivates, (rp: any) => rp?.receipt?.customer)
+
+    // Expensas: se muestra a veces el dueño del vehículo (vehicle.customer) y otras el mismo customer.
+    // Ordenamos por el MISMO criterio que usás para mostrar el nombre.
+    const combinedOwnersSorted = sortByLastName(combinedOwners, (rp: any) => {
+      const receipt = rp?.receipt
+      const vehicleCustomer = receipt?.customer?.vehicleRenters?.[0]?.vehicle?.customer
+      return vehicleCustomer ?? receipt?.customer
+    })
 
     // 🧮 Totales globales
     let totalEfectivo = 0
@@ -119,17 +158,15 @@ export default async function generateBoxList(boxList: BoxList, userName: string
     let yPosition = height - 50
 
     // Ajuste de márgenes y columnas
-// Ajuste de márgenes y columnas
-const tableLeft = 60      // antes 30
-const tableRight = 550    // antes 520
+    const tableLeft = 60
+    const tableRight = 550
 
-const colFechaX = 30      // antes 40
-const colDescX = 79      // antes 155
-const colEntradasX = 315  // antes 290
-const colSalidasX = 395  // antes 355
-const colSubtotalesX = 475 // antes 430
-const colTotalesX = 545  // antes 505
-
+    const colFechaX = 30
+    const colDescX = 79
+    const colEntradasX = 315
+    const colSalidasX = 395
+    const colSubtotalesX = 475
+    const colTotalesX = 545
 
     const formatNumber = (num: number): string => {
       if (num === 0) return "0"
@@ -155,34 +192,46 @@ const colTotalesX = 545  // antes 505
     }
 
     const today = formatDate(new Date())
-    let isFirstPage = true // 👈 agregalo al principio de la función generateBoxList()
+    let isFirstPage = true
+
+    // ==============================
+    // ✅ Acumulador de subtotales (resumen + total general correcto)
+    // ==============================
+    const subtotals: SubtotalSummaryItem[] = []
+    const upsertSubtotal = (key: string, label: string, entradas: number, salidas: number) => {
+      const neto = entradas - salidas
+      const existing = subtotals.find((s) => s.key === key)
+      if (existing) {
+        existing.entradas += entradas
+        existing.salidas += salidas
+        existing.neto = existing.entradas - existing.salidas
+      } else {
+        subtotals.push({ key, label, entradas, salidas, neto })
+      }
+    }
 
     const ensureSpace = (neededHeight = 70) => {
       if (yPosition < neededHeight) {
-        // 🆕 Crear nueva página solo si ya no hay espacio
         page = pdfDoc.addPage([595.28, 841.89])
         const { height: newHeight } = page.getSize()
         yPosition = newHeight - 80
-    
-        // ⚙️ A partir de la segunda hoja
+
         isFirstPage = false
-    
-        // 🧭 Encabezado de continuación
+
         page.drawText("Garage Mitre", {
           x: 50,
           y: yPosition + 40,
           size: fontSize + 2,
           font: fontBold,
         })
-    
+
         page.drawText("Planilla de Caja (continuación)", {
           x: 250,
           y: yPosition + 40,
           size: fontSize + 2,
           font: fontBold,
         })
-    
-        // 🔢 Número de página
+
         const currentPage = pdfDoc.getPageCount()
         page.drawText(`Página ${currentPage}`, {
           x: 500,
@@ -190,11 +239,9 @@ const colTotalesX = 545  // antes 505
           size: fontSize - 1,
           font,
         })
-    
-        // Pequeño espacio visual
+
         yPosition -= 20
-    
-        // 🔁 Redibujar encabezado de tabla
+
         page.drawRectangle({
           x: 0,
           y: yPosition - 28,
@@ -202,7 +249,7 @@ const colTotalesX = 545  // antes 505
           height: 26,
           color: rgb(0.80, 0.80, 0.80),
         })
-    
+
         const headerY = yPosition - 19
         page.drawText("Fecha", { x: colFechaX, y: headerY, size: fontSize, font: fontBold })
         page.drawText("Descripción", { x: colDescX, y: headerY, size: fontSize, font: fontBold })
@@ -210,13 +257,13 @@ const colTotalesX = 545  // antes 505
         page.drawText("Salidas", { x: colSalidasX, y: headerY, size: fontSize, font: fontBold })
         page.drawText("Subtotales", { x: colSubtotalesX, y: headerY, size: fontSize, font: fontBold })
         page.drawText("Totales", { x: colTotalesX, y: headerY, size: fontSize, font: fontBold })
-    
+
         yPosition -= 40
       }
     }
-    
+
     const drawVerticalLines = (y: number) => {
-      const columnPositions = [85, 300, 380] // líneas más a la derecha
+      const columnPositions = [85, 300, 380]
       columnPositions.forEach((x) => {
         page.drawLine({
           start: { x, y: y + 22 },
@@ -226,7 +273,6 @@ const colTotalesX = 545  // antes 505
         })
       })
     }
-    
 
     // ==============================
     //  Encabezado superior
@@ -280,14 +326,13 @@ const colTotalesX = 545  // antes 505
     //  Encabezado de tabla (como la foto)
     // ==============================
     const drawTableHeader = () => {
-// 🧭 Ocupa toda la hoja A4 (de borde a borde)
-page.drawRectangle({
-  x: 0, // ✅ empieza en el borde izquierdo
-  y: yPosition - 28,
-  width: 595.28, // ✅ cubre todo el ancho de la hoja A4
-  height: 26,
-  color: rgb(0.80, 0.80, 0.80),
-})
+      page.drawRectangle({
+        x: 0,
+        y: yPosition - 28,
+        width: 595.28,
+        height: 26,
+        color: rgb(0.80, 0.80, 0.80),
+      })
 
       const headerY = yPosition - 19
       page.drawText("Fecha", { x: colFechaX, y: headerY, size: fontSize, font: fontBold })
@@ -307,9 +352,9 @@ page.drawRectangle({
     const drawSectionHeaderRow = (title: string) => {
       ensureSpace(80)
       page.drawRectangle({
-        x: 0, // ✅ empieza en el borde izquierdo
+        x: 0,
         y: yPosition - 16,
-        width: 595.28, // ✅ cubre todo el ancho de la hoja A4
+        width: 595.28,
         height: 18,
         color: rgb(0.80, 0.80, 0.80),
       })
@@ -339,16 +384,22 @@ page.drawRectangle({
       yPosition -= 3
     }
 
-    const drawSubtotalRow = (totalEntrada: number, totalSalida: number) => {
+    // ✅ ahora recibe sectionKey/label para registrar subtotales
+    const drawSubtotalRow = (sectionKey: string, sectionLabel: string, totalEntrada: number, totalSalida: number) => {
       ensureSpace(50)
       const neto = totalEntrada - totalSalida
+
+      // ✅ guardo el subtotal para resumen y total general
+      upsertSubtotal(sectionKey, sectionLabel, totalEntrada, totalSalida)
+
       page.drawRectangle({
-        x: 0, // ✅ empieza en el borde izquierdo
+        x: 0,
         y: yPosition - 28,
-        width: 595.28, // ✅ cubre todo el ancho de la hoja A4
+        width: 595.28,
         height: 26,
         color: rgb(0.80, 0.80, 0.80),
       })
+
       const textY = yPosition - 18
       page.drawText("Subtotal", { x: colFechaX, y: textY, size: fontSize, font: fontBold })
       page.drawText(formatNumber(totalEntrada), { x: colEntradasX + 20, y: textY, size: fontSize, font: fontBold })
@@ -365,35 +416,91 @@ page.drawRectangle({
     const drawTotalGeneralRow = (total: number) => {
       ensureSpace(80)
       page.drawRectangle({
-        x: 0, // ✅ empieza en el borde izquierdo
+        x: 0,
         y: yPosition - 40,
-        width: 595.28, // ✅ cubre todo el ancho de la hoja A4
+        width: 595.28,
         height: 32,
         color: rgb(0.80, 0.80, 0.80),
       })
-      
+
       const textY = yPosition - 22
       page.drawText("Total General", { x: 40, y: textY, size: fontSize + 0.5, font: fontBold })
       page.drawText(formatNumber(total), { x: colTotalesX, y: textY, size: fontSize + 0.5, font: fontBold })
       yPosition -= 46
     }
+
+    // ✅ Resumen final con subtotales
+    const drawSubtotalsSummary = () => {
+      ensureSpace(220)
+
+      page.drawRectangle({
+        x: 0,
+        y: yPosition - 20,
+        width: 595.28,
+        height: 18,
+        color: rgb(0.80, 0.80, 0.80),
+      })
+
+      page.drawText("RESUMEN", {
+        x: 40,
+        y: yPosition - 14,
+        size: fontSize,
+        font: fontBold,
+      })
+
+      yPosition -= 30
+
+      page.drawText("Sección", { x: 40, y: yPosition, size: fontSize - 0.5, font: fontBold })
+      page.drawText("Entradas", { x: colEntradasX, y: yPosition, size: fontSize - 0.5, font: fontBold })
+      page.drawText("Salidas", { x: colSalidasX, y: yPosition, size: fontSize - 0.5, font: fontBold })
+      page.drawText("Neto", { x: colSubtotalesX, y: yPosition, size: fontSize - 0.5, font: fontBold })
+
+      yPosition -= 14
+
+      subtotals.forEach((s) => {
+        ensureSpace(40)
+
+        page.drawText(s.label, { x: 40, y: yPosition, size: fontSize - 0.5, font })
+        page.drawText(formatNumber(s.entradas), { x: colEntradasX + 20, y: yPosition, size: fontSize - 0.5, font })
+        page.drawText(s.salidas ? `- ${formatNumber(s.salidas)}` : "0", {
+          x: colSalidasX + 20,
+          y: yPosition,
+          size: fontSize - 0.5,
+          font,
+        })
+        page.drawText(formatNumber(s.neto), { x: colSubtotalesX + 10, y: yPosition, size: fontSize - 0.5, font })
+
+        yPosition -= 16
+      })
+
+      page.drawLine({
+        start: { x: 40, y: yPosition + 6 },
+        end: { x: 555, y: yPosition + 6 },
+        thickness: 0.6,
+        color: rgb(0.65, 0.65, 0.65),
+      })
+
+      yPosition -= 12
+    }
+
     // ==============================
     //  Secciones de datos
     // ==============================
 
     // Tickets / genérico (entradas solamente)
-    const addDataSection = (title: string, items: any[], dataExtractor: (item: any) => string[]) => {
+    const addDataSection = (sectionKey: string, title: string, items: any[], dataExtractor: (item: any) => string[]) => {
       yPosition -= 6
       drawSectionHeaderRow(title)
       const filteredItems = items.filter((i: any) => i.paid === undefined || i.paid)
       const total = filteredItems.reduce((sum, i: any) => sum + i.price, 0)
+
       if (items.length > 0) {
         items.forEach((item: any) => {
           ensureSpace(45)
           const [desc, priceStr, dateNow] = dataExtractor(item)
           const price = Number(priceStr)
 
-          const maxDescWidth = colEntradasX - colDescX - 30 // Leave 30px margin
+          const maxDescWidth = colEntradasX - colDescX - 30
           const truncatedDesc = truncateText(desc, maxDescWidth, font, fontSize)
 
           page.drawText(dateNow, { x: colFechaX, y: yPosition - 6, size: fontSize, font })
@@ -403,7 +510,6 @@ page.drawRectangle({
           drawRowSeparator()
         })
         drawVerticalLines(yPosition)
-
       } else {
         page.drawText("No se registraron datos", {
           x: colDescX + 10,
@@ -414,176 +520,147 @@ page.drawRectangle({
         yPosition -= 28
         drawRowSeparator()
       }
-      drawSubtotalRow(total, 0)
+
+      drawSubtotalRow(sectionKey, title, total, 0)
     }
 
     const addDataSectionReceipt = (
+      sectionKey: string,
       title: string,
       items: ReceiptPayment[],
-      dataExtractor: (
-        item: any
-      ) => [string, number, string, string, string?, number?],
+      dataExtractor: (item: any) => [string, number, string, string, string?, number?],
     ) => {
-      yPosition -= 5;
-      drawSectionHeaderRow(title);
-    
-      let totalEntradas = 0;
-      let totalSalidas = 0;
-    
+      yPosition -= 5
+      drawSectionHeaderRow(title)
+
+      let totalEntradas = 0
+      let totalSalidas = 0
+
       if (items.length > 0) {
         items.forEach((item) => {
-          ensureSpace(40);
-    
-          const [
-            desc,
-            priceStr,
-            dateNow,
-            paymentType,
-            vehicleOwner,
-            totalSalExpe,
-          ] = dataExtractor(item);
-    
-          const price = Number(priceStr);
-    
+          ensureSpace(40)
+
+          const [desc, priceStr, dateNow, paymentType, vehicleOwner, totalSalExpe] = dataExtractor(item)
+          const price = Number(priceStr)
+
           // Fecha
           page.drawText(dateNow, {
             x: colFechaX,
             y: yPosition - 5,
             size: fontSize,
             font,
-          });
-    
+          })
+
           // Texto descripción
-          const displayType = paymentType === "MIX" ? "AT" : paymentType;
-    
-          let descText = desc;
-          if (displayType) descText += ` (${displayType})`;
-          if (vehicleOwner) descText += ` (${vehicleOwner})`;
-    
-          const maxDescWidth = colEntradasX - colDescX - 30;
-          const truncatedDesc = truncateText(
-            descText,
-            maxDescWidth,
-            font,
-            fontSize
-          );
-    
+          const displayType = paymentType === "MIX" ? "AT" : paymentType
+
+          let descText = desc
+          if (displayType) descText += ` (${displayType})`
+          if (vehicleOwner) descText += ` (${vehicleOwner})`
+
+          const maxDescWidth = colEntradasX - colDescX - 30
+          const truncatedDesc = truncateText(descText, maxDescWidth, font, fontSize)
+
           page.drawText(truncatedDesc, {
             x: colDescX + 10,
             y: yPosition - 5,
             size: fontSize,
             font,
-          });
-    
+          })
+
           // ======================================================
           // 🟢 REGLA EXPENSAS — AT FUNCIONA COMO EFECTIVO
           // ======================================================
-          const isExpensa = title.toLowerCase() === "expensas";
-    
+          const isExpensa = title.toLowerCase() === "expensas"
+
           const treatAsCash =
             paymentType === "EF" ||
             paymentType === "CH" ||
             paymentType === "MIX" ||
-            (isExpensa && paymentType === "AT");
-    
+            (isExpensa && paymentType === "AT")
+
           if (treatAsCash) {
-            // Entrada
-            totalEntradas += price;
-    
+            totalEntradas += price
+
             page.drawText(formatNumber(price), {
               x: colEntradasX + 20,
               y: yPosition - 5,
               size: fontSize,
               font,
-            });
-    
-            // SIN SALIDA
-            drawVerticalLines(yPosition);
-            yPosition -= 22;
-            drawRowSeparator();
-            return;
+            })
+
+            drawVerticalLines(yPosition)
+            yPosition -= 22
+            drawRowSeparator()
+            return
           }
-    
+
           // ======================================================
           // 🔵 REGLA TERCEROS — salida con TOTAL COMPLETO
           // ======================================================
-          const isTercero = title.toLowerCase() === "terceros";
-    
+          const isTercero = title.toLowerCase() === "terceros"
+
           // Entrada normal
-          totalEntradas += price;
-    
+          totalEntradas += price
+
           page.drawText(formatNumber(price), {
             x: colEntradasX + 20,
             y: yPosition - 5,
             size: fontSize,
             font,
-          });
-    
-          // Salida para TERCEROS
+          })
+
           if (isTercero && totalSalExpe) {
-            totalSalidas += totalSalExpe;
-    
+            totalSalidas += totalSalExpe
             page.drawText(`- ${formatNumber(totalSalExpe)}`, {
               x: colSalidasX + 20,
               y: yPosition - 5,
               size: fontSize,
               font,
-            });
-          }
-    
-          // ======================================================
-          // 🔵 EXPENSAS + TR → salida con TOTAL COMPLETO
-          // ======================================================
-          // 🔵 TR GENERALES — siempre salida = price
-          else if (paymentType === "TR" && !isTercero) {
-            totalSalidas += price;
-
+            })
+          } else if (paymentType === "TR" && !isTercero) {
+            totalSalidas += price
             page.drawText(`- ${formatNumber(price)}`, {
               x: colSalidasX + 20,
               y: yPosition - 5,
               size: fontSize,
               font,
-            });
-          }
-
-    
-          // ======================================================
-          // 🔵 CASO NORMAL
-          // ======================================================
-          else {
-            totalSalidas += price;
-    
+            })
+          } else {
+            totalSalidas += price
             page.drawText(`- ${formatNumber(price)}`, {
               x: colSalidasX + 20,
               y: yPosition - 5,
               size: fontSize,
               font,
-            });
+            })
           }
-    
-          drawVerticalLines(yPosition);
-          yPosition -= 22;
-          drawRowSeparator();
-        });
+
+          drawVerticalLines(yPosition)
+          yPosition -= 22
+          drawRowSeparator()
+        })
       } else {
         page.drawText("No se registraron datos", {
           x: colDescX + 10,
           y: yPosition - 5,
           size: fontSize,
           font,
-        });
-        yPosition -= 24;
-        drawRowSeparator();
+        })
+        yPosition -= 24
+        drawRowSeparator()
       }
-    
-      // ============================
-      // 📌 SUBTOTALES CORRECTOS
-      // ============================
-      drawSubtotalRow(totalEntradas, totalSalidas);
-    };
-    
+
+      drawSubtotalRow(sectionKey, title, totalEntradas, totalSalidas)
+    }
+
     // Varios (otros pagos, ingresos/egresos)
-    const addDataSectionExpense = (title: string, items: OtherPayment[], dataExtractor: (item: any) => string[]) => {
+    const addDataSectionExpense = (
+      sectionKey: string,
+      title: string,
+      items: OtherPayment[],
+      dataExtractor: (item: any) => string[],
+    ) => {
       yPosition -= 6
       drawSectionHeaderRow(title)
 
@@ -629,7 +706,6 @@ page.drawRectangle({
 
           drawVerticalLines(yPosition)
           yPosition -= 22
-
           drawRowSeparator()
         })
       } else {
@@ -640,11 +716,10 @@ page.drawRectangle({
           font,
         })
         yPosition -= 24
-
         drawRowSeparator()
       }
 
-      drawSubtotalRow(entradas, salidas)
+      drawSubtotalRow(sectionKey, title, entradas, salidas)
     }
 
     // ==============================
@@ -662,7 +737,7 @@ page.drawRectangle({
     // ==============================
 
     // Ticket x hora
-    addDataSection("ticket x hora", tickets, (ticket: TicketRegistration) => [
+    addDataSection("tickets_hora", "ticket x hora", tickets, (ticket: TicketRegistration) => [
       `${ticket.description} (${ticket.codeBarTicket || "—"})`,
       ticket.price.toString(),
       ticket.dateNow ? formatDateA(ticket.dateNow) : "—",
@@ -670,15 +745,15 @@ page.drawRectangle({
     ])
 
     // Ticket x día/semana
-    addDataSection("Ticket x día/semana", ticketDays, (ticket: TicketRegistrationForDay) => [
+    addDataSection("tickets_dia", "Ticket x día/semana", ticketDays, (ticket: TicketRegistrationForDay) => [
       ticket.description,
       ticket.price.toString(),
       ticket.dateNow ? formatDateA(ticket.dateNow) : "—",
       "",
     ])
 
-    // Alquiler
-    addDataSectionReceipt("alquiler", combinedRenters, (receiptPayment) => {
+    // Alquiler (✅ ordenado por apellido)
+    addDataSectionReceipt("alquiler", "alquiler", combinedRentersSorted, (receiptPayment) => {
       const receipt = receiptPayment.receipt
       const total = receiptPayment.price
       const owner = receiptTypeNames[receipt.receiptTypeKey] || receipt.receiptTypeKey
@@ -705,8 +780,8 @@ page.drawRectangle({
       ]
     })
 
-    // Expensas
-    addDataSectionReceipt("expensas", combinedOwners, (receiptPayment) => {
+    // Expensas (✅ ordenado por apellido, respetando vehicleOwner cuando aplica)
+    addDataSectionReceipt("expensas", "expensas", combinedOwnersSorted, (receiptPayment) => {
       const receipt = receiptPayment.receipt
       const total = receiptPayment.price
 
@@ -714,7 +789,6 @@ page.drawRectangle({
       const ownerName = vehicleCustomer
         ? `${vehicleCustomer.lastName} ${vehicleCustomer.firstName}`
         : `${receipt.customer.lastName} ${receipt.customer.firstName}`
-
 
       const paymentType =
         receiptPayment.paymentType === "TRANSFER"
@@ -727,24 +801,24 @@ page.drawRectangle({
                 ? "CR"
                 : receiptPayment.paymentType === "TP"
                   ? "AT"
-                   : receiptPayment.paymentType === "MIX"
-                  ? "MIX"
-                  : "Desconocido"
+                  : receiptPayment.paymentType === "MIX"
+                    ? "MIX"
+                    : "Desconocido"
 
       return [ownerName, total, formatDateA(receipt.dateNow), paymentType]
     })
 
-    // Terceros
-    addDataSectionReceipt("terceros", combinedPrivates, (receiptPayment) => {
+    // Terceros (✅ ordenado por apellido)
+    addDataSectionReceipt("terceros", "terceros", combinedPrivatesSorted, (receiptPayment) => {
       const receipt = receiptPayment.receipt
       const total = receiptPayment.price
       const vehicleCustomer = receipt.customer.vehicleRenters?.[0]?.vehicle?.customer
       const vehicleOwner = vehicleCustomer ? `${vehicleCustomer.lastName}` : ""
       const lastReceiptPrice =
-  vehicleCustomer?.receipts?.length
-    ? vehicleCustomer.receipts[vehicleCustomer.receipts.length - 1].price
-    : 0
-    const totalParcial = total - lastReceiptPrice
+        vehicleCustomer?.receipts?.length
+          ? vehicleCustomer.receipts[vehicleCustomer.receipts.length - 1].price
+          : 0
+      const totalParcial = total - lastReceiptPrice
 
       const paymentType =
         receiptPayment.paymentType === "TRANSFER"
@@ -765,7 +839,7 @@ page.drawRectangle({
         formatDateA(receipt.dateNow),
         paymentType,
         vehicleOwner,
-        total
+        total,
       ]
     })
 
@@ -807,7 +881,7 @@ page.drawRectangle({
     const total = totalEntradas - totalSalidas
 
     // Sección Varios (diseño tipo tabla)
-    addDataSectionExpense("varios", otherPaymentsRegistration, (payment) => [
+    addDataSectionExpense("varios", "varios", otherPaymentsRegistration, (payment) => [
       payment.description,
       payment.price.toString(),
       formatDateA(payment.dateNow),
@@ -815,9 +889,12 @@ page.drawRectangle({
     ])
 
     // ==============================
-    //  Total general (como en la foto)
+    // ✅ RESUMEN + TOTAL GENERAL CORRECTO
     // ==============================
-    drawTotalGeneralRow(totalPrice)
+    const totalFromSubtotals = subtotals.reduce((acc, s) => acc + s.neto, 0)
+
+    drawSubtotalsSummary()
+    drawTotalGeneralRow(totalFromSubtotals)
 
     // ==============================
     //  Guardar, abrir e imprimir
