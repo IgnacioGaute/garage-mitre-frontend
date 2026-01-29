@@ -413,21 +413,38 @@ export default async function generateBoxList(boxList: BoxList, userName: string
       yPosition -= 28
     }
 
-    const drawTotalGeneralRow = (total: number) => {
-      ensureSpace(80)
-      page.drawRectangle({
-        x: 0,
-        y: yPosition - 40,
-        width: 595.28,
-        height: 32,
-        color: rgb(0.80, 0.80, 0.80),
-      })
+  const drawTotalsESNRow = (entradas: number, salidas: number, neto: number) => {
+    ensureSpace(110)
 
-      const textY = yPosition - 22
-      page.drawText("Total General", { x: 40, y: textY, size: fontSize + 0.5, font: fontBold })
-      page.drawText(formatNumber(total), { x: colTotalesX, y: textY, size: fontSize + 0.5, font: fontBold })
-      yPosition -= 46
-    }
+    // Fondo gris
+    page.drawRectangle({
+      x: 0,
+      y: yPosition - 58,
+      width: 595.28,
+      height: 50,
+      color: rgb(0.80, 0.80, 0.80),
+    })
+
+    const y1 = yPosition - 20
+    const y2 = yPosition - 34
+    const y3 = yPosition - 48
+
+    page.drawText("Total Entradas", { x: 40, y: y1, size: fontSize + 0.5, font: fontBold })
+    page.drawText(formatNumber(entradas), { x: colTotalesX - 10, y: y1, size: fontSize + 0.5, font: fontBold })
+
+    page.drawText("Total Salidas", { x: 40, y: y2, size: fontSize + 0.5, font: fontBold })
+    page.drawText(salidas ? `- ${formatNumber(salidas)}` : "0", {
+      x: colTotalesX - 10,
+      y: y2,
+      size: fontSize + 0.5,
+      font: fontBold,
+    })
+
+    page.drawText("Neto", { x: 40, y: y3, size: fontSize + 0.7, font: fontBold })
+    page.drawText(formatNumber(neto), { x: colTotalesX - 10, y: y3, size: fontSize + 0.7, font: fontBold })
+
+    yPosition -= 64
+  }
 
     // ✅ Resumen final con subtotales
     const drawSubtotalsSummary = () => {
@@ -891,10 +908,19 @@ export default async function generateBoxList(boxList: BoxList, userName: string
     // ==============================
     // ✅ RESUMEN + TOTAL GENERAL CORRECTO
     // ==============================
-    const totalFromSubtotals = subtotals.reduce((acc, s) => acc + s.neto, 0)
+    const totalsFromSubtotals = subtotals.reduce(
+      (acc, s) => {
+        acc.entradas += s.entradas
+        acc.salidas += s.salidas
+        return acc
+      },
+      { entradas: 0, salidas: 0 },
+    )
+
+    const netoFromSubtotals = totalsFromSubtotals.entradas - totalsFromSubtotals.salidas
 
     drawSubtotalsSummary()
-    drawTotalGeneralRow(totalFromSubtotals)
+    drawTotalsESNRow(totalsFromSubtotals.entradas, totalsFromSubtotals.salidas, netoFromSubtotals)
 
     // ==============================
     //  Guardar, abrir e imprimir

@@ -58,6 +58,8 @@ interface PaymentSummaryTableProps {
   autoOpen?: boolean;
 }
 
+const TZ = 'America/Argentina/Buenos_Aires';
+
 export function PaymentSummaryTable({
   customer,
   children,
@@ -68,41 +70,62 @@ export function PaymentSummaryTable({
   const [receipts, setReceipts] = useState(customer.receipts || []);
   const [currentPage, setCurrentPage] = useState(1);
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(
-    null
-  );
+  const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
+
   const [selectedPayments, setSelectedPayments] = useState<
     ReceiptSchemaType['payments']
   >([{ paymentType: 'CASH' }]);
+
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
   const [selectedReceiptForPayment, setSelectedReceiptForPayment] =
     useState<Receipt | null>(null);
+
   const pageSize = 10;
   const { data: session } = useSession();
-  const totalPages = Math.ceil(receipts.length / pageSize);
   const [updatedCustomer, setUpdatedCustomer] = useState<Customer | null>(null);
 
+  // ✅ Parse robusto (ISO / Date / string) en TZ AR
+  const toTime = (value?: string | Date | null) => {
+    if (!value) return NaN;
+
+    if (value instanceof Date) {
+      return value.getTime();
+    }
+
+    // primero intento parse normal
+    let d = dayjs(value);
+    if (!d.isValid()) {
+      // fallback TZ
+      d = dayjs.tz(value, TZ);
+    }
+
+    return d.isValid() ? d.valueOf() : NaN;
+  };
+
+  // ✅ Orden: más reciente ARRIBA según "Fecha de Inicio" (startDate)
+  //    y si empatan, por fecha de pago / creación.
   const sortReceiptsMostRecentFirst = (list: Receipt[]) => {
-  return [...list].sort((a, b) => {
-    // Usá la fecha que tenga más sentido para tu “reciente”.
-    // Si querés por pago: paymentDate. Si querés por creación: dateNow.
-    const aDate = a.paymentDate ?? a.dateNow ?? a.startDate ?? null
-    const bDate = b.paymentDate ?? b.dateNow ?? b.startDate ?? null
+    return [...list].sort((a, b) => {
+      const aStart = toTime(a.startDate ?? null);
+      const bStart = toTime(b.startDate ?? null);
 
-    const timeA = aDate ? Date.parse(aDate as any) : 0
-    const timeB = bDate ? Date.parse(bDate as any) : 0
+      const aStartSafe = isNaN(aStart) ? -Infinity : aStart;
+      const bStartSafe = isNaN(bStart) ? -Infinity : bStart;
 
-    if (isNaN(timeA) && isNaN(timeB)) return 0
-    if (isNaN(timeA)) return 1
-    if (isNaN(timeB)) return -1
+      // 1) startDate DESC (período)
+      if (bStartSafe !== aStartSafe) return bStartSafe - aStartSafe;
 
-    // ✅ DESC: más nuevo primero
-    return timeB - timeA
-  })
-}
+      // 2) tie-breaker: paymentDate/dateNow DESC
+      const aTie = toTime(a.paymentDate ?? a.dateNow ?? null);
+      const bTie = toTime(b.paymentDate ?? b.dateNow ?? null);
 
+      const aTieSafe = isNaN(aTie) ? -Infinity : aTie;
+      const bTieSafe = isNaN(bTie) ? -Infinity : bTie;
+
+      return bTieSafe - aTieSafe;
+    });
+  };
 
   useEffect(() => {
     if (autoOpen) {
@@ -112,27 +135,26 @@ export function PaymentSummaryTable({
   }, [autoOpen]);
 
   useEffect(() => {
-    if (open) {
-      startTransition(async () => {
-        try {
-          const updatedOwner = await getCustomerById(customer.id, session?.token)
-          if (updatedOwner) {
-            setUpdatedCustomer(updatedOwner)
+    if (!open) return;
 
-            // ✅ Orden nuevo (más reciente arriba)
-            const sortedReceipts = sortReceiptsMostRecentFirst(updatedOwner.receipts || [])
-            setReceipts(sortedReceipts)
+    startTransition(async () => {
+      try {
+        const updatedOwner = await getCustomerById(customer.id, session?.token);
+        if (updatedOwner) {
+          setUpdatedCustomer(updatedOwner);
 
-            // ✅ Como está ordenado newest-first, arrancá arriba
-            setCurrentPage(1)
-          }
-        } catch (error) {
-          console.error("Error fetching owner receipts:", error)
+          const sortedReceipts = sortReceiptsMostRecentFirst(
+            updatedOwner.receipts || []
+          );
+
+          setReceipts(sortedReceipts);
+          setCurrentPage(1); // ✅ como es newest-first
         }
-      })
-    }
-  }, [open, customer.id])
-
+      } catch (error) {
+        console.error('Error fetching owner receipts:', error);
+      }
+    });
+  }, [open, customer.id, session?.token]);
 
   const activeCustomer = updatedCustomer || customer;
 
@@ -157,7 +179,7 @@ export function PaymentSummaryTable({
       'Noviembre',
       'Diciembre',
     ];
-    const date = dayjs.tz(dateString, 'America/Argentina/Buenos_Aires');
+    const date = dayjs.tz(dateString, TZ);
     if (!date.isValid()) return 'Fecha inválida';
     return meses[date.month()];
   }
@@ -172,22 +194,21 @@ export function PaymentSummaryTable({
 
   const refreshReceipts = async () => {
     try {
-      const updatedOwner = await getCustomerById(customer.id, session?.token)
+      const updatedOwner = await getCustomerById(customer.id, session?.token);
       if (updatedOwner) {
-        setUpdatedCustomer(updatedOwner)
+        setUpdatedCustomer(updatedOwner);
 
-        // ✅ Orden nuevo (más reciente arriba)
-        const sortedReceipts = sortReceiptsMostRecentFirst(updatedOwner.receipts || [])
-        setReceipts(sortedReceipts)
+        const sortedReceipts = sortReceiptsMostRecentFirst(
+          updatedOwner.receipts || []
+        );
 
-        // ✅ Página 1
-        setCurrentPage(1)
+        setReceipts(sortedReceipts);
+        setCurrentPage(1);
       }
     } catch (error) {
-      console.error("Error actualizando recibos:", error)
+      console.error('Error actualizando recibos:', error);
     }
-  }
-
+  };
 
   const handleRegister = (receipt: Receipt) => {
     setSelectedReceiptForPayment(receipt);
@@ -201,7 +222,7 @@ export function PaymentSummaryTable({
         customer.id,
         data
       );
-  
+
       if (result.error) {
         toast.error(result.error.message);
       } else {
@@ -212,11 +233,10 @@ export function PaymentSummaryTable({
       console.error('Error al registrar el pago:', error);
       toast.error('❌ Error al registrar el pago.');
     } finally {
-      setOpenPaymentDialog(false); // 🔸 cerrar el modal
+      setOpenPaymentDialog(false);
       setSelectedReceiptForPayment(null);
     }
   };
-  
 
   function translatePaymentType(type: string) {
     switch (type) {
@@ -271,7 +291,6 @@ export function PaymentSummaryTable({
               {paginatedReceipts.length > 0 ? (
                 paginatedReceipts.map((receiptOwner) => (
                   <TableRow key={receiptOwner.id}>
-                    {/* Estado */}
                     <TableCell className="font-medium">
                       <div className="flex items-center space-x-2">
                         {receiptOwner.status === 'PAID' ? (
@@ -280,14 +299,13 @@ export function PaymentSummaryTable({
                           <Clock className="h-5 w-5 text-yellow-500" />
                         )}
                         <span>
-                          {receiptOwner.status === 'PAID'
-                            ? 'Pagado'
-                            : 'Pendiente'}
+                          {receiptOwner.status === 'PAID' ? 'Pagado' : 'Pendiente'}
                         </span>
                       </div>
                     </TableCell>
 
                     <TableCell>{getMonthName(receiptOwner.startDate)}</TableCell>
+
                     <TableCell>
                       {receiptOwner.paymentDate &&
                         new Date(
@@ -296,20 +314,15 @@ export function PaymentSummaryTable({
                         ).toLocaleDateString()}
                     </TableCell>
 
-                    {/* Métodos de pago */}
                     <TableCell className="font-medium">
                       <div className="flex flex-col gap-1">
                         {receiptOwner.payments?.length
                           ? receiptOwner.payments.map((p, i) => (
-                              <span key={i}>
-                                {translatePaymentType(p.paymentType)}
-                              </span>
+                              <span key={i}>{translatePaymentType(p.paymentType)}</span>
                             ))
                           : receiptOwner.paymentHistoryOnAccount?.length
                           ? receiptOwner.paymentHistoryOnAccount.map((p, i) => (
-                              <span key={i}>
-                                {translatePaymentType(p.paymentType)}
-                              </span>
+                              <span key={i}>{translatePaymentType(p.paymentType)}</span>
                             ))
                           : receiptOwner.paymentType
                           ? translatePaymentType(receiptOwner.paymentType)
@@ -317,7 +330,6 @@ export function PaymentSummaryTable({
                       </div>
                     </TableCell>
 
-                    {/* Monto */}
                     <TableCell className="text-right pr-6 align-middle">
                       <span className="block pr-5">
                         $
@@ -327,8 +339,6 @@ export function PaymentSummaryTable({
                       </span>
                     </TableCell>
 
-
-                    {/* Imprimir */}
                     <TableCell className="text-center">
                       <Button
                         variant="ghost"
@@ -339,7 +349,6 @@ export function PaymentSummaryTable({
                       </Button>
                     </TableCell>
 
-                    {/* Cancelar */}
                     <TableCell className="text-center">
                       <Dialog
                         open={openCancelDialog}
@@ -361,9 +370,9 @@ export function PaymentSummaryTable({
                           <DialogHeader>
                             <DialogTitle>¿Está seguro?</DialogTitle>
                             <DialogDescription>
-                              Este recibo se marcará como "pendiente" y se
-                              eliminará de la planilla de caja. Si se pagó con
-                              crédito, el monto será reintegrado.
+                              Este recibo se marcará como "pendiente" y se eliminará de la
+                              planilla de caja. Si se pagó con crédito, el monto será
+                              reintegrado.
                             </DialogDescription>
                           </DialogHeader>
                           <DialogFooter>
@@ -380,16 +389,12 @@ export function PaymentSummaryTable({
                                   selectedReceiptId,
                                   customer.id
                                 );
-                                if (result.error) {
-                                  toast.error(result.error.message);
-                                } else {
-                                  toast.success(
-                                    'Recibo cancelado exitosamente'
-                                  );
+                                if (result.error) toast.error(result.error.message);
+                                else {
+                                  toast.success('Recibo cancelado exitosamente');
                                   await refreshReceipts();
                                 }
                                 setOpenCancelDialog(false);
-                                setOpenDropdown(false);
                               }}
                             >
                               Cancelar Recibo
@@ -399,7 +404,6 @@ export function PaymentSummaryTable({
                       </Dialog>
                     </TableCell>
 
-                    {/* Registrar */}
                     <TableCell className="text-center">
                       <Button
                         variant="ghost"
@@ -448,7 +452,6 @@ export function PaymentSummaryTable({
         </DialogContent>
       </Dialog>
 
-      {/* Modal de pago */}
       <PaymentTypeReceiptDialog
         open={openPaymentDialog}
         onConfirm={handleConfirmPayment}
