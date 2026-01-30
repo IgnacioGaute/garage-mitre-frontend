@@ -14,7 +14,10 @@ export type ParkingTypeSchemaType = z.infer<typeof parkingTypeSchema>;
 
 export const updateParkingTypeSchema = z.object({
     amount: z.coerce.number(),
-    parkingType: z.enum(PARKING_TYPE)
+    parkingType: z.enum(PARKING_TYPE),
+    month: z
+    .string()
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "El mes debe ser YYYY-MM (ej: 2026-02)"),
   });
 export type UpdateParkingTypeSchemaType = z.infer<typeof updateParkingTypeSchema>;
 
