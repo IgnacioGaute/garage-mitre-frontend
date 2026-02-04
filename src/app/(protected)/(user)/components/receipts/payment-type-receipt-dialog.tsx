@@ -188,6 +188,7 @@ export function PaymentTypeReceiptDialog({
                               <>
                                 <SelectItem value="TRANSFER">Transferencia</SelectItem>
                                 <SelectItem value="CASH">Efectivo</SelectItem>
+                                <SelectItem value="FIX">Correccion</SelectItem>
                               </>
                             ) : (
                               <>
@@ -195,6 +196,8 @@ export function PaymentTypeReceiptDialog({
                                 <SelectItem value="CASH">Efectivo</SelectItem>
                                 <SelectItem value="CHECK">Cheque</SelectItem>
                                 <SelectItem value="CREDIT">Crédito</SelectItem>
+                                <SelectItem value="FIX">Correccion</SelectItem>
+
                               </>
                             )}
                           </SelectContent>

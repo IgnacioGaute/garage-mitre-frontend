@@ -114,9 +114,15 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
               const description = `Expensas comunes ${garage.garageNumber}`;
               page.drawText(`1`, { x: 70, y, size: fontSize, color: textColor });
               page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
-              page.drawText(`$${garage.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
+              if(customer.numberOfVehicles === 1){
+                page.drawText(`$${pendingPrice.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
+              }else{
+                const priceDiv = pendingPrice/customer.numberOfVehicles
+                page.drawText(`$${priceDiv.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
+
+              }
               
-              total += garage.amount;
+              total = pendingPrice;
               y -= 30;
             }
           } else {
@@ -128,9 +134,15 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
           
               page.drawText(`1`, { x: 70, y, size: fontSize, color: textColor });
               page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
-              page.drawText(`$${renter.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
-          
-              total += renter.amount;
+                if(customer.numberOfVehicles === 1){
+                page.drawText(`$${pendingPrice.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
+              }else{
+                const priceDiv = pendingPrice/customer.numberOfVehicles
+                page.drawText(`$${priceDiv.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
+
+              }
+              
+              total = pendingPrice;
               y -= 30;
             }
           }

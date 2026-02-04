@@ -117,65 +117,6 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[80vh] sm:max-h-[90vh] overflow-y-auto w-full max-w-md sm:max-w-lg">
-
-        {/* TOTAL DEL DÍA */}
-        {typeof boxData?.totalPrice === "number" && (
-          <div
-            className={`flex flex-col items-center justify-center gap-2 mx-auto mt-2 p-3 rounded-lg shadow-sm border w-[70%]
-              ${
-                boxData.totalPrice < 0
-                  ? "border-red-400 text-red-600"
-                  : "border-green-400 text-green-600"
-              }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <p className="text-xs font-semibold uppercase tracking-wide">
-                Total del día
-              </p>
-
-              {/* ✏️ SOLO ADMIN VE EL ICONO */}
-              {isAdmin && (
-                <button
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="text-gray-500 hover:text-accent transition"
-                >
-                  <Edit2 size={14} />
-                </button>
-              )}
-            </div>
-
-            {!isEditing ? (
-              <p className="text-2xl font-bold select-none">
-                ${boxData.totalPrice.toLocaleString("es-AR")}
-              </p>
-            ) : (
-              isAdmin && (
-                <div className="flex items-center gap-2 mt-1">
-                  <input
-                    type="number"
-                    value={newTotal}
-                    onChange={(e) => setNewTotal(e.target.value)}
-                    className="w-24 text-center text-lg font-semibold border-b border-gray-400 bg-transparent focus:outline-none focus:border-accent"
-                  />
-                  <button
-                    onClick={handleUpdateTotal}
-                    disabled={isSaving}
-                    className={`flex items-center gap-1 text-xs px-3 py-1 rounded-md text-white transition
-                      ${
-                        isSaving
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-accent hover:bg-accent-hover"
-                      }`}
-                  >
-                    <Check size={12} />
-                    {isSaving ? "..." : "Guardar"}
-                  </button>
-                </div>
-              )
-            )}
-          </div>
-        )}
-
         <DialogHeader className="items-center mt-4">
           <DialogTitle>Elegir fecha</DialogTitle>
         </DialogHeader>

@@ -248,6 +248,8 @@ export function PaymentSummaryTable({
         return 'Cheque';
       case 'CREDIT':
         return 'Crédito';
+      case 'FIX':
+        return 'Corrección';
       default:
         return 'Automatico';
     }

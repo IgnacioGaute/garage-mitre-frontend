@@ -43,6 +43,7 @@ import {
   Command,
   CommandGroup,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -310,73 +311,64 @@ const monthOptions = Array.from({ length: 12 }).map((_, i) => {
                     <FormItem>
                       <FormLabel>Meses adeudados</FormLabel>
     
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="w-full justify-between"
-                          >
-                            Selecciona meses
-                            <span className="ml-2">&#x25BC;</span>
-                          </Button>
-                        </PopoverTrigger>
-    
-                        <PopoverContent className="w-[300px] p-2 shadow-lg rounded-md z-50">
-                          <Command>
-                            <CommandGroup>
-                              {monthOptions.map(option => {
-                                const monthKey = formattedMonth(option.value);
-                                const current = form.getValues('monthsDebt') ?? [];
-                                const isSelected = current.some(d => d.month === monthKey);
-                                const preselectedMonths = customer.monthsDebt?.map(m => m.month) ?? [];
-                                const isPreselected = preselectedMonths.includes(monthKey);
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between">
+                      Selecciona meses
+                      <span className="ml-2">&#x25BC;</span>
+                    </Button>
+                  </PopoverTrigger>
 
-                                return (
-                                  <CommandItem
-                                    key={option.value}
-                                    onSelect={() => {
-                                      if (option.isDisabled || isPreselected) return;
+                    <PopoverContent
+                      side="bottom"
+                      align="start"
+                      sideOffset={8}
+                      avoidCollisions={false}
+                      className="w-[300px] p-2 shadow-lg rounded-md z-50"
+                    >
+                      <Command>
+                        <CommandList className="max-h-[260px] overflow-y-auto">
+                          <CommandGroup>
+                            {monthOptions.map(option => {
+                              const monthKey = formattedMonth(option.value);
+                              const current = form.getValues('monthsDebt') ?? [];
+                              const isSelected = current.some(d => d.month === monthKey);
 
-                                      if (isSelected) {
-                                        form.setValue(
-                                          'monthsDebt',
-                                          current?.filter(d => d.month !== monthKey)
-                                        );
-                                      } else {
-                                        form.setValue('monthsDebt', [
-                                          ...current,
-                                          { month: monthKey, amount: 0 }
-                                        ]);
-                                      }
-                                    }}
-                                    className={`relative flex items-center justify-between gap-2 px-2 py-1.5 rounded-md ${
-                                      option.isDisabled || isPreselected
-                                        ? 'opacity-50 cursor-not-allowed'
-                                        : 'cursor-pointer hover:bg-accent'
-                                    }`}
-                                    style={{ pointerEvents: option.isDisabled || isPreselected ? 'none' : 'auto' }}
-                                  >
-                                    <span className="flex items-center gap-2">
-                                      {option.label}
-                                      {isPreselected && (
-                                        <span
-                                          className="absolute top-1 right-2 text-red-500"
-                                          title="Mes protegido"
-                                        >
-                                          🔒
-                                        </span>
-                                      )}
-                                    </span>
-                                    <Checkbox checked={isSelected} className="hover:text-white" />
-                                  </CommandItem>
-                                );
-                              })}
+                              return (
+                                <CommandItem
+                                  key={option.value}
+                                  onSelect={() => {
+                                    if (option.isDisabled) return;
 
-                            </CommandGroup>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-    
+                                    if (isSelected) {
+                                      form.setValue(
+                                        'monthsDebt',
+                                        current?.filter(d => d.month !== monthKey)
+                                      );
+                                    } else {
+                                      form.setValue('monthsDebt', [
+                                        ...current,
+                                        { month: monthKey, amount: 0 }
+                                      ]);
+                                    }
+                                  }}
+                                  className={`flex items-center justify-between gap-2 ${
+                                    option.isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                                  }`}
+                                  style={{ pointerEvents: option.isDisabled ? 'none' : 'auto' }}
+                                >
+                                  {option.label}
+                                  <Checkbox checked={isSelected} />
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+
+                </Popover>
+
                       <div className="mt-4 space-y-3">
                         {form.watch('monthsDebt')?.map((entry, index) => {
                           const label = monthOptions.find(opt =>
