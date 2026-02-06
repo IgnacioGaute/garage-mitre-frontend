@@ -41,6 +41,7 @@ export type ReceiptPayment ={
   paymentDate: string | null;
   receipt: Receipt;
   boxList: BoxList;
+  numberInBox: number;
 }
 
 export type PaymentHistoryOnAccount ={
@@ -49,4 +50,5 @@ export type PaymentHistoryOnAccount ={
   paymentDate: string | null;
   receipt: Receipt;
   boxList: BoxList;
+  numberInBox: number;
 }

@@ -204,10 +204,20 @@ export default async function generateBoxList(boxList: BoxList, userName: string
       page.drawText(text, { x: centerX - w / 2, y, size: fontSize, font: fontBold })
     }
 
+    const numberFmt = new Intl.NumberFormat("es-AR", {
+      useGrouping: true,
+      maximumFractionDigits: 0,
+    })
+
     const formatNumber = (num: number): string => {
-      if (num === 0) return "0"
-      return num.toLocaleString("es-ES")
+      const n = Math.round(Number(num) || 0)
+      if (n === 0) return "0"
+      const s = String(Math.abs(n))
+      const withDots = s.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+      return n < 0 ? `-${withDots}` : withDots
     }
+
+
 
     const formatDate = (fecha: Date) => {
       const day = String(fecha.getDate()).padStart(2, "0")
@@ -785,7 +795,7 @@ export default async function generateBoxList(boxList: BoxList, userName: string
 
     addDataSectionReceipt("expensas", "expensas", combinedOwnersSorted, (receiptPayment) => {
       const receipt = receiptPayment.receipt
-      const total = receiptPayment.price
+      const total = receiptPayment.numberInBox
 
       const vehicleCustomer = receipt.customer?.vehicleRenters?.[0]?.vehicle?.customer
       const ownerName = vehicleCustomer
@@ -812,14 +822,10 @@ export default async function generateBoxList(boxList: BoxList, userName: string
 
     addDataSectionReceipt("terceros", "terceros", combinedPrivatesSorted, (receiptPayment) => {
       const receipt = receiptPayment.receipt
-      const total = receiptPayment.price
+      const total = receiptPayment.numberInBox
       const vehicleCustomer = receipt.customer.vehicleRenters?.[0]?.vehicle?.customer
       const vehicleOwner = vehicleCustomer ? `${vehicleCustomer.lastName}` : ""
-      const lastReceiptPrice =
-        vehicleCustomer?.receipts?.length
-          ? vehicleCustomer.receipts[vehicleCustomer.receipts.length - 1].price
-          : 0
-      const totalParcial = total - lastReceiptPrice
+
 
       const paymentType =
         receiptPayment.paymentType === "TRANSFER"
@@ -836,7 +842,7 @@ export default async function generateBoxList(boxList: BoxList, userName: string
 
       return [
         `${receipt.customer.lastName} ${receipt.customer.firstName}`,
-        totalParcial,
+        total,
         formatDateA(receipt.dateNow),
         paymentType,
         vehicleOwner,
