@@ -591,7 +591,15 @@ export default async function generateBoxList(boxList: BoxList, userName: string
       sectionKey: string,
       title: string,
       items: ReceiptPayment[],
-      dataExtractor: (item: any) => [string, number, string, string, string?, number?],
+      // 7 valores:
+      // 1 desc
+      // 2 price (lo que va en Entradas)
+      // 3 fecha
+      // 4 paymentType
+      // 5 vehicleOwner?
+      // 6 numberInBox? (opcional, si querés mostrarlo/usar)
+      // 7 totalPriceSalida? (para la regla TERCEROS+TR)
+      dataExtractor: (item: any) => [string, number, string, string, string?, number?, number?],
     ) => {
       yPosition -= 5
       drawSectionHeaderRow(title)
@@ -603,8 +611,18 @@ export default async function generateBoxList(boxList: BoxList, userName: string
         items.forEach((item) => {
           ensureSpace(40)
 
-          const [desc, priceStr, dateNow, paymentType, vehicleOwner, totalSalExpe] = dataExtractor(item)
-          const price = Number(priceStr)
+          // ✅ desestructurar los 7
+          const [
+            desc,
+            priceStr,
+            dateNow,
+            paymentType,
+            vehicleOwner,
+            numberInBox,
+            totalPriceSalida,
+          ] = dataExtractor(item)
+
+          const price = Number(priceStr ?? 0)
 
           page.drawText(dateNow, {
             x: colFechaX,
@@ -630,6 +648,7 @@ export default async function generateBoxList(boxList: BoxList, userName: string
           })
 
           const isExpensa = title.toLowerCase() === "expensas"
+          const isTercero = title.toLowerCase() === "terceros"
 
           const treatAsCash =
             paymentType === "EF" ||
@@ -637,6 +656,7 @@ export default async function generateBoxList(boxList: BoxList, userName: string
             paymentType === "MIX" ||
             (isExpensa && paymentType === "AT")
 
+          // ✅ Caja: entradas
           if (treatAsCash) {
             totalEntradas += price
             drawRightText(formatNumber(price), entradasRightX, yPosition - 5, font, fontSize)
@@ -647,15 +667,25 @@ export default async function generateBoxList(boxList: BoxList, userName: string
             return
           }
 
-          const isTercero = title.toLowerCase() === "terceros"
-
+          // ✅ Entrada normal (siempre)
           totalEntradas += price
           drawRightText(formatNumber(price), entradasRightX, yPosition - 5, font, fontSize)
 
-          if (isTercero && totalSalExpe) {
-            totalSalidas += totalSalExpe
-            drawRightText(`- ${formatNumber(totalSalExpe)}`, salidasRightX, yPosition - 5, font, fontSize)
-          } else if (paymentType === "TR" && !isTercero) {
+          // ======================================================
+          // 🔥 REGLA: TERCEROS + TR => salida = totalPriceSalida (7mo valor)
+          // ======================================================
+          if (isTercero && paymentType === "TR") {
+            const salida = Number(totalPriceSalida ?? 0)
+            totalSalidas += salida
+            drawRightText(`- ${formatNumber(salida)}`, salidasRightX, yPosition - 5, font, fontSize)
+          }
+          // ✅ Si TERCEROS y NO es TR, dejo tu regla (salida = price)
+          else if (isTercero) {
+            totalSalidas += price
+            drawRightText(`- ${formatNumber(price)}`, salidasRightX, yPosition - 5, font, fontSize)
+          }
+          // ✅ resto secciones
+          else if (paymentType === "TR") {
             totalSalidas += price
             drawRightText(`- ${formatNumber(price)}`, salidasRightX, yPosition - 5, font, fontSize)
           } else {
@@ -680,6 +710,7 @@ export default async function generateBoxList(boxList: BoxList, userName: string
 
       drawSubtotalRow(sectionKey, title, totalEntradas, totalSalidas)
     }
+
 
     const addDataSectionExpense = (
       sectionKey: string,
@@ -822,10 +853,12 @@ export default async function generateBoxList(boxList: BoxList, userName: string
 
     addDataSectionReceipt("terceros", "terceros", combinedPrivatesSorted, (receiptPayment) => {
       const receipt = receiptPayment.receipt
-      const total = receiptPayment.numberInBox
+
+      const totalInBox = Number(receiptPayment.numberInBox ?? 0)       // lo que mostrás en caja
+      const totalPriceSalida = Number(receiptPayment.price ?? 0)       // salida real si TR
+
       const vehicleCustomer = receipt.customer.vehicleRenters?.[0]?.vehicle?.customer
       const vehicleOwner = vehicleCustomer ? `${vehicleCustomer.lastName}` : ""
-
 
       const paymentType =
         receiptPayment.paymentType === "TRANSFER"
@@ -838,17 +871,21 @@ export default async function generateBoxList(boxList: BoxList, userName: string
                 ? "CR"
                 : receiptPayment.paymentType === "TP"
                   ? "AT"
-                  : "Desconocido"
+                  : receiptPayment.paymentType === "MIX"
+                    ? "MIX"
+                    : "Desconocido"
 
       return [
-        `${receipt.customer.lastName} ${receipt.customer.firstName}`,
-        total,
-        formatDateA(receipt.dateNow),
-        paymentType,
-        vehicleOwner,
-        total,
+        `${receipt.customer.lastName} ${receipt.customer.firstName}`, // 1 desc
+        totalInBox,                                                   // 2 entradas
+        formatDateA(receipt.dateNow),                                 // 3 fecha
+        paymentType,                                                  // 4 tipo
+        vehicleOwner,                                                 // 5 owner?
+        totalInBox,                                                   // 6 numberInBox (extra)
+        totalPriceSalida,                                             // 7 salida para TR
       ]
     })
+
 
     // ==============================
     //  Totales globales (NO toco la lógica)
