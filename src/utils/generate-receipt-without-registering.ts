@@ -131,18 +131,12 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
                 ? `(${renter.vehicle.customer.lastName} ${renter.vehicle.customer.firstName})`
                 : '';
               const description = `Cochera mensual ${renter.garageNumber} ${plateOwner}`;
-          
+
               page.drawText(`1`, { x: 70, y, size: fontSize, color: textColor });
               page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
-                if(customer.numberOfVehicles === 1){
-                page.drawText(`$${pendingPrice.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
-              }else{
-                const priceDiv = pendingPrice/customer.numberOfVehicles
-                page.drawText(`$${priceDiv.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
+              page.drawText(`$${renter.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
 
-              }
-              
-              total = pendingPrice;
+              total += renter.amount;
               y -= 30;
             }
           }
