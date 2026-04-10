@@ -126,17 +126,23 @@ export async function generateReceiptsWithoutRegistering(customer: any, pendingR
               y -= 30;
             }
           } else {
+            const sumRenterAmounts = customer.vehicleRenters.reduce((acc: number, r: any) => acc + r.amount, 0);
+            const priceMatchesSum = sumRenterAmounts === pendingPrice;
+
             for (const renter of customer.vehicleRenters) {
               const plateOwner = renter.vehicle?.customer
                 ? `(${renter.vehicle.customer.lastName} ${renter.vehicle.customer.firstName})`
                 : '';
               const description = `Cochera mensual ${renter.garageNumber} ${plateOwner}`;
+              const renterPrice = priceMatchesSum
+                ? renter.amount
+                : pendingPrice / customer.vehicleRenters.length;
 
               page.drawText(`1`, { x: 70, y, size: fontSize, color: textColor });
               page.drawText(description, { x: 130, y, size: fontSize, color: textColor });
-              page.drawText(`$${renter.amount.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
+              page.drawText(`$${renterPrice.toLocaleString('es-AR')}`, { x: 460, y, size: fontSize, color: textColor });
 
-              total += renter.amount;
+              total += renterPrice;
               y -= 30;
             }
           }
