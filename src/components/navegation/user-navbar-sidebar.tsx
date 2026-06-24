@@ -1,22 +1,8 @@
 'use client';
 
 import {
-  CreditCardIcon,
-  HandCoins,
-  Home,
-  HelpCircle,
-  User2,
-  Scale,
-  BarChart,
-  UserCheck,
   ArrowLeft,
-  Globe,
-  User,
-  Wallet,
   Banknote,
-  ParkingCircle,
-  Ticket,
-  DollarSignIcon,
 } from 'lucide-react';
 
 import {
@@ -25,20 +11,14 @@ import {
   SidebarHeader,
   SidebarTrigger,
   SidebarRail,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { NavMain } from './nav-main';
+import { GarageMitreMonogram } from '@/components/brand/logo';
 
 export const userNavItems = [
-  {
-    title: 'Registrar Gastos',
-    url: '/admin/other-payments',
-    icon: <Banknote  />,
-  },
-  {
-    title: 'Volver',
-    url: '/tickets',
-    icon: <ArrowLeft />,
-  },
+  { title: 'Registrar Gastos', url: '/admin/other-payments', icon: <Banknote /> },
+  { title: 'Volver',           url: '/tickets',              icon: <ArrowLeft /> },
 ];
 
 export function UserNavbarSidebar({
@@ -47,16 +27,39 @@ export function UserNavbarSidebar({
   return (
     <Sidebar
       collapsible="icon"
-      className="group/sidebar border-r bg-gradient-to-b from-background to-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="group/sidebar border-r border-border bg-gm-surface"
       {...props}
     >
-      <SidebarHeader className="h-14 border-b flex justify-center items-center bg-gradient-to-r from-background to-background/95">
-        <SidebarTrigger className="h-9 w-9 rounded-lg hover:bg-gradient-to-r hover:from-primary/20 hover:to-primary/10 hover:text-white transition-all duration-200" />
+      <SidebarHeader className="h-16 border-b border-border bg-gm-surface flex items-center justify-between px-3 group-[[data-collapsible=icon]]/sidebar:justify-center">
+        <div className="group-[[data-collapsible=icon]]/sidebar:hidden">
+          <GarageMitreMonogram size="md" />
+        </div>
+        <div className="hidden group-[[data-collapsible=icon]]/sidebar:block">
+          <GarageMitreMonogram size="sm" />
+        </div>
+        <SidebarTrigger className="h-8 w-8 rounded-md hover:bg-gm-surface-2 hover:text-foreground" />
       </SidebarHeader>
-      <SidebarContent className="py-1 bg-gradient-to-r from-background to-background/95">
+
+      <div className="px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground group-[[data-collapsible=icon]]/sidebar:hidden">
+        Operación
+      </div>
+
+      <SidebarContent className="bg-gm-surface px-1 py-1">
         <NavMain items={userNavItems} />
       </SidebarContent>
-      <SidebarRail className="after:bg-border after:opacity-50 hover:after:opacity-100 after:transition-opacity" />
+
+      <SidebarFooter className="border-t border-border bg-gm-surface p-3 group-[[data-collapsible=icon]]/sidebar:p-1">
+        <div className="rounded-md bg-gm-surface-2 border border-border p-3 group-[[data-collapsible=icon]]/sidebar:hidden">
+          <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+            Turno
+          </div>
+          <div className="gm-display mt-0.5 text-sm font-bold text-gm-yellow">
+            OPERADOR · TARDE
+          </div>
+        </div>
+      </SidebarFooter>
+
+      <SidebarRail />
     </Sidebar>
   );
 }

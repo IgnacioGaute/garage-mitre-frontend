@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { CalendarPlus } from "lucide-react";
 import { ticketRegistrationForDaySchema, TicketRegistrationForDaySchemaType } from "@/schemas/ticket-registration-for-day.schema";
 import { createTicketRegistrationForDayAction } from "@/actions/tickets/create-ticket-registration-for-day.action";
 
@@ -69,17 +70,18 @@ const onSubmit = async (values: TicketRegistrationForDaySchemaType) => {
 };
   return (
     <div className="text-center mt-8">
-      <Button
-      variant="default"
-      size="sm"
-      onClick={() => {
-        setIsOpen(true);
-        setIsDialogOpen(true);
-      }}
-      className="bg-yellow-400 text-black hover:bg-yellow-500 text-black cursor-pointer text-lg font-bold"
-    >
-      Crear Ticket Por Día/semana
-    </Button>
+      <button
+        onClick={() => {
+          setIsOpen(true);
+          setIsDialogOpen(true);
+        }}
+        className="group relative inline-flex items-center gap-3 rounded-2xl border border-border/50 bg-card/30 px-6 py-3.5 text-sm font-semibold text-foreground backdrop-blur-xl transition-all duration-300 hover:border-gm-yellow/40 hover:bg-gm-yellow/10 hover:shadow-[0_0_30px_-8px_hsl(var(--gm-yellow)/0.3)]"
+      >
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-gm-yellow/30 bg-gm-yellow/15 text-gm-yellow transition-colors group-hover:bg-gm-yellow/25">
+          <CalendarPlus className="size-4" />
+        </span>
+        Crear Ticket Por Día/semana
+      </button>
 
       <Dialog
         open={isOpen}

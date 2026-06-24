@@ -1,27 +1,31 @@
 'use client';
 
+import { useState } from 'react';
+import { ColumnDef, SortingFn } from '@tanstack/react-table';
+import { useSession } from 'next-auth/react';
+import { Ban, MoreHorizontal } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ColumnDef, SortingFn } from '@tanstack/react-table';
-import { Ban, MoreHorizontal, Printer } from 'lucide-react';
-import { useState } from 'react';
+import { cn } from '@/lib/utils';
+
 import { Customer } from '@/types/cutomer.type';
-import { useSession } from 'next-auth/react';
-import { PaymentSummaryCell } from '../../components/receipts/automatic-open-summary';
 import { Vehicle } from '@/types/vehicle.type';
-import { ViewCustomerRenterDialog } from '../../components/customers/view-customer-renter-dialog';
-import { DeletePrivateDialog } from './delete-private-dialog';
+
 import { UpdatePrivateDialog } from './update-private-dialog';
+import { DeletePrivateDialog } from './delete-private-dialog';
 import { SoftDeletePrivateDialog } from './soft-delete-private-dialog';
 import { RestoredPrivateDialog } from './restored-private-dialog';
+import { ViewCustomerRenterDialog } from '../../components/customers/view-customer-renter-dialog';
+import { PaymentSummaryCell } from '../../components/receipts/automatic-open-summary';
 
 const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
   if (rowA.original.deletedAt && !rowB.original.deletedAt) return 1;
@@ -31,42 +35,60 @@ const customSort: SortingFn<Customer> = (rowA, rowB, columnId) => {
   return valueA.toLowerCase().localeCompare(valueB.toLowerCase());
 };
 
-export const privateColumns = (customerRenters: Vehicle[]): ColumnDef<Customer>[] => [
+const dimmed = (deleted: boolean | Date | null | undefined) =>
+  deleted ? 'text-muted-foreground line-through opacity-60' : '';
+
+export const privateColumns = (
+  customerRenters: Vehicle[],
+): ColumnDef<Customer>[] => [
   {
     accessorKey: 'lastName',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Apellido" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Apellido" />
+    ),
     cell: ({ row }) => (
       <div
-      className={`text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate ${
-        row.original.deletedAt ? 'text-gray-500 opacity-60' : ''
-      }`}
-    >
+        className={cn(
+          'gm-display font-semibold text-[13px] tracking-[0.01em] text-foreground max-w-[220px] truncate',
+          dimmed(row.original.deletedAt),
+        )}
+      >
         {row.original.lastName}
+        {row.original.deletedAt && (
+          <Badge variant="default" className="ml-2 align-middle">
+            <Ban className="size-3" /> Baja
+          </Badge>
+        )}
       </div>
     ),
     sortingFn: customSort,
   },
   {
     accessorKey: 'firstName',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Nombre" />,
-    cell: ({ row }) =>   <div
-    className={`text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate ${
-      row.original.deletedAt ? 'text-gray-500 opacity-60' : ''
-    }`}
-  >{row.original.firstName}</div>,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Nombre" />
+    ),
+    cell: ({ row }) => (
+      <div className={cn('text-[13px] truncate', dimmed(row.original.deletedAt))}>
+        {row.original.firstName}
+      </div>
+    ),
     sortingFn: customSort,
   },
   {
     accessorKey: 'numberOfVehicles',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Número de vehículos" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Cocheras" />
+    ),
     cell: ({ row }) => (
-      <div
-      className={`text-sm sm:text-base max-w-[200px] sm:max-w-[300px] truncate ${
-        row.original.deletedAt ? 'text-gray-500 opacity-60' : ''
-      }`}
-    >
+      <span
+        className={cn(
+          'gm-display gm-tnum inline-flex h-7 items-center justify-center rounded-md border border-border bg-gm-surface-2 px-2 text-[12px] font-bold text-foreground',
+          dimmed(row.original.deletedAt),
+        )}
+      >
         {row.original.numberOfVehicles}
-      </div>
+      </span>
     ),
     sortingFn: customSort,
   },
@@ -76,55 +98,58 @@ export const privateColumns = (customerRenters: Vehicle[]): ColumnDef<Customer>[
       const customer = row.original;
       return (
         <PaymentSummaryCell
-          key={`${customer.id}-${customer.lastName}`} // 👈 esto fuerza el remount
+          key={`${customer.id}-${customer.lastName}`}
           customer={customer}
         />
       );
     },
   },
-  
-  
-  
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => {
       const customer = row.original;
       const [openDropdown, setOpenDropdown] = useState(false);
       const session = useSession();
+      const isAdmin = session.data?.user.role === 'ADMIN';
 
       return (
-        <>
-          <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel className="text-sm sm:text-base">Acciones</DropdownMenuLabel>
-              <ViewCustomerRenterDialog customer={customer} />
-              {session.data?.user.role === 'ADMIN' && (
-                <>
-                  <DropdownMenuSeparator />
-                  {customer.deletedAt === null ? (
-                    <>
-                    <UpdatePrivateDialog customer={customer} customersRenters={customerRenters} />
+        <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="size-8">
+              <span className="sr-only">Abrir acciones</span>
+              <MoreHorizontal className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="w-56 border border-border bg-gm-surface p-1 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.7)]"
+          >
+            <DropdownMenuLabel className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+              Acciones
+            </DropdownMenuLabel>
+            <ViewCustomerRenterDialog customer={customer} />
+            {isAdmin && (
+              <>
+                <DropdownMenuSeparator className="bg-border" />
+                {customer.deletedAt === null ? (
+                  <>
+                    <UpdatePrivateDialog
+                      customer={customer}
+                      customersRenters={customerRenters}
+                    />
                     <SoftDeletePrivateDialog customer={customer} />
-                    </>
-                  ): (
-                    <>
+                  </>
+                ) : (
+                  <>
                     <DeletePrivateDialog customer={customer} />
                     <RestoredPrivateDialog customer={customer} />
                   </>
-                  )}
-                </>
-              )}            
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </>
+                )}
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       );
     },
-  }
-  
+  },
 ];

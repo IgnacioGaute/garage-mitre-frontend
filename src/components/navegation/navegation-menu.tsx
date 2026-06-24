@@ -1,17 +1,15 @@
 'use client';
 
-import {
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { ChevronsUpDown, Home, Key, KeyIcon, ShieldCheck, Users } from 'lucide-react';
+import { ChevronDown, Home, Key, ShieldCheck, Users } from 'lucide-react';
 import Link from 'next/link';
-import { BoxListDialog } from '../box-list-dialog';
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
-export function NavigationMenuDemo({ setIsExpanded }: { setIsExpanded: (state: boolean) => void }) {
+export function NavigationMenuDemo({
+  setIsExpanded,
+}: {
+  setIsExpanded: (state: boolean) => void;
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleToggleMenu = () => {
@@ -21,56 +19,61 @@ export function NavigationMenuDemo({ setIsExpanded }: { setIsExpanded: (state: b
   };
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          size="lg"
-          className=" w-full h-full text-center data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-          onClick={handleToggleMenu}
-        >
-                      <Users/>
-          <div className="hidden lg:grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">Clientes</span>
-          </div>
-          <ChevronsUpDown className="ml-auto size-4 mr-1" />
-        </SidebarMenuButton>
-
-        {menuOpen && (
-    <div className="w-[--radix-dropdown-menu-trigger-width] min-w-40 rounded-lg shadow-md mt-2">
-    <DropdownMenuSeparator />
-    <DropdownMenuGroup>
-      <Link href="/owners">
-        <DropdownMenuItem className="cursor-pointer flex items-center gap-2 pl-4">
-          <Home size={18} />
-          Propietarios
-        </DropdownMenuItem>
-      </Link>
-    </DropdownMenuGroup>
-
-    <DropdownMenuSeparator />
-
-    <DropdownMenuGroup>
-      <Link href="/renters">
-        <DropdownMenuItem className="cursor-pointer flex items-center gap-2 pl-4">
-          <Key size={18} />
-          Inquilinos
-        </DropdownMenuItem>
-      </Link>
-    </DropdownMenuGroup>
-
-    <DropdownMenuSeparator />
-
-    <DropdownMenuGroup>
-      <Link href="/privates">
-        <DropdownMenuItem className="cursor-pointer flex items-center gap-2 pl-4">
-        <ShieldCheck size={24} />
-          Inquilinos de Terceros
-        </DropdownMenuItem>
-      </Link>
-    </DropdownMenuGroup>
-  </div>
+    <div>
+      <button
+        type="button"
+        onClick={handleToggleMenu}
+        className={cn(
+          'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] text-foreground transition-colors duration-200 hover:bg-white/[0.08]',
+          menuOpen && 'bg-white/[0.06]'
         )}
-      </SidebarMenuItem>
-    </SidebarMenu>
+      >
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 bg-white/5">
+          <Users className="size-4 text-muted-foreground" />
+        </span>
+        <span className="flex-1 text-left font-medium">Clientes</span>
+        <span
+          className={cn(
+            'flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-transform duration-200',
+            menuOpen && 'rotate-180'
+          )}
+        >
+          <ChevronDown className="size-3.5" />
+        </span>
+      </button>
+
+      <div
+        className={cn(
+          'grid transition-all duration-200 ease-out',
+          menuOpen ? 'grid-rows-[1fr] opacity-100 mt-1.5' : 'grid-rows-[0fr] opacity-0'
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="space-y-0.5 rounded-xl border border-border/40 bg-white/[0.03] p-1.5">
+            <Link
+              href="/owners"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-[12.5px] text-foreground transition-colors duration-200 hover:bg-white/[0.08]"
+            >
+              <Home className="size-3.5 text-muted-foreground" />
+              Propietarios
+            </Link>
+            <Link
+              href="/renters"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-[12.5px] text-foreground transition-colors duration-200 hover:bg-white/[0.08]"
+            >
+              <Key className="size-3.5 text-muted-foreground" />
+              Inquilinos
+            </Link>
+            <Link
+              href="/privates"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-[12.5px] text-foreground transition-colors duration-200 hover:bg-white/[0.08]"
+            >
+              <ShieldCheck className="size-3.5 text-muted-foreground" />
+              Inquilinos de terceros
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

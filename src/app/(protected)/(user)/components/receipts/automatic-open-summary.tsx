@@ -48,7 +48,7 @@ export const PaymentSummaryCell = ({ customer }: { customer: Customer }) => {
 
   return (
     <PaymentSummaryTable customer={customer} autoOpen={autoOpen}>
-      <span className="text-gray-500 hover:underline cursor-pointer">Ver Resumen</span>
+      <span className="text-muted-foreground hover:text-foreground hover:underline cursor-pointer text-[12.5px] transition-colors">Ver Resumen</span>
     </PaymentSummaryTable>
   );
 };

@@ -18,18 +18,22 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 interface NavItem {
   title: string;
   url: string;
   icon?: LucideIcon | React.ReactNode | (() => React.JSX.Element);
   isActive?: boolean;
-  items?: {
-    title: string;
-    url: string;
-  }[];
+  items?: { title: string; url: string }[];
 }
 
+/**
+ * Brand-styled sidebar nav:
+ *  - Active item gets the yellow "plate" treatment.
+ *  - Hover is a subtle elevated surface (gm-surface-2).
+ *  - Icons get a slight scale-up on hover.
+ */
 export function NavMain({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
   const [mounted, setMounted] = React.useState(false);
@@ -46,6 +50,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
           const hasActiveChild =
             mounted && item.items?.some((subItem) => pathname === subItem.url);
 
+          // ——— leaf item ———
           if (!item.items?.length) {
             return (
               <SidebarMenuItem key={item.title}>
@@ -53,18 +58,17 @@ export function NavMain({ items }: { items: NavItem[] }) {
                   asChild
                   tooltip={item.title}
                   isActive={isActive}
-                  className="group relative flex w-full items-center rounded-md px-2 py-6 text-sm font-medium transition-all duration-200 hover:bg-gradient-to-r hover:from-primary/20 hover:to-primary/10 hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/30 data-[active=true]:to-primary/20 data-[active=true]:text-white"
+                  className={cn(
+                    'group relative my-[2px] flex h-10 w-full items-center rounded-md px-3 text-[13px] font-semibold tracking-tight transition-all duration-150',
+                    'text-muted-foreground hover:bg-gm-surface-2 hover:text-foreground',
+                    'data-[active=true]:bg-gm-yellow data-[active=true]:text-gm-ink data-[active=true]:shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)]'
+                  )}
                 >
-                  <Link
-                    href={item.url}
-                    className="flex items-center w-full gap-x-3"
-                  >
+                  <Link href={item.url} className="flex w-full items-center gap-x-3">
                     {item.icon && (
-                      <div className="flex h-5 w-5 items-center justify-center transition-transform duration-200 group-hover:scale-110">
-                        {typeof item.icon === 'function'
-                          ? item.icon({})
-                          : item.icon}
-                      </div>
+                      <span className="flex h-5 w-5 items-center justify-center transition-transform duration-150 group-hover:scale-105">
+                        {typeof item.icon === 'function' ? item.icon({}) : item.icon}
+                      </span>
                     )}
                     <span className="truncate group-[[data-collapsible=icon]]/sidebar:hidden">
                       {item.title}
@@ -75,6 +79,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
             );
           }
 
+          // ——— group with children ———
           return (
             <Collapsible
               key={item.title}
@@ -87,19 +92,21 @@ export function NavMain({ items }: { items: NavItem[] }) {
                   <SidebarMenuButton
                     tooltip={item.title}
                     isActive={hasActiveChild}
-                    className="group relativeflex items-center rounded-l-full px-4 py-8 text-sm font-medium transition-all duration-200 hover:bg-gradient-to-r data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/30 data-[active=true]:to-primary/20 data-[active=true]:text-white"
+                    className={cn(
+                      'group relative my-[2px] flex h-10 w-full items-center rounded-md px-3 text-[13px] font-semibold tracking-tight transition-all duration-150',
+                      'text-muted-foreground hover:bg-gm-surface-2 hover:text-foreground',
+                      'data-[active=true]:bg-gm-surface-2 data-[active=true]:text-foreground'
+                    )}
                   >
                     {item.icon && (
-                      <div className="flex h-7 w-5 items-center justify-center transition-transform duration-200 group-hover:scale-110">
-                        {typeof item.icon === 'function'
-                          ? item.icon({})
-                          : item.icon}
-                      </div>
+                      <span className="flex h-5 w-5 items-center justify-center transition-transform duration-150 group-hover:scale-105">
+                        {typeof item.icon === 'function' ? item.icon({}) : item.icon}
+                      </span>
                     )}
-                    <span className="ml-10 truncate group-[[data-collapsible=icon]]/sidebar:hidden">
+                    <span className="ml-2 truncate group-[[data-collapsible=icon]]/sidebar:hidden">
                       {item.title}
                     </span>
-                    <ChevronRight className="ml-auto h-5 w-5 shrink-0 transition-all duration-200 text-muted-foreground/50 group-hover:text-primary group-data-[state=open]/collapsible:rotate-90 group-[[data-collapsible=icon]]/sidebar:hidden" />
+                    <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground/60 transition-transform duration-150 group-data-[state=open]/collapsible:rotate-90 group-[[data-collapsible=icon]]/sidebar:hidden" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="animate-accordion-down group-[[data-collapsible=icon]]/sidebar:hidden">
@@ -109,7 +116,11 @@ export function NavMain({ items }: { items: NavItem[] }) {
                         <SidebarMenuSubButton
                           asChild
                           isActive={mounted && pathname === subItem.url}
-                          className="group flex w-full items-center rounded-md px-4 py-2 pl-12 text-sm font-medium transition-all duration-200 hover:bg-gradient-to-r hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/30 data-[active=true]:to-primary/20 data-[active=true]:text-white"
+                          className={cn(
+                            'group flex w-full items-center rounded-md py-2 pl-9 pr-3 text-[12.5px] font-medium transition-colors',
+                            'text-muted-foreground hover:bg-gm-surface-2 hover:text-foreground',
+                            'data-[active=true]:bg-gm-yellow data-[active=true]:text-gm-ink'
+                          )}
                         >
                           <Link href={subItem.url}>
                             <span className="truncate">{subItem.title}</span>
