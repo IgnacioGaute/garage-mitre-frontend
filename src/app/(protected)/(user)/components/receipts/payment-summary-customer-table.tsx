@@ -310,7 +310,11 @@ export function PaymentSummaryTable({
                   <TableHead>Fecha de pago</TableHead>
                   <TableHead>Método/s</TableHead>
                   <TableHead className="text-right">Monto</TableHead>
-                  <TableHead className="text-center w-[1%]">Acciones</TableHead>
+                  <TableHead className="text-center">Imprimir</TableHead>
+                  <TableHead className="text-center">Cancelar</TableHead>
+                  <TableHead className="text-center">Registrar</TableHead>
+                  <TableHead className="text-center">Movimientos</TableHead>
+                  <TableHead className="w-[1%]"></TableHead>
                 </TableRow>
               </TableHeader>
 
@@ -384,99 +388,106 @@ export function PaymentSummaryTable({
                         </span>
                       </TableCell>
 
-                      <TableCell>
-                        <div className="flex items-center justify-center gap-0.5">
-                          <ReceiptMovementsDrawer receipt={receiptOwner} />
+                      {/* Imprimir */}
+                      <TableCell className="text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8 text-muted-foreground hover:text-foreground"
+                          onClick={() => handlePrint(receiptOwner)}
+                        >
+                          <Printer className="size-3.5" />
+                        </Button>
+                      </TableCell>
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8 text-muted-foreground hover:text-foreground"
-                            onClick={() => handlePrint(receiptOwner)}
-                            title="Imprimir"
-                          >
-                            <Printer className="size-3.5" />
-                          </Button>
-
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8 text-muted-foreground hover:text-foreground"
-                            onClick={() => handleRegister(receiptOwner)}
-                            title="Registrar pago"
-                          >
-                            <Save className="size-3.5" />
-                          </Button>
-
-                          <Dialog
-                            open={openCancelDialog && selectedReceiptId === receiptOwner.id}
-                            onOpenChange={(v) => {
-                              if (!v) setOpenCancelDialog(false);
-                            }}
-                          >
-                            <DialogTrigger asChild>
+                      {/* Cancelar */}
+                      <TableCell className="text-center">
+                        <Dialog
+                          open={openCancelDialog && selectedReceiptId === receiptOwner.id}
+                          onOpenChange={(v) => {
+                            if (!v) setOpenCancelDialog(false);
+                          }}
+                        >
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-8 text-muted-foreground hover:text-[#F08775]"
+                              onClick={() => {
+                                setSelectedReceiptId(receiptOwner.id);
+                                setOpenCancelDialog(true);
+                              }}
+                            >
+                              <Ban className="size-3.5" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <div className="flex items-center gap-3">
+                                <span className="grid size-9 place-items-center rounded-md border border-destructive/40 bg-destructive/15 text-[#F08775]">
+                                  <Ban className="size-4" />
+                                </span>
+                                <div>
+                                  <DialogTitle>¿Cancelar recibo?</DialogTitle>
+                                  <DialogDescription className="mt-0.5">
+                                    Se marcará como pendiente y se eliminará de la
+                                    planilla de caja. Si se pagó con crédito, el monto
+                                    será reintegrado.
+                                  </DialogDescription>
+                                </div>
+                              </div>
+                            </DialogHeader>
+                            <DialogFooter>
                               <Button
                                 variant="ghost"
-                                size="icon"
-                                className="size-8 text-muted-foreground hover:text-[#F08775]"
-                                onClick={() => {
-                                  setSelectedReceiptId(receiptOwner.id);
-                                  setOpenCancelDialog(true);
-                                }}
-                                title="Cancelar recibo"
+                                onClick={() => setOpenCancelDialog(false)}
                               >
-                                <Ban className="size-3.5" />
+                                Volver
                               </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <div className="flex items-center gap-3">
-                                  <span className="grid size-9 place-items-center rounded-md border border-destructive/40 bg-destructive/15 text-[#F08775]">
-                                    <Ban className="size-4" />
-                                  </span>
-                                  <div>
-                                    <DialogTitle>¿Cancelar recibo?</DialogTitle>
-                                    <DialogDescription className="mt-0.5">
-                                      Se marcará como pendiente y se eliminará de la
-                                      planilla de caja. Si se pagó con crédito, el monto
-                                      será reintegrado.
-                                    </DialogDescription>
-                                  </div>
-                                </div>
-                              </DialogHeader>
-                              <DialogFooter>
-                                <Button
-                                  variant="ghost"
-                                  onClick={() => setOpenCancelDialog(false)}
-                                >
-                                  Volver
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  onClick={async () => {
-                                    if (!selectedReceiptId) return;
-                                    const result = await cancelReceiptAction(
-                                      selectedReceiptId,
-                                      customer.id,
-                                    );
-                                    if (result.error)
-                                      toast.error(result.error.message);
-                                    else {
-                                      toast.success(
-                                        'Recibo cancelado exitosamente',
-                                      );
-                                      await refreshReceipts();
-                                    }
-                                    setOpenCancelDialog(false);
-                                  }}
-                                >
-                                  Cancelar Recibo
-                                </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
+                              <Button
+                                variant="destructive"
+                                onClick={async () => {
+                                  if (!selectedReceiptId) return;
+                                  const result = await cancelReceiptAction(
+                                    selectedReceiptId,
+                                    customer.id,
+                                  );
+                                  if (result.error)
+                                    toast.error(result.error.message);
+                                  else {
+                                    toast.success('Recibo cancelado exitosamente');
+                                    await refreshReceipts();
+                                  }
+                                  setOpenCancelDialog(false);
+                                }}
+                              >
+                                Cancelar Recibo
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </TableCell>
 
-                          <DropdownMenu
+                      {/* Registrar */}
+                      <TableCell className="text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8 text-muted-foreground hover:text-foreground"
+                          onClick={() => handleRegister(receiptOwner)}
+                        >
+                          <Save className="size-3.5" />
+                        </Button>
+                      </TableCell>
+
+                      {/* Movimientos */}
+                      <TableCell className="text-center">
+                        <ReceiptMovementsDrawer receipt={receiptOwner} />
+                      </TableCell>
+
+                      {/* Más acciones */}
+                      <TableCell>
+                        <DropdownMenu
                             open={openDropdownId === receiptOwner.id}
                             onOpenChange={(v) =>
                               setOpenDropdownId(v ? receiptOwner.id : null)
@@ -498,13 +509,12 @@ export function PaymentSummaryTable({
                               <DeleteReceiptDialog receipt={receiptOwner} />
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </div>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={10} className="h-24 text-center">
                       <div className="text-[13px] text-muted-foreground">
                         No hay recibos registrados.
                       </div>
