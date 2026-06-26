@@ -24,51 +24,49 @@ export function NavigationMenuDemo({
         type="button"
         onClick={handleToggleMenu}
         className={cn(
-          'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] text-foreground transition-colors duration-200 hover:bg-white/[0.08]',
-          menuOpen && 'bg-white/[0.06]'
+          'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] text-foreground transition-colors duration-150 hover:bg-white/[0.08]',
+          menuOpen && 'bg-white/[0.06]',
         )}
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 bg-white/5">
-          <Users className="size-4 text-muted-foreground" />
-        </span>
+        <Users className="size-3.5 text-muted-foreground" />
         <span className="flex-1 text-left font-medium">Clientes</span>
-        <span
+        <ChevronDown
           className={cn(
-            'flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-transform duration-200',
-            menuOpen && 'rotate-180'
+            'size-3 text-muted-foreground transition-transform duration-200',
+            menuOpen && 'rotate-180',
           )}
-        >
-          <ChevronDown className="size-3.5" />
-        </span>
+        />
       </button>
 
       <div
         className={cn(
           'grid transition-all duration-200 ease-out',
-          menuOpen ? 'grid-rows-[1fr] opacity-100 mt-1.5' : 'grid-rows-[0fr] opacity-0'
+          menuOpen
+            ? 'grid-rows-[1fr] opacity-100 mt-1'
+            : 'grid-rows-[0fr] opacity-0',
         )}
       >
         <div className="overflow-hidden">
-          <div className="space-y-0.5 rounded-xl border border-border/40 bg-white/[0.03] p-1.5">
+          <div className="space-y-px rounded-lg border border-border/40 bg-white/[0.03] p-1 ml-5">
             <Link
               href="/owners"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-[12.5px] text-foreground transition-colors duration-200 hover:bg-white/[0.08]"
+              className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] text-muted-foreground transition-colors duration-150 hover:bg-white/[0.08] hover:text-foreground"
             >
-              <Home className="size-3.5 text-muted-foreground" />
+              <Home className="size-3 shrink-0" />
               Propietarios
             </Link>
             <Link
               href="/renters"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-[12.5px] text-foreground transition-colors duration-200 hover:bg-white/[0.08]"
+              className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] text-muted-foreground transition-colors duration-150 hover:bg-white/[0.08] hover:text-foreground"
             >
-              <Key className="size-3.5 text-muted-foreground" />
+              <Key className="size-3 shrink-0" />
               Inquilinos
             </Link>
             <Link
               href="/privates"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-[12.5px] text-foreground transition-colors duration-200 hover:bg-white/[0.08]"
+              className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] text-muted-foreground transition-colors duration-150 hover:bg-white/[0.08] hover:text-foreground"
             >
-              <ShieldCheck className="size-3.5 text-muted-foreground" />
+              <ShieldCheck className="size-3 shrink-0" />
               Inquilinos de terceros
             </Link>
           </div>

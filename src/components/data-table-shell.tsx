@@ -30,26 +30,16 @@ import { cn } from '@/lib/utils';
 interface DataTableShellProps<TData, TValue> {
   data: TData[];
   columns: ColumnDef<TData, TValue>[];
-  /** Column id to filter via the toolbar input. Skip for no filter. */
   filterColumn?: string;
   filterPlaceholder?: string;
-  /** Default filter value (e.g. from a URL ?lastName=foo) */
   initialFilter?: string;
-  /** Initial sorting state. */
   initialSort?: SortingState;
-  /** Render slot for the right side of the toolbar — usually a "Nuevo X" button. */
   toolbarRight?: ReactNode | ((table: TanstackTable<TData>) => ReactNode);
-  /** Default page size. */
   pageSize?: number;
-  /** Custom empty-state message. */
   emptyMessage?: string;
   className?: string;
 }
 
-/**
- * Standard data table shell — used by every list page (owners, renters, notes, users, etc.).
- * Provides filter input, view options, the table itself, and pagination.
- */
 export function DataTableShell<TData, TValue>({
   data,
   columns,
@@ -84,12 +74,12 @@ export function DataTableShell<TData, TValue>({
   });
 
   return (
-    <div className={cn('flex flex-col gap-4 pt-4', className)}>
+    <div className={cn('flex flex-col gap-3 pt-4', className)}>
       {/* TOOLBAR */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         {filterColumn && (
-          <div className="relative w-full sm:max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
             <Input
               placeholder={filterPlaceholder}
               value={
@@ -98,7 +88,7 @@ export function DataTableShell<TData, TValue>({
               onChange={(e) =>
                 table.getColumn(filterColumn)?.setFilterValue(e.target.value)
               }
-              className="pl-9"
+              className="pl-9 h-8 text-[13px]"
             />
           </div>
         )}
@@ -112,7 +102,7 @@ export function DataTableShell<TData, TValue>({
       </div>
 
       {/* TABLE */}
-      <div className="overflow-hidden rounded-md border border-border bg-card">
+      <div className="overflow-hidden rounded-lg border border-border">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -152,11 +142,11 @@ export function DataTableShell<TData, TValue>({
                 <TableRow>
                   <TableCell
                     colSpan={table.getVisibleFlatColumns().length}
-                    className="h-32 text-center"
+                    className="h-28 text-center"
                   >
-                    <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                      <Inbox className="size-6" />
-                      <span className="text-[13px]">{emptyMessage}</span>
+                    <div className="flex flex-col items-center justify-center gap-1.5 text-muted-foreground">
+                      <Inbox className="size-5 opacity-50" />
+                      <span className="text-[12.5px]">{emptyMessage}</span>
                     </div>
                   </TableCell>
                 </TableRow>

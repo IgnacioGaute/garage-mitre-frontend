@@ -30,11 +30,11 @@ export default function LoginPage() {
             EN TUS MANOS.
           </h2>
           <p className="mt-6 max-w-[460px] text-[14px] leading-[1.6] text-muted-foreground">
-            Sistema operativo de la cochera: tickets, abonos, recibos y caja.
+            Sistema operativo de la cochera: tickets, recibos y caja.
             Diseñado para que el operador haga todo sin levantar la vista del auto que entra.
           </p>
 
-          <div className="mt-10 grid max-w-[460px] grid-cols-3 gap-3">
+          {/* <div className="mt-10 grid max-w-[460px] grid-cols-3 gap-3">
             {[
               { k: '62', l: 'años operando' },
               { k: '284', l: 'espacios' },
@@ -52,11 +52,11 @@ export default function LoginPage() {
                 </div>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
 
         <div className="text-[11px] tracking-[0.04em] text-muted-foreground">
-          AV. MITRE 1245 · BUENOS AIRES · ARG &nbsp;·&nbsp; +54 11 4382 0099
+          AV. MITRE 1453 · MENDOZA · ARG
         </div>
       </aside>
 

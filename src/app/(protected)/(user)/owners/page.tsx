@@ -1,15 +1,18 @@
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
-import { getCustomers, getParkingTypes } from '@/services/customers.service';
+import { getCustomers, getParkingTypes, findAllPendingReceipts } from '@/services/customers.service';
 import { OwnersTable } from './components/owners-table';
 import { OwnerColumns } from './components/owner-columns';
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
 import { PageHeader } from '@/components/page-header';
+import { CustomerActionsBar } from '../components/customers/drop-menu-actions';
 
 export default async function OwnerPage() {
   const customers = await getCustomers(CUSTOMER_TYPE[0]);
   const parkingTypes = await getParkingTypes();
+  const receiptsData = await findAllPendingReceipts(CUSTOMER_TYPE[0]);
+  const receipts = Array.isArray(receiptsData) ? receiptsData : [];
   const count = customers?.length ?? 0;
 
   return (
@@ -21,6 +24,13 @@ export default async function OwnerPage() {
           count > 0
             ? `${count} propietarios registrados.`
             : 'Creá el primer propietario para empezar a operar.'
+        }
+        actions={
+          <CustomerActionsBar
+            customers={customers || []}
+            type={CUSTOMER_TYPE[0]}
+            receipts={receipts}
+          />
         }
       />
 

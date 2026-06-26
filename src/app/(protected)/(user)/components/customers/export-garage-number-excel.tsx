@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ParkingSquare } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { Customer } from '@/types/cutomer.type';
@@ -58,11 +59,16 @@ export const ExportGarageNumberExcel = ({ customers }: Props) => {
   };
 
   return (
-    <div className="flex flex-col space-y-4">
+    <>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-        <Button variant="ghost" className="w-full justify-start" size="sm">
-            Exportar Excel  Cocheras
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 rounded-md border-border bg-gm-surface-2 text-[12px] font-medium text-muted-foreground hover:text-foreground"
+          >
+            <ParkingSquare className="size-3.5" />
+            <span className="hidden sm:inline">Cocheras</span>
           </Button>
         </DialogTrigger>
         <DialogContent className="w-full p-5">
@@ -86,8 +92,6 @@ export const ExportGarageNumberExcel = ({ customers }: Props) => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
-  
-  
 };

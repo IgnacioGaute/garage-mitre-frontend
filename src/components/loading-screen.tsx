@@ -35,7 +35,7 @@ export function LoadingScreen() {
         </div>
       </div>
 
-      <div className="gm-loader__foot">AV. MITRE 1245 · BUENOS AIRES</div>
+      <div className="gm-loader__foot">AV. MITRE 1453 · MENDOZA</div>
     </div>
   );
 }

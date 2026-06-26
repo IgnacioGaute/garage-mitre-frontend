@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import {
   AlertCircle,
   BellDot,
@@ -47,6 +48,11 @@ export function NavUser({
   const { hasNewNoteAlert, clearNoteAlert } = useNotifications();
   const [openTicketDialog, setOpenTicketDialog] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   const initials = userNav.name
     .split(' ')
@@ -65,7 +71,7 @@ export function NavUser({
               'group relative flex items-center gap-3 rounded-2xl border border-transparent bg-white/[0.04] px-2.5 py-2 text-left text-sm transition-all duration-200',
               'hover:bg-white/[0.08]',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-              isOpen && 'bg-white/[0.08] border-border/60'
+              isOpen && 'bg-white/[0.08] border-border/60',
             )}
           >
             <Avatar className="h-10 w-10 rounded-xl border border-border/60">
@@ -91,7 +97,7 @@ export function NavUser({
             <span
               className={cn(
                 'hidden lg:flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-white/5 text-muted-foreground transition-transform duration-200',
-                isOpen && 'rotate-180'
+                isOpen && 'rotate-180',
               )}
             >
               <ChevronDown className="h-4 w-4" />
@@ -101,26 +107,26 @@ export function NavUser({
 
         <DropdownMenuContent
           align="end"
-          sideOffset={12}
-          className="w-72 rounded-2xl border border-border/70 bg-card/95 p-3 shadow-[0_28px_90px_-35px_rgba(0,0,0,0.65)] backdrop-blur-xl"
+          sideOffset={8}
+          className="w-56 rounded-xl border border-border/70 bg-card/95 p-1.5 shadow-[0_28px_90px_-35px_rgba(0,0,0,0.65)] backdrop-blur-xl"
         >
           {/* User info header */}
-          <div className="flex items-center gap-3 rounded-xl border border-border/40 bg-white/[0.04] px-3 py-3 mb-2">
-            <Avatar className="h-9 w-9 rounded-lg border border-border/60">
+          <div className="flex items-center gap-2.5 rounded-lg bg-white/[0.04] px-2.5 py-2 mb-1">
+            <Avatar className="h-7 w-7 rounded-md border border-border/60">
               <AvatarImage src={userNav.avatar} alt={userNav.name} />
-              <AvatarFallback className="rounded-lg bg-gm-orange text-white font-display font-bold text-xs tracking-wider">
+              <AvatarFallback className="rounded-md bg-gm-orange text-white font-display font-bold text-[10px] tracking-wider">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-1 flex-col min-w-0">
-              <span className="text-sm font-medium text-foreground truncate">
+              <span className="text-[12.5px] font-medium text-foreground truncate leading-tight">
                 {userNav.name.trim() || 'Usuario'}
               </span>
-              <span className="text-xs text-muted-foreground truncate">
+              <span className="text-[10.5px] text-muted-foreground truncate leading-tight">
                 {userNav.email}
               </span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-gm-yellow">
+            <span className="text-[9px] font-bold uppercase tracking-[0.06em] text-gm-yellow">
               {userNav.role === 'ADMIN' ? 'Admin' : 'Op.'}
             </span>
           </div>
@@ -128,31 +134,25 @@ export function NavUser({
           {/* Clients submenu (admin only) */}
           {userNav.role === 'ADMIN' && (
             <>
-              <div className="px-0 pb-1">
-                <NavigationMenuDemo setIsExpanded={setIsExpanded} />
-              </div>
-              <DropdownMenuSeparator className="bg-border/40 -mx-3 my-2" />
+              <NavigationMenuDemo setIsExpanded={setIsExpanded} />
+              <DropdownMenuSeparator className="bg-border/40 -mx-1.5 my-1" />
             </>
           )}
 
           {/* Navigation items */}
-          <DropdownMenuGroup className="space-y-0.5">
+          <DropdownMenuGroup>
             <Link href="/tickets">
-              <DropdownMenuItem className="cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-[13px] text-foreground transition-colors duration-200 hover:bg-white/[0.08] focus:bg-white/[0.08]">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 bg-white/5">
-                  <TicketIcon className="size-4 text-muted-foreground" />
-                </span>
+              <DropdownMenuItem className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] text-foreground transition-colors duration-150 hover:bg-white/[0.08] focus:bg-white/[0.08]">
+                <TicketIcon className="size-3.5 text-muted-foreground" />
                 Tickets
               </DropdownMenuItem>
             </Link>
 
             <DropdownMenuItem
               onClick={() => setOpenBoxDialog(true)}
-              className="cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-[13px] text-foreground transition-colors duration-200 hover:bg-white/[0.08] focus:bg-white/[0.08]"
+              className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] text-foreground transition-colors duration-150 hover:bg-white/[0.08] focus:bg-white/[0.08]"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 bg-white/5">
-                <Box className="size-4 text-muted-foreground" />
-              </span>
+              <Box className="size-3.5 text-muted-foreground" />
               Planilla de caja
             </DropdownMenuItem>
 
@@ -161,31 +161,27 @@ export function NavUser({
                 e.preventDefault();
                 setOpenTicketDialog(true);
               }}
-              className="cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-[13px] text-foreground transition-colors duration-200 hover:bg-white/[0.08] focus:bg-white/[0.08]"
+              className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] text-foreground transition-colors duration-150 hover:bg-white/[0.08] focus:bg-white/[0.08]"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 bg-white/5">
-                <TicketIcon className="size-4 text-muted-foreground" />
-              </span>
+              <TicketIcon className="size-3.5 text-muted-foreground" />
               Ver registros de tickets
             </DropdownMenuItem>
 
             <Link href="/notes">
               <DropdownMenuItem
-                className="cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-[13px] text-foreground transition-colors duration-200 hover:bg-white/[0.08] focus:bg-white/[0.08]"
+                className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] text-foreground transition-colors duration-150 hover:bg-white/[0.08] focus:bg-white/[0.08]"
                 onClick={clearNoteAlert}
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 bg-white/5">
-                  <AlertCircle className="size-4 text-muted-foreground" />
-                </span>
+                <AlertCircle className="size-3.5 text-muted-foreground" />
                 Avisos
                 {hasNewNoteAlert && (
-                  <BellDot className="ml-auto size-4 text-gm-orange" />
+                  <BellDot className="ml-auto size-3.5 text-gm-orange" />
                 )}
               </DropdownMenuItem>
             </Link>
           </DropdownMenuGroup>
 
-          <DropdownMenuSeparator className="bg-border/40 -mx-3 my-2" />
+          <DropdownMenuSeparator className="bg-border/40 -mx-1.5 my-1" />
 
           <Link
             href={
@@ -194,23 +190,21 @@ export function NavUser({
                 : '/admin/other-payments'
             }
           >
-            <DropdownMenuItem className="cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-[13px] text-foreground transition-colors duration-200 hover:bg-white/[0.08] focus:bg-white/[0.08]">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 bg-white/5">
-                <Shield className="size-4 text-muted-foreground" />
-              </span>
+            <DropdownMenuItem className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] text-foreground transition-colors duration-150 hover:bg-white/[0.08] focus:bg-white/[0.08]">
+              <Shield className="size-3.5 text-muted-foreground" />
               {userNav.role === 'ADMIN' ? 'Administrar' : 'Administrar gastos'}
             </DropdownMenuItem>
           </Link>
 
-          <DropdownMenuSeparator className="bg-border/40 -mx-3 my-2" />
+          <DropdownMenuSeparator className="bg-border/40 -mx-1.5 my-1" />
 
-          {/* Logout section */}
+          {/* Logout */}
           <DropdownMenuItem
             onClick={() => signOut()}
-            className="cursor-pointer gap-3 rounded-xl border border-border/40 bg-white/[0.03] px-3 py-3 text-[13px] text-[#F08775] transition-colors duration-200 hover:bg-destructive/15 focus:bg-destructive/15"
+            className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] text-[#F08775] transition-colors duration-150 hover:bg-destructive/15 focus:bg-destructive/15"
           >
-            <LogOut className="size-4" />
-            <span className="flex-1">Cerrar sesión</span>
+            <LogOut className="size-3.5" />
+            Cerrar sesión
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

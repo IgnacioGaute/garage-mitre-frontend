@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Receipt } from '@/types/receipt.type';
 import { CustomerType } from '@/types/cutomer.type';
+import { Receipt as ReceiptIcon } from 'lucide-react';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -135,16 +136,16 @@ finalRows.sort((a, b) => {
   };
 
   return (
-    <div className="flex flex-col space-y-4">
+    <>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
           <Button
-            variant="ghost"
-            className="w-full justify-start"
+            variant="outline"
             size="sm"
-            onClick={() => setIsDialogOpen(true)}
+            className="h-8 gap-1.5 rounded-md border-border bg-gm-surface-2 text-[12px] font-medium text-muted-foreground hover:text-foreground"
           >
-            Exportar Excel Recibos
+            <ReceiptIcon className="size-3.5" />
+            <span className="hidden sm:inline">Recibos</span>
           </Button>
         </DialogTrigger>
         <DialogContent>
@@ -201,6 +202,6 @@ finalRows.sort((a, b) => {
           </Button>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 };

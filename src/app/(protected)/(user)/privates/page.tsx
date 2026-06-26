@@ -1,15 +1,18 @@
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
-import { getCustomers, getCustomerVehicleRenter } from '@/services/customers.service';
+import { getCustomers, getCustomerVehicleRenter, findAllPendingReceipts } from '@/services/customers.service';
 import { privateColumns } from './components/private-columns';
 import { PrivatesTable } from './components/privates-table';
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
 import { PageHeader } from '@/components/page-header';
+import { CustomerActionsBar } from '../components/customers/drop-menu-actions';
 
 export default async function PrivatePage() {
   const customers = await getCustomers(CUSTOMER_TYPE[2]);
   const customersThirds = await getCustomerVehicleRenter();
+  const receiptsData = await findAllPendingReceipts(CUSTOMER_TYPE[2]);
+  const receipts = Array.isArray(receiptsData) ? receiptsData : [];
   const count = customers?.length ?? 0;
 
   return (
@@ -21,6 +24,13 @@ export default async function PrivatePage() {
           count > 0
             ? `${count} inquilinos de terceros registrados.`
             : 'Creá el primer inquilino de terceros para empezar a operar.'
+        }
+        actions={
+          <CustomerActionsBar
+            customers={customers || []}
+            type={CUSTOMER_TYPE[2]}
+            receipts={receipts}
+          />
         }
       />
 

@@ -51,7 +51,7 @@ export function LoginForm() {
         })
         .catch((err) => {
           console.error('⚠️ Error en loginAction:', err);
-          setError('Algo salió mal. Por favor intenta de nuevo.');
+          setError('No se pudo iniciar sesión. Intentá de nuevo.');
         });
     });
   };

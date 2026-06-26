@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ChevronRight, type LucideIcon } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import {
   Collapsible,
   CollapsibleContent,
@@ -23,17 +23,11 @@ import { cn } from '@/lib/utils';
 interface NavItem {
   title: string;
   url: string;
-  icon?: LucideIcon | React.ReactNode | (() => React.JSX.Element);
+  icon?: React.ReactNode | (() => React.JSX.Element);
   isActive?: boolean;
   items?: { title: string; url: string }[];
 }
 
-/**
- * Brand-styled sidebar nav:
- *  - Active item gets the yellow "plate" treatment.
- *  - Hover is a subtle elevated surface (gm-surface-2).
- *  - Icons get a slight scale-up on hover.
- */
 export function NavMain({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
   const [mounted, setMounted] = React.useState(false);
@@ -50,7 +44,6 @@ export function NavMain({ items }: { items: NavItem[] }) {
           const hasActiveChild =
             mounted && item.items?.some((subItem) => pathname === subItem.url);
 
-          // ——— leaf item ———
           if (!item.items?.length) {
             return (
               <SidebarMenuItem key={item.title}>
@@ -59,18 +52,18 @@ export function NavMain({ items }: { items: NavItem[] }) {
                   tooltip={item.title}
                   isActive={isActive}
                   className={cn(
-                    'group relative my-[2px] flex h-10 w-full items-center rounded-md px-3 text-[13px] font-semibold tracking-tight transition-all duration-150',
+                    'group relative my-px flex h-9 w-full items-center rounded-md px-2.5 text-[13px] font-medium tracking-tight transition-all duration-150',
                     'text-muted-foreground hover:bg-gm-surface-2 hover:text-foreground',
-                    'data-[active=true]:bg-gm-yellow data-[active=true]:text-gm-ink data-[active=true]:shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)]'
+                    'data-[active=true]:bg-gm-yellow data-[active=true]:text-gm-ink data-[active=true]:font-semibold data-[active=true]:shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)]',
                   )}
                 >
-                  <Link href={item.url} className="flex w-full items-center gap-x-3">
+                  <Link href={item.url} className="flex w-full items-center gap-x-2.5">
                     {item.icon && (
-                      <span className="flex h-5 w-5 items-center justify-center transition-transform duration-150 group-hover:scale-105">
-                        {typeof item.icon === 'function' ? item.icon({}) : item.icon}
+                      <span className="flex size-4 shrink-0 items-center justify-center [&>svg]:size-4">
+                        {React.isValidElement(item.icon) ? item.icon : typeof item.icon === 'function' ? (item.icon as () => React.JSX.Element)() : null}
                       </span>
                     )}
-                    <span className="truncate group-[[data-collapsible=icon]]/sidebar:hidden">
+                    <span className="truncate">
                       {item.title}
                     </span>
                   </Link>
@@ -79,7 +72,6 @@ export function NavMain({ items }: { items: NavItem[] }) {
             );
           }
 
-          // ——— group with children ———
           return (
             <Collapsible
               key={item.title}
@@ -93,23 +85,23 @@ export function NavMain({ items }: { items: NavItem[] }) {
                     tooltip={item.title}
                     isActive={hasActiveChild}
                     className={cn(
-                      'group relative my-[2px] flex h-10 w-full items-center rounded-md px-3 text-[13px] font-semibold tracking-tight transition-all duration-150',
+                      'group relative my-px flex h-9 w-full items-center rounded-md px-2.5 text-[13px] font-medium tracking-tight transition-all duration-150',
                       'text-muted-foreground hover:bg-gm-surface-2 hover:text-foreground',
-                      'data-[active=true]:bg-gm-surface-2 data-[active=true]:text-foreground'
+                      'data-[active=true]:bg-gm-surface-2 data-[active=true]:text-foreground',
                     )}
                   >
                     {item.icon && (
-                      <span className="flex h-5 w-5 items-center justify-center transition-transform duration-150 group-hover:scale-105">
-                        {typeof item.icon === 'function' ? item.icon({}) : item.icon}
+                      <span className="flex size-4 shrink-0 items-center justify-center [&>svg]:size-4">
+                        {React.isValidElement(item.icon) ? item.icon : typeof item.icon === 'function' ? (item.icon as () => React.JSX.Element)() : null}
                       </span>
                     )}
-                    <span className="ml-2 truncate group-[[data-collapsible=icon]]/sidebar:hidden">
+                    <span className="ml-1 truncate group-data-[collapsible=icon]:hidden">
                       {item.title}
                     </span>
-                    <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground/60 transition-transform duration-150 group-data-[state=open]/collapsible:rotate-90 group-[[data-collapsible=icon]]/sidebar:hidden" />
+                    <ChevronRight className="ml-auto size-3.5 shrink-0 text-muted-foreground/60 transition-transform duration-150 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="animate-accordion-down group-[[data-collapsible=icon]]/sidebar:hidden">
+                <CollapsibleContent className="animate-accordion-down group-data-[collapsible=icon]:hidden">
                   <SidebarMenuSub>
                     {item.items?.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
@@ -117,9 +109,9 @@ export function NavMain({ items }: { items: NavItem[] }) {
                           asChild
                           isActive={mounted && pathname === subItem.url}
                           className={cn(
-                            'group flex w-full items-center rounded-md py-2 pl-9 pr-3 text-[12.5px] font-medium transition-colors',
+                            'group flex w-full items-center rounded-md py-1.5 pl-9 pr-3 text-[12px] font-medium transition-colors',
                             'text-muted-foreground hover:bg-gm-surface-2 hover:text-foreground',
-                            'data-[active=true]:bg-gm-yellow data-[active=true]:text-gm-ink'
+                            'data-[active=true]:bg-gm-yellow data-[active=true]:text-gm-ink',
                           )}
                         >
                           <Link href={subItem.url}>

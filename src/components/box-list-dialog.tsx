@@ -10,15 +10,15 @@ import {
 } from '@/components/ui/dialog';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { BoxList } from '@/types/box-list.type';
-import { findBoxByDate, updateBoxByDate } from '@/services/box-lists.service';
+import { findBoxByDate } from '@/services/box-lists.service';
 import generateBoxList from '@/utils/generate-box-list';
 import { useSession } from 'next-auth/react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { Check, Edit2, FileText, Loader2, Printer, X } from 'lucide-react';
+import { FileText, Printer } from 'lucide-react';
+import { es } from 'date-fns/locale';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -37,11 +37,7 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [boxData, setBoxData] = useState<BoxList | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [newTotal, setNewTotal] = useState<string>('');
-  const [isSaving, setIsSaving] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const { data: session } = useSession();
-  const isAdmin = session?.user?.role === 'ADMIN';
 
   const fetchData = async (date: Date) => {
     try {
@@ -55,7 +51,6 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
       } else {
         setError(null);
         setBoxData(response.data);
-        setNewTotal(response.data.totalPrice.toString());
       }
     } catch (err) {
       console.error(err);
@@ -67,29 +62,6 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
   useEffect(() => { fetchData(selectedDate); }, [selectedDate]);
   useEffect(() => { if (open) fetchData(selectedDate); }, [open]);
 
-  const handleUpdateTotal = async () => {
-    if (!boxData || !isAdmin) return;
-    setIsSaving(true);
-    const formattedDate = dayjs(selectedDate)
-      .tz('America/Argentina/Buenos_Aires')
-      .format('YYYY-MM-DD');
-    try {
-      const parsedTotal = parseFloat(newTotal);
-      const updated = await updateBoxByDate(formattedDate, parsedTotal, session?.token);
-      if (updated) {
-        setBoxData({ ...boxData, totalPrice: parsedTotal });
-        setIsEditing(false);
-        setError(null);
-      } else {
-        setError('No se pudo actualizar el total.');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Ocurrió un error al guardar los cambios.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handlePrintPdf = async () => {
     if (!boxData) {
@@ -104,9 +76,13 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
     }
   };
 
+  const formattedSelectedDate = dayjs(selectedDate)
+    .tz('America/Argentina/Buenos_Aires')
+    .format('DD/MM/YYYY');
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-sm">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <span className="grid size-9 place-items-center rounded-md border border-gm-yellow/40 bg-gm-yellow/15 text-gm-yellow">
@@ -121,61 +97,58 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
           </div>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="rounded-md border border-border bg-gm-surface-2 p-2">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(day) => { if (day && day <= new Date()) setSelectedDate(day); }}
-              disabled={(day) => day > new Date()}
-              modifiers={{ today: new Date() }}
-              modifiersClassNames={{
-                today:    'bg-gm-yellow/20 text-gm-yellow font-bold ring-1 ring-gm-yellow/40',
-                selected: 'bg-gm-yellow text-gm-ink font-bold',
-              }}
-            />
+        <div className="space-y-3">
+          <Calendar
+            mode="single"
+            locale={es}
+            selected={selectedDate}
+            onSelect={(day) => { if (day && day <= new Date()) setSelectedDate(day); }}
+            disabled={(day) => day > new Date()}
+            modifiers={{ today: new Date() }}
+            modifiersClassNames={{
+              today:    'bg-gm-yellow/20 text-gm-yellow font-bold ring-1 ring-gm-yellow/40',
+              selected: 'bg-gm-yellow text-gm-ink font-bold',
+            }}
+            className="rounded-md border border-border bg-gm-surface-2 p-2 w-full"
+            classNames={{
+              months:   'w-full',
+              month:    'w-full space-y-2',
+              caption:  'flex justify-center relative items-center pb-1',
+              caption_label: 'text-[13px] font-bold capitalize',
+              nav_button_previous: 'absolute left-0',
+              nav_button_next: 'absolute right-0',
+              table:    'w-full border-collapse',
+              head_row: 'grid grid-cols-7',
+              head_cell: 'text-[11px] font-medium text-muted-foreground text-center py-1',
+              row:      'grid grid-cols-7 mt-0.5',
+              cell:     'text-center text-[12.5px] p-0 relative aspect-square flex items-center justify-center',
+              day:      'h-8 w-8 p-0 font-normal rounded-md hover:bg-white/[0.08] transition-colors mx-auto flex items-center justify-center',
+            }}
+          />
+
+          {/* Selected date indicator */}
+          <div className="flex items-center justify-between rounded-md border border-border bg-gm-surface-2 px-3 py-2">
+            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+              Fecha seleccionada
+            </span>
+            <span className="gm-mono gm-tnum text-[13px] font-semibold text-foreground">
+              {formattedSelectedDate}
+            </span>
           </div>
 
           {boxData && (
             <div className="rounded-md border border-border bg-gm-surface-2 p-3">
-              <div className="flex items-center justify-between">
-                <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-                  Total recaudado
-                </div>
-                {isAdmin && !isEditing && (
-                  <Button variant="ghost" size="sm" className="h-7" onClick={() => setIsEditing(true)}>
-                    <Edit2 className="size-3.5" />
-                  </Button>
-                )}
+              <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                Total recaudado
               </div>
-              {!isEditing ? (
-                <div className="gm-display gm-tnum mt-1 text-[28px] font-bold text-gm-yellow leading-none">
-                  {ars(boxData.totalPrice)}
-                </div>
-              ) : (
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground gm-mono">$</span>
-                    <Input
-                      type="number"
-                      value={newTotal}
-                      onChange={(e) => setNewTotal(e.target.value)}
-                      className="pl-7 gm-mono gm-tnum"
-                    />
-                  </div>
-                  <Button size="icon" className="size-9" onClick={handleUpdateTotal} disabled={isSaving}>
-                    {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
-                  </Button>
-                  <Button size="icon" variant="ghost" className="size-9" onClick={() => setIsEditing(false)}>
-                    <X className="size-4" />
-                  </Button>
-                </div>
-              )}
+              <div className="gm-display gm-tnum mt-1 text-[24px] font-bold text-gm-yellow leading-none">
+                {ars(boxData.totalPrice)}
+              </div>
             </div>
           )}
 
           {error && (
-            <div className="rounded-md border border-destructive/40 bg-destructive/10 p-2.5 text-[12.5px] text-[#F08775]">
+            <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-[12px] text-[#F08775]">
               {error}
             </div>
           )}

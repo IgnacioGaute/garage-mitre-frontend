@@ -1,15 +1,18 @@
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
-import { getCustomers, getCustomerVehicleRenter } from '@/services/customers.service';
+import { getCustomers, getCustomerVehicleRenter, findAllPendingReceipts } from '@/services/customers.service';
 import { RentersTable } from './components/renters-table';
 import { renterColumns } from './components/renter-columns';
 import { CUSTOMER_TYPE } from '@/types/cutomer.type';
 import { PageHeader } from '@/components/page-header';
+import { CustomerActionsBar } from '../components/customers/drop-menu-actions';
 
 export default async function RenterPage() {
   const customers = await getCustomers(CUSTOMER_TYPE[1]);
   const customersRenters = await getCustomerVehicleRenter();
+  const receiptsData = await findAllPendingReceipts(CUSTOMER_TYPE[1]);
+  const receipts = Array.isArray(receiptsData) ? receiptsData : [];
   const count = customers?.length ?? 0;
 
   return (
@@ -21,6 +24,13 @@ export default async function RenterPage() {
           count > 0
             ? `${count} inquilinos registrados.`
             : 'Creá el primer inquilino para empezar a operar.'
+        }
+        actions={
+          <CustomerActionsBar
+            customers={customers || []}
+            type={CUSTOMER_TYPE[1]}
+            receipts={receipts}
+          />
         }
       />
 

@@ -5,7 +5,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -44,6 +43,10 @@ const ars = (n: number | undefined | null) =>
 export function ViewCustomerDialog({ customer }: { customer: Customer }) {
   const [open, setOpen] = useState(false);
   const vehicles = customer.vehicles ?? [];
+  const hasPendingReceipts = customer.receipts?.some(
+    (r) => r.status === 'PENDING',
+  );
+  const hasDebt = hasPendingReceipts || customer.hasDebt;
   const initials =
     `${customer.firstName?.[0] ?? ''}${customer.lastName?.[0] ?? ''}`.toUpperCase() ||
     'GM';
@@ -59,14 +62,19 @@ export function ViewCustomerDialog({ customer }: { customer: Customer }) {
 
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 pr-8">
             <div className="grid size-12 place-items-center rounded-md bg-gm-orange text-white font-display font-bold text-base">
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <DialogTitle>
-                {customer.firstName} {customer.lastName}
-              </DialogTitle>
+              <div className="flex items-center gap-2">
+                <DialogTitle>
+                  {customer.firstName} {customer.lastName}
+                </DialogTitle>
+                <Badge variant={customer.deletedAt ? 'default' : 'green'}>
+                  {customer.deletedAt ? 'Inactivo' : 'Activo'}
+                </Badge>
+              </div>
               <DialogDescription className="mt-0.5 flex flex-wrap items-center gap-3 text-[12.5px]">
                 <span className="inline-flex items-center gap-1.5">
                   <User className="size-3.5" /> Propietario
@@ -76,9 +84,6 @@ export function ViewCustomerDialog({ customer }: { customer: Customer }) {
                 </span>
               </DialogDescription>
             </div>
-            <Badge variant={customer.deletedAt ? 'default' : 'green'}>
-              {customer.deletedAt ? 'Inactivo' : 'Activo'}
-            </Badge>
           </div>
         </DialogHeader>
 
@@ -88,8 +93,8 @@ export function ViewCustomerDialog({ customer }: { customer: Customer }) {
           <Fact label="Crédito"   value={ars(customer.credit ?? 0)} accent="yellow" />
           <Fact
             label="Estado de cuenta"
-            value={customer.hasDebt ? 'Con deuda' : 'Al día'}
-            accent={customer.hasDebt ? 'orange' : 'green'}
+            value={hasDebt ? 'Con deuda' : 'Al día'}
+            accent={hasDebt ? 'orange' : 'green'}
           />
         </dl>
 
@@ -161,11 +166,6 @@ export function ViewCustomerDialog({ customer }: { customer: Customer }) {
           )}
         </section>
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>
-            Cerrar
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -33,16 +33,6 @@ export function GarageMitreLogo({
         <span className={cn('gm-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-gm-yellow to-gm-orange', dims.mitre)}>
           MITRE
         </span>
-        {withTagline && (
-          <span
-            className={cn(
-              'gm-display mt-1 font-medium text-muted-foreground tracking-[0.18em]',
-              dims.sub
-            )}
-          >
-            EST. PARKING · SINCE 1962
-          </span>
-        )}
       </div>
     </div>
   );
