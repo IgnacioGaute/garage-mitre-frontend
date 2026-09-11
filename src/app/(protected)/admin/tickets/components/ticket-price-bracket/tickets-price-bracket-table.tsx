@@ -19,11 +19,13 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  emptyMessage?: string;
 }
 
-export function TicketsPriceWeekOrDayTable<TData, TValue>({
+export function TicketsPriceBracketTable<TData, TValue>({
   columns,
   data,
+  emptyMessage = 'No hay franjas de precio configuradas.',
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -61,7 +63,7 @@ export function TicketsPriceWeekOrDayTable<TData, TValue>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-20 text-center text-[12.5px] text-muted-foreground">
-                No hay precios registrados.
+                {emptyMessage}
               </TableCell>
             </TableRow>
           )}

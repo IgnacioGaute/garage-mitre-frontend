@@ -18,7 +18,7 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        'flex flex-col gap-3 border-b border-border pb-5 md:flex-row md:items-end md:justify-between',
+        'flex flex-col gap-3 border-b border-border pb-5 short:pb-4 md:flex-row md:items-end md:justify-between',
         className
       )}
     >
@@ -26,7 +26,7 @@ export function PageHeader({
         {breadcrumb && breadcrumb.length > 0 && (
           <nav
             aria-label="breadcrumb"
-            className="flex flex-wrap items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-muted-foreground"
+            className="gm-mono flex flex-wrap items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-muted-foreground"
           >
             {breadcrumb.map((b, i) => (
               <span key={i} className="inline-flex items-center gap-1.5">
@@ -36,7 +36,7 @@ export function PageHeader({
             ))}
           </nav>
         )}
-        <h1 className="gm-display mt-1 text-[26px] font-bold leading-tight tracking-[0.01em] text-foreground md:text-[30px]">
+        <h1 className="gm-display mt-1 text-[22px] font-bold leading-tight tracking-[0.01em] text-foreground sm:text-[26px] md:text-[30px] short:text-[24px]">
           {title}
         </h1>
         {description && (

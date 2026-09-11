@@ -1,23 +1,29 @@
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
-import { getTickets, getTicketsPrice } from '@/services/tickets.service';
+import { getTickets, getTicketPriceBrackets, getTicketSchedule, getTicketsPrice } from '@/services/tickets.service';
 import { TicketsTable } from './components/tickets-table';
 import { ticketColumns } from './components/ticket-columns';
-import { ticketPriceColumns } from './components/ticket-price-hours/ticket-price-columns';
-import { TicketsPriceTable } from './components/ticket-price-hours/tickets-price-table';
-import { TicketsPriceWeekOrDayTable } from './components/ticket-price-week-or-day/tickets-price-table';
-import { ticketPriceWeekOrDayColumns } from './components/ticket-price-week-or-day/ticket-price-columns';
 import { currentUser } from '@/lib/auth';
 import { PageHeader } from '@/components/page-header';
+import { PageShell } from '@/components/page-shell';
 import { ExportTicketsExcel } from '../components/export-ticket-excel';
-import { Clock4, Hourglass } from 'lucide-react';
-import { CreateTicketPriceDialog } from './components/ticket-price-hours/create-ticket-price-dialog';
-import { CreateTicketPriceWeekOrDayDialog } from './components/ticket-price-week-or-day/create-ticket-price-dialog';
+import { TicketsTabs } from './components/tickets-tabs';
+import { TicketScheduleCard } from './components/ticket-schedule-card';
+import { TicketsPriceBracketTable } from './components/ticket-price-bracket/tickets-price-bracket-table';
+import { PriceBracketSection } from './components/ticket-price-bracket/price-bracket-section';
+import { TicketPriceBracketMap } from './components/ticket-price-bracket/ticket-price-bracket-map';
+import { ticketPriceColumns } from './components/ticket-price/ticket-price-columns';
+import { CreateTicketPriceDialog } from './components/ticket-price/create-ticket-price-dialog';
 
 export default async function UserPage() {
   const tickets = await getTickets();
+  const priceBrackets = await getTicketPriceBrackets();
+  const ticketSchedule = await getTicketSchedule();
   const ticketsPrice = await getTicketsPrice();
+  const dayWeekMonthPrices = (ticketsPrice?.data || []).filter((p) =>
+    ['DIA', 'SEMANA', 'MES'].includes(p.ticketTimeType ?? ''),
+  );
   const user = await currentUser();
 
   const sortedTickets = (tickets?.data || []).sort((a, b) => {
@@ -26,13 +32,10 @@ export default async function UserPage() {
     return codeA - codeB;
   });
 
-  const ticketTimeTypeNull =
-    ticketsPrice?.data?.filter((tp) => tp.ticketTimeType === null) || [];
-  const vehicleTypeNull =
-    ticketsPrice?.data?.filter((tp) => tp.ticketDayType === null) || [];
+  const isAdmin = user?.role === 'ADMIN';
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:p-8 max-w-7xl space-y-10">
+    <PageShell>
       <PageHeader
         breadcrumb={['Garage Mitre', 'Administración', 'Tickets']}
         title="Tickets y precios"
@@ -44,59 +47,45 @@ export default async function UserPage() {
         actions={<ExportTicketsExcel tickets={sortedTickets} />}
       />
 
-      <section>
-        <TicketsTable columns={ticketColumns} data={sortedTickets} />
-      </section>
-
-      {user?.role === 'ADMIN' && (
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-8">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="grid size-8 place-items-center rounded-md border border-gm-yellow/40 bg-gm-yellow/15 text-gm-yellow">
-                  <Clock4 className="size-4" />
-                </span>
-                <div>
-                  <h2 className="gm-display text-[14px] font-bold text-foreground">
-                    Precios por hora
-                  </h2>
-                  <p className="text-[11.5px] text-muted-foreground">
-                    Según tipo de vehículo y horario.
-                  </p>
-                </div>
+      <TicketsTabs
+        catalog={<TicketsTable columns={ticketColumns} data={sortedTickets} />}
+        tarifas={
+          isAdmin && ticketSchedule ? (
+            <div className="space-y-4">
+              <div className="rounded-xl border border-border bg-gm-surface-2 p-4">
+                <h3 className="mb-3 text-[13px] font-semibold text-foreground">
+                  Horario diurno/nocturno y tolerancia
+                </h3>
+                <TicketScheduleCard schedule={ticketSchedule} />
               </div>
-              <CreateTicketPriceDialog />
+              <PriceBracketSection brackets={priceBrackets || []} />
             </div>
-            <TicketsPriceTable
-              columns={ticketPriceColumns}
-              data={ticketTimeTypeNull}
-            />
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="grid size-8 place-items-center rounded-md border border-gm-orange/40 bg-gm-orange/15 text-[#FF8458]">
-                  <Hourglass className="size-4" />
-                </span>
-                <div>
-                  <h2 className="gm-display text-[14px] font-bold text-foreground">
-                    Precios por abono
-                  </h2>
-                  <p className="text-[11.5px] text-muted-foreground">
-                    Tickets por día o semana.
-                  </p>
-                </div>
+          ) : undefined
+        }
+        mapaTarifas={
+          isAdmin && ticketSchedule ? (
+            <TicketPriceBracketMap brackets={priceBrackets || []} schedule={ticketSchedule} />
+          ) : undefined
+        }
+        tarifasDiaSemanaMes={
+          isAdmin ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[12.5px] text-muted-foreground">
+                  Precio por unidad para los tickets de día, semana o mes — se aplica solo al
+                  crear un ticket nuevo de ese tipo.
+                </p>
+                <CreateTicketPriceDialog />
               </div>
-              <CreateTicketPriceWeekOrDayDialog />
+              <TicketsPriceBracketTable
+                columns={ticketPriceColumns}
+                data={dayWeekMonthPrices}
+                emptyMessage="No hay tarifas de día/semana/mes configuradas."
+              />
             </div>
-            <TicketsPriceWeekOrDayTable
-              columns={ticketPriceWeekOrDayColumns}
-              data={vehicleTypeNull}
-            />
-          </div>
-        </section>
-      )}
-    </div>
+          ) : undefined
+        }
+      />
+    </PageShell>
   );
 }

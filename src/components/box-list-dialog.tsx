@@ -82,7 +82,7 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-h-[85dvh] w-[calc(100%-2rem)] max-w-sm overflow-y-auto sm:max-h-[90dvh]">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <span className="grid size-9 place-items-center rounded-md border border-gm-yellow/40 bg-gm-yellow/15 text-gm-yellow">
@@ -121,13 +121,13 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
               head_row: 'grid grid-cols-7',
               head_cell: 'text-[11px] font-medium text-muted-foreground text-center py-1',
               row:      'grid grid-cols-7 mt-0.5',
-              cell:     'text-center text-[12.5px] p-0 relative aspect-square flex items-center justify-center',
-              day:      'h-8 w-8 p-0 font-normal rounded-md hover:bg-white/[0.08] transition-colors mx-auto flex items-center justify-center',
+              cell:     'text-center text-[12.5px] p-0 relative aspect-square min-w-0 flex items-center justify-center',
+              day:      'h-8 w-8 max-h-full max-w-full p-0 font-normal rounded-md hover:bg-white/[0.08] transition-colors mx-auto flex items-center justify-center',
             }}
           />
 
           {/* Selected date indicator */}
-          <div className="flex items-center justify-between rounded-md border border-border bg-gm-surface-2 px-3 py-2">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-md border border-border bg-gm-surface-2 px-3 py-2">
             <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
               Fecha seleccionada
             </span>
@@ -138,8 +138,11 @@ export function BoxListDialog({ open, setOpen }: BoxListDialogProps) {
 
           {boxData && (
             <div className="rounded-md border border-border bg-gm-surface-2 p-3">
-              <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-                Total recaudado
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                  Total recaudado
+                </div>
+                <span className="gm-mono text-[11px] text-muted-foreground">Caja #{boxData.boxNumber}</span>
               </div>
               <div className="gm-display gm-tnum mt-1 text-[24px] font-bold text-gm-yellow leading-none">
                 {ars(boxData.totalPrice)}

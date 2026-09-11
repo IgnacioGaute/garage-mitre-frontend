@@ -9,10 +9,169 @@ import { TicketRegistrationForDaySchemaType } from "@/schemas/ticket-registratio
 import { getAuthHeaders } from "@/lib/auth";
 import { TicketPriceSchemaType, UpdateTicketPriceSchemaType } from "@/schemas/ticket-price.schema";
 import { ticketPrice } from "@/types/ticket-price";
+import { TicketScheduleSchemaType } from "@/schemas/ticket-schedule.schema";
+import { TicketPriceBracket } from "@/types/ticket-price-bracket.type";
+import { TicketPriceBracketSchemaType, UpdateTicketPriceBracketSchemaType } from "@/schemas/ticket-price-bracket.schema";
+import { AdvancePaymentSchemaType } from "@/schemas/advance-payment.schema";
+
+export type TicketSchedule = { dayStartHour: number; dayEndHour: number; graceMinutes: number; barcodeTicketsEnabled: boolean };
 
 
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+export const getTicketSchedule = async (authToken?: string) => {
+  try {
+    const response = await fetch(`${BASE_URL}/tickets/schedule-settings`, {
+      headers: await getAuthHeaders(authToken),
+      next: {
+        tags: [getCacheTag('ticketSchedule', 'all')],
+      },
+    });
+    const data = await response.json();
+
+    if (response.ok) {
+      return data as TicketSchedule;
+    } else {
+      console.error(data);
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
+export const updateTicketSchedule = async (schedule: TicketScheduleSchemaType, authToken?: string) => {
+  try {
+    const response = await fetch(`${BASE_URL}/tickets/schedule-settings`, {
+      method: 'PATCH',
+      headers: await getAuthHeaders(authToken),
+      body: JSON.stringify(schedule),
+    });
+    const data = await response.json();
+
+    if (response.ok) {
+      revalidateTag(getCacheTag('ticketSchedule', 'all'));
+      return data as TicketSchedule;
+    } else {
+      console.error(data);
+      return {
+        error: {
+          code: data.code || 'UNKNOWN_ERROR',
+          message: data.message || 'Error desconocido',
+        },
+      };
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
+export const getTicketPriceBrackets = async (vehicleType?: string, authToken?: string) => {
+  try {
+    const url = new URL(`${BASE_URL}/tickets/priceBrackets`);
+    if (vehicleType) url.searchParams.set('vehicleType', vehicleType);
+    const response = await fetch(url.toString(), {
+      headers: await getAuthHeaders(authToken),
+      next: {
+        tags: [getCacheTag('priceBrackets', 'all')],
+      },
+    });
+    const data = await response.json();
+
+    if (response.ok) {
+      return data as TicketPriceBracket[];
+    } else {
+      console.error(data);
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
+export const createTicketPriceBracket = async (bracket: TicketPriceBracketSchemaType, authToken?: string) => {
+  try {
+    const response = await fetch(`${BASE_URL}/tickets/priceBrackets`, {
+      method: 'POST',
+      headers: await getAuthHeaders(authToken),
+      body: JSON.stringify(bracket),
+    });
+    const data = await response.json();
+
+    if (response.ok) {
+      revalidateTag(getCacheTag('priceBrackets', 'all'));
+      return data as TicketPriceBracket;
+    } else {
+      console.error(data);
+      return {
+        error: {
+          code: data.code || 'UNKNOWN_ERROR',
+          message: data.message || 'Error desconocido',
+        },
+      };
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
+export const updateTicketPriceBracket = async (
+  id: string,
+  bracket: Partial<UpdateTicketPriceBracketSchemaType>,
+  authToken?: string,
+) => {
+  try {
+    const response = await fetch(`${BASE_URL}/tickets/priceBrackets/${id}`, {
+      method: 'PATCH',
+      headers: await getAuthHeaders(authToken),
+      body: JSON.stringify(bracket),
+    });
+
+    const data = await response.json();
+    revalidateTag(getCacheTag('priceBrackets', 'all'));
+    if (!response.ok) {
+      console.error(data);
+      return {
+        error: {
+          code: data.code || 'UNKNOWN_ERROR',
+          message: data.message || 'Error desconocido',
+        },
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error en updateTicketPriceBracket:', error);
+    throw error;
+  }
+};
+
+export const deleteTicketPriceBracket = async (id: string, authToken?: string) => {
+  try {
+    const response = await fetch(`${BASE_URL}/tickets/priceBrackets/${id}`, {
+      method: 'DELETE',
+      headers: await getAuthHeaders(authToken),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      revalidateTag(getCacheTag('priceBrackets', 'all'));
+      return data;
+    } else {
+      console.error(data);
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
 
 export const getTicketsPrice = async (authToken?: string) => {
   try {
@@ -242,6 +401,70 @@ export const getTicketRegistrations = async (authToken?: string) => {
 };
 
   
+  export const addAdvancePayment = async (
+    id: string,
+    dto: AdvancePaymentSchemaType,
+    authToken?: string,
+  ) => {
+    try {
+      const response = await fetch(`${BASE_URL}/tickets/registrations/${id}/advance-payment`, {
+        method: 'PATCH',
+        headers: await getAuthHeaders(authToken),
+        body: JSON.stringify(dto),
+      });
+
+      const data = await response.json();
+      revalidateTag(getCacheTag('tickets', 'all'));
+
+      if (!response.ok) {
+        console.error(data);
+        return {
+          error: {
+            code: data.code || 'UNKNOWN_ERROR',
+            message: data.message || 'Error desconocido',
+          },
+        };
+      }
+
+      return data as TicketRegistration;
+    } catch (error) {
+      console.error(error);
+      return { error: { code: 'UNKNOWN_ERROR', message: 'Error desconocido' } };
+    }
+  };
+
+  export const setPaymentMethod = async (
+    id: string,
+    metodo: 'CASH' | 'TRANSFER',
+    authToken?: string,
+  ) => {
+    try {
+      const response = await fetch(`${BASE_URL}/tickets/registrations/${id}/payment-method`, {
+        method: 'PATCH',
+        headers: await getAuthHeaders(authToken),
+        body: JSON.stringify({ metodo }),
+      });
+
+      const data = await response.json();
+      revalidateTag(getCacheTag('tickets', 'all'));
+
+      if (!response.ok) {
+        console.error(data);
+        return {
+          error: {
+            code: data.code || 'UNKNOWN_ERROR',
+            message: data.message || 'Error desconocido',
+          },
+        };
+      }
+
+      return data as TicketRegistration;
+    } catch (error) {
+      console.error(error);
+      return { error: { code: 'UNKNOWN_ERROR', message: 'Error desconocido' } };
+    }
+  };
+
   export const getTicketRegistrationById = async (id: string, authToken?: string) => {
     try {
       if (!id) return null;
@@ -276,11 +499,11 @@ export const getTicketRegistrations = async (authToken?: string) => {
         return data as TicketRegistrationForDay;
       } else {
         console.error(data);
-        return null;
+        return { error: { code: data.code || 'UNKNOWN_ERROR', message: data.message || 'Error desconocido' } };
       }
     } catch (error) {
       console.error(error);
-      return null;
+      return { error: { code: 'UNKNOWN_ERROR', message: 'Error desconocido' } };
     }
   };
 
@@ -295,7 +518,7 @@ export const getTicketRegistrations = async (authToken?: string) => {
     const data = await response.json();
 
     if (response.ok) {
-      return data as TicketRegistrationForDay
+      return data as TicketRegistrationForDay[]
     } else {
       console.error(data);
       return null;

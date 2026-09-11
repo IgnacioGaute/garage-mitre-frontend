@@ -4,7 +4,6 @@ import { ReactNode } from 'react';
 import { currentUser } from '@/lib/auth';
 import { NavUser } from './nav-user';
 import { GarageMitreLogo } from '@/components/brand/logo';
-import { getTicketsRegistrationForDay } from '@/services/tickets.service';
 
 interface AppNavbarProps {
   children: ReactNode;
@@ -14,8 +13,6 @@ interface AppNavbarProps {
 
 export async function AppNavbar({ children, adminSidebar, userSidebar }: AppNavbarProps) {
   const user = await currentUser();
-  const tickets = await getTicketsRegistrationForDay();
-  const ticketRegistrationsDayOrWeek = Array.isArray(tickets) ? tickets : [];
 
   return (
     <>
@@ -57,7 +54,6 @@ export async function AppNavbar({ children, adminSidebar, userSidebar }: AppNavb
                 name: `${user?.firstName ?? ''} ${user?.lastName ?? ''}`,
                 role: user?.role || 'USER',
               }}
-              ticketRegistrationsDayOrWeek={ticketRegistrationsDayOrWeek || []}
             />
           </div>
         </header>

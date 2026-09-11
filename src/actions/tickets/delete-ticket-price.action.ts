@@ -6,11 +6,11 @@ export async function deleteTicketPriceAction(id: string) {
   try {
     const success = await deleteTicketPriceAPI(id);
     if (!success) {
-      return { error: 'Error al eliminar el precio ticket' };
+      return { error: 'Error al eliminar la tarifa' };
     }
-    return { success: 'Precio Ticket eliminado exitosamente' };
+    return { success: 'Tarifa eliminada exitosamente' };
   } catch (error) {
     console.log(error);
-    return { error: 'Error al eliminar el precio ticket' };
+    return { error: 'Error al eliminar la tarifa' };
   }
 }

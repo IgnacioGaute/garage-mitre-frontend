@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Banknote,
   DollarSign,
+  LayoutDashboard,
   ParkingCircle,
   Shield,
   Ticket,
@@ -30,6 +31,7 @@ export function AdminNavbarSidebar({
 
   const allNavItems = [
     { title: 'Usuarios',                url: '/admin/users',                  icon: <User /> },
+    { title: 'Dashboard',               url: '/admin/dashboard',              icon: <LayoutDashboard /> },
     { title: 'Tickets / Precios',       url: '/admin/tickets',                icon: <Ticket /> },
     { title: 'Tipo de Estacionamiento', url: '/admin/parking-type',           icon: <ParkingCircle /> },
     { title: 'Actualizar Montos',       url: '/admin/update-amount-customers', icon: <DollarSign /> },

@@ -20,6 +20,7 @@ interface OwnersTableProps {
 export function OwnersTable({ columns, data, parkingTypes }: OwnersTableProps) {
   const searchParams = useSearchParams();
   const lastNameQuery = searchParams.get('lastName') || '';
+  const customerIdQuery = searchParams.get('customerId') || undefined;
   const session = useSession();
   const isAdmin = session.data?.user.role === 'ADMIN';
 
@@ -31,6 +32,8 @@ export function OwnersTable({ columns, data, parkingTypes }: OwnersTableProps) {
       filterPlaceholder="Filtrar por apellido..."
       initialFilter={lastNameQuery}
       initialSort={[{ id: 'lastName', desc: false }]}
+      getRowId={(customer) => customer.id}
+      initialExpandedId={customerIdQuery}
       toolbarRight={
         <div className="flex items-center gap-2">
           <CustomerPageTour entityLabel="propietario" />

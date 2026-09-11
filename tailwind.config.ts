@@ -9,6 +9,11 @@ export default {
   ],
   theme: {
     extend: {
+      // Height-based breakpoints: laptops are short, not narrow. Extended
+      // screens are emitted after the width ones, so `short:` wins over `lg:`.
+      screens: {
+        short: { raw: "(max-height: 900px)" },
+      },
       fontFamily: {
         sans:    ["var(--font-sans)", "system-ui", "sans-serif"],
         display: ["var(--font-display)", "system-ui", "sans-serif"],

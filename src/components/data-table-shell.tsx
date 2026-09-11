@@ -14,7 +14,7 @@ import {
   Table as TanstackTable,
   useReactTable,
 } from '@tanstack/react-table';
-import { Fragment, ReactNode, useState } from 'react';
+import { Fragment, ReactNode, useEffect, useRef, useState } from 'react';
 import { Search, Inbox } from 'lucide-react';
 import {
   Table,
@@ -41,6 +41,9 @@ interface DataTableShellProps<TData, TValue> {
   emptyMessage?: string;
   className?: string;
   renderSubComponent?: (row: Row<TData>) => ReactNode;
+  getRowId?: (row: TData) => string;
+  /** Id (via getRowId) de una fila a la que hay que llegar al montar: se expande y se hace scroll hasta ella. */
+  initialExpandedId?: string;
 }
 
 export function DataTableShell<TData, TValue>({
@@ -55,6 +58,8 @@ export function DataTableShell<TData, TValue>({
   emptyMessage = 'No hay resultados para mostrar.',
   className,
   renderSubComponent,
+  getRowId,
+  initialExpandedId,
 }: DataTableShellProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>(initialSort);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
@@ -62,10 +67,13 @@ export function DataTableShell<TData, TValue>({
       ? [{ id: filterColumn, value: initialFilter }]
       : [],
   );
+  const scrolledToIdRef = useRef<string | null>(null);
+  const [highlightedRowId, setHighlightedRowId] = useState<string | null>(null);
 
   const table = useReactTable({
     data,
     columns,
+    getRowId,
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
@@ -75,9 +83,26 @@ export function DataTableShell<TData, TValue>({
     getExpandedRowModel: getExpandedRowModel(),
     getRowCanExpand: renderSubComponent ? () => true : undefined,
     state: { columnFilters, sorting },
-    initialState: { pagination: { pageSize }, sorting: initialSort },
+    initialState: {
+      // Si venimos a buscar una fila puntual (link "ver cliente" desde otra pantalla),
+      // mostramos todo sin paginar para garantizar que esa fila exista en el DOM y se pueda scrollear.
+      pagination: { pageSize: initialExpandedId ? data.length || pageSize : pageSize },
+      sorting: initialSort,
+      expanded: initialExpandedId ? { [initialExpandedId]: true } : {},
+    },
     autoResetPageIndex: false,
   });
+
+  useEffect(() => {
+    if (!initialExpandedId || scrolledToIdRef.current === initialExpandedId) return;
+    const el = document.getElementById(`table-row-${initialExpandedId}`);
+    if (!el) return;
+    scrolledToIdRef.current = initialExpandedId;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setHighlightedRowId(initialExpandedId);
+    const timeout = setTimeout(() => setHighlightedRowId(null), 2200);
+    return () => clearTimeout(timeout);
+  }, [initialExpandedId, data]);
 
   return (
     <div className={cn('flex flex-col gap-3 pt-4', className)}>
@@ -132,8 +157,12 @@ export function DataTableShell<TData, TValue>({
                 table.getRowModel().rows.map((row) => (
                   <Fragment key={row.id}>
                     <TableRow
+                      id={`table-row-${row.id}`}
                       data-state={row.getIsSelected() && 'selected'}
-                      className={row.getIsExpanded() ? 'border-b-0 bg-gm-surface-2/20' : undefined}
+                      className={cn(
+                        row.getIsExpanded() && 'border-b-0 bg-gm-surface-2/20',
+                        highlightedRowId === row.id && 'bg-gm-yellow/10 transition-colors duration-1000',
+                      )}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="whitespace-nowrap">

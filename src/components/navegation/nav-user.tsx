@@ -27,13 +27,10 @@ import { User } from 'next-auth';
 import { NavigationMenuDemo } from './navegation-menu';
 import { BoxListDialog } from '../box-list-dialog';
 import { useNotifications } from '@/hooks/use-notification';
-import { TicketTableDialog } from '@/app/(protected)/(user)/tickets/tickets-days-or-weeks/ticket-table-dialog';
-import { TicketRegistrationForDay } from '@/types/ticket-registration-for-day.type';
 import { cn } from '@/lib/utils';
 
 export function NavUser({
   userNav,
-  ticketRegistrationsDayOrWeek,
 }: {
   userNav: {
     name: string;
@@ -41,12 +38,10 @@ export function NavUser({
     avatar: string;
     role: User['role'];
   };
-  ticketRegistrationsDayOrWeek: TicketRegistrationForDay[];
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [openBoxDialog, setOpenBoxDialog] = useState(false);
   const { hasNewNoteAlert, clearNoteAlert } = useNotifications();
-  const [openTicketDialog, setOpenTicketDialog] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -91,7 +86,10 @@ export function NavUser({
             </div>
 
             {hasNewNoteAlert && (
-              <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-gm-orange ring-2 ring-gm-surface" />
+              <span className="absolute -top-1 -right-1 flex size-3.5 items-center justify-center">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-gm-orange opacity-75" />
+                <span className="relative inline-flex size-3 rounded-full bg-gm-orange ring-2 ring-gm-surface" />
+              </span>
             )}
 
             <span
@@ -156,26 +154,23 @@ export function NavUser({
               Planilla de caja
             </DropdownMenuItem>
 
-            <DropdownMenuItem
-              onSelect={(e) => {
-                e.preventDefault();
-                setOpenTicketDialog(true);
-              }}
-              className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] text-foreground transition-colors duration-150 hover:bg-white/[0.08] focus:bg-white/[0.08]"
-            >
-              <TicketIcon className="size-3.5 text-muted-foreground" />
-              Ver registros de tickets
-            </DropdownMenuItem>
-
             <Link href="/notes">
               <DropdownMenuItem
-                className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] text-foreground transition-colors duration-150 hover:bg-white/[0.08] focus:bg-white/[0.08]"
+                className={cn(
+                  'cursor-pointer gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] transition-colors duration-150 hover:bg-white/[0.08] focus:bg-white/[0.08]',
+                  hasNewNoteAlert
+                    ? 'border border-gm-orange/40 bg-gm-orange/10 font-semibold text-gm-orange hover:bg-gm-orange/15 focus:bg-gm-orange/15'
+                    : 'text-foreground',
+                )}
                 onClick={clearNoteAlert}
               >
-                <AlertCircle className="size-3.5 text-muted-foreground" />
+                <AlertCircle className={cn('size-3.5', hasNewNoteAlert ? 'text-gm-orange' : 'text-muted-foreground')} />
                 Avisos
                 {hasNewNoteAlert && (
-                  <BellDot className="ml-auto size-3.5 text-gm-orange" />
+                  <span className="ml-auto flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.04em]">
+                    <BellDot className="size-3.5 animate-pulse" />
+                    Nuevo
+                  </span>
                 )}
               </DropdownMenuItem>
             </Link>
@@ -210,11 +205,6 @@ export function NavUser({
       </DropdownMenu>
 
       <BoxListDialog open={openBoxDialog} setOpen={setOpenBoxDialog} />
-      <TicketTableDialog
-        ticketRegistrationForDay={ticketRegistrationsDayOrWeek}
-        open={openTicketDialog}
-        setOpen={setOpenTicketDialog}
-      />
     </>
   );
 }

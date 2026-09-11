@@ -20,6 +20,7 @@ interface PrivatesTableProps {
 export function PrivatesTable({ columns, data, customersRenters }: PrivatesTableProps) {
   const searchParams = useSearchParams();
   const lastNameQuery = searchParams.get('lastName') || '';
+  const customerIdQuery = searchParams.get('customerId') || undefined;
   const session = useSession();
   const isAdmin = session.data?.user.role === 'ADMIN';
 
@@ -31,6 +32,8 @@ export function PrivatesTable({ columns, data, customersRenters }: PrivatesTable
       filterPlaceholder="Filtrar por apellido..."
       initialFilter={lastNameQuery}
       initialSort={[{ id: 'lastName', desc: false }]}
+      getRowId={(customer) => customer.id}
+      initialExpandedId={customerIdQuery}
       toolbarRight={
         <div className="flex items-center gap-2">
           <CustomerPageTour entityLabel="inquilino de terceros" />

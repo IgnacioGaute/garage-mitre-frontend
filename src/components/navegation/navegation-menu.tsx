@@ -1,9 +1,12 @@
 'use client';
 
-import { ChevronDown, Home, Key, ShieldCheck, Users } from 'lucide-react';
+import { BarChart3, ChevronDown, Home, Key, ShieldCheck, Users } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+
+const RECEIPTS_METRICS_ID = 'recibos-pagados-pendientes';
 
 export function NavigationMenuDemo({
   setIsExpanded,
@@ -11,6 +14,17 @@ export function NavigationMenuDemo({
   setIsExpanded: (state: boolean) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Si ya estás en el dashboard, un click en "Ver métricas" no navega a ningún lado nuevo
+  // (misma ruta) — Next no vuelve a montar la página, así que ni el scroll ni la animación
+  // de los gráficos se disparan solos. Lo hacemos a mano en ese caso puntual.
+  const handleMetricsClick = (e: React.MouseEvent) => {
+    if (pathname !== '/admin/dashboard') return;
+    e.preventDefault();
+    document.getElementById(RECEIPTS_METRICS_ID)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.dispatchEvent(new Event('gm:replay-receipts-chart'));
+  };
 
   const handleToggleMenu = () => {
     const newState = !menuOpen;
@@ -68,6 +82,17 @@ export function NavigationMenuDemo({
             >
               <ShieldCheck className="size-3 shrink-0" />
               Inquilinos de terceros
+            </Link>
+
+            <div className="my-1 border-t border-border/40" />
+
+            <Link
+              href={`/admin/dashboard#${RECEIPTS_METRICS_ID}`}
+              onClick={handleMetricsClick}
+              className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] text-gm-yellow transition-colors duration-150 hover:bg-gm-yellow/10"
+            >
+              <BarChart3 className="size-3 shrink-0" />
+              Ver métricas
             </Link>
           </div>
         </div>

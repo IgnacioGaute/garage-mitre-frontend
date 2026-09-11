@@ -15,10 +15,7 @@ import { ticketPrice } from '@/types/ticket-price';
 import { UpdateTicketPriceDialog } from './update-ticket-price-dialog';
 import { DeleteTicketPriceDialog } from './delete-ticket-price-dialog';
 
-const typeMap: Record<string, string> = {
-  DAY: 'Día',
-  NIGHT: 'Noche',
-};
+const timeTypeLabel: Record<string, string> = { DIA: 'Día', SEMANA: 'Semana', MES: 'Mes' };
 
 const ars = (n: number) =>
   new Intl.NumberFormat('es-AR', {
@@ -27,43 +24,31 @@ const ars = (n: number) =>
 
 export const ticketPriceColumns: ColumnDef<ticketPrice>[] = [
   {
-    accessorKey: 'price',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Precio" />
-    ),
-    cell: ({ row }) => (
-      <span className="gm-display gm-tnum text-[13.5px] font-bold text-foreground">
-        {ars(row.getValue('price'))}
-      </span>
-    ),
+    accessorKey: 'vehicleType',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Vehículo" />,
+    cell: ({ row }) => <Badge variant="default">{row.getValue('vehicleType')}</Badge>,
   },
   {
-    accessorKey: 'ticketDayType',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Horario" />
-    ),
+    accessorKey: 'ticketTimeType',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Duración" />,
     cell: ({ row }) => {
-      const value = row.getValue('ticketDayType') as string;
-      return (
-        <Badge variant={value === 'NIGHT' ? 'blue' : 'yellow'}>
-          {typeMap[value] || value}
-        </Badge>
-      );
+      const value = row.getValue('ticketTimeType') as string | null;
+      return <span className="text-[13px] font-medium text-foreground">{value ? timeTypeLabel[value] ?? value : '—'}</span>;
     },
   },
   {
-    accessorKey: 'vehicleType',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Vehículo" />
-    ),
+    accessorKey: 'ticketTimePrice',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Precio por unidad" />,
     cell: ({ row }) => (
-      <Badge variant="default">{row.getValue('vehicleType')}</Badge>
+      <span className="gm-display gm-tnum text-[13.5px] font-bold text-foreground">
+        {ars(row.getValue('ticketTimePrice'))}
+      </span>
     ),
   },
   {
     id: 'actions',
     cell: ({ row }) => {
-      const ticketPrice = row.original;
+      const item = row.original;
 
       return (
         <DropdownMenu>
@@ -80,8 +65,8 @@ export const ticketPriceColumns: ColumnDef<ticketPrice>[] = [
             <DropdownMenuLabel className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
               Acciones
             </DropdownMenuLabel>
-            <UpdateTicketPriceDialog ticketPrice={ticketPrice} />
-            <DeleteTicketPriceDialog ticketPrice={ticketPrice} />
+            <UpdateTicketPriceDialog ticketPrice={item} />
+            <DeleteTicketPriceDialog ticketPrice={item} />
           </DropdownMenuContent>
         </DropdownMenu>
       );

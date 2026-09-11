@@ -16,16 +16,6 @@ import { Ticket } from '@/types/ticket.type';
 import { DeleteTicketDialog } from './delete-ticket-dialog';
 import { useSession } from 'next-auth/react';
 
-const typeMap: Record<string, string> = {
-  DAY: 'Día',
-  NIGHT: 'Noche',
-};
-
-const ars = (n: number) =>
-  new Intl.NumberFormat('es-AR', {
-    style: 'currency', currency: 'ARS', maximumFractionDigits: 0,
-  }).format(n);
-
 export const ticketColumns: ColumnDef<Ticket>[] = [
   {
     accessorKey: 'codeBar',
@@ -37,31 +27,6 @@ export const ticketColumns: ColumnDef<Ticket>[] = [
         {row.getValue('codeBar')}
       </span>
     ),
-  },
-  {
-    accessorKey: 'price',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Precio" />
-    ),
-    cell: ({ row }) => (
-      <span className="gm-display gm-tnum text-[13.5px] font-bold text-foreground">
-        {ars(row.getValue('price'))}
-      </span>
-    ),
-  },
-  {
-    accessorKey: 'ticketDayType',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Horario" />
-    ),
-    cell: ({ row }) => {
-      const value = row.getValue('ticketDayType') as string;
-      return (
-        <Badge variant={value === 'NIGHT' ? 'blue' : 'yellow'}>
-          {typeMap[value] || value}
-        </Badge>
-      );
-    },
   },
   {
     accessorKey: 'vehicleType',

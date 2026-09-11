@@ -1,16 +1,6 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
 import {
   Dialog,
   DialogContent,
@@ -19,36 +9,45 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ticketPrice } from '@/types/ticket-price';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Pencil } from 'lucide-react';
 import { updateTicketPriceSchema, UpdateTicketPriceSchemaType } from '@/schemas/ticket-price.schema';
 import { updateTicketPriceAction } from '@/actions/tickets/update-ticket-price.action';
-import { Hourglass, Loader2, Pencil } from 'lucide-react';
+import { ticketPrice } from '@/types/ticket-price';
 
-export function UpdateTicketPriceWeekOrDayDialog({ ticketPrice }: { ticketPrice: ticketPrice }) {
+export function UpdateTicketPriceDialog({ ticketPrice }: { ticketPrice: ticketPrice }) {
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
 
   const form = useForm<UpdateTicketPriceSchemaType>({
     resolver: zodResolver(updateTicketPriceSchema),
     defaultValues: {
-      ticketTimePrice: ticketPrice.ticketTimePrice || 0,
-      ticketTimeType: ticketPrice.ticketTimeType || 'DIA',
-      vehicleType: ticketPrice.vehicleType || 'AUTO',
+      vehicleType: ticketPrice.vehicleType ?? 'AUTO',
+      ticketTimeType: ticketPrice.ticketTimeType ?? 'SEMANA',
+      ticketTimePrice: ticketPrice.ticketTimePrice,
     },
   });
 
-  const onSubmit = async (values: UpdateTicketPriceSchemaType) => {
+  const onSubmit = (values: UpdateTicketPriceSchemaType) => {
     startTransition(async () => {
       const data = await updateTicketPriceAction(ticketPrice.id, values);
-      if (!data || data.error) {
+      if (!data || 'error' in data) {
         toast.error(data?.error?.message ?? 'Error desconocido');
       } else {
-        toast.success('Precio de ticket editado exitosamente');
-        form.reset();
+        toast.success('Tarifa editada exitosamente');
         setOpen(false);
       }
     });
@@ -57,28 +56,21 @@ export function UpdateTicketPriceWeekOrDayDialog({ ticketPrice }: { ticketPrice:
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-2"
-          size="sm"
-          onClick={() => setOpen(true)}
-        >
+        <Button variant="ghost" className="w-full justify-start gap-2" size="sm" onClick={() => setOpen(true)}>
           <Pencil className="size-3.5" />
-          Editar precio
+          Editar
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md sm:max-w-lg">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-md border border-gm-orange/40 bg-gm-orange/15 text-[#FF8458]">
-              <Hourglass className="size-4" />
+            <span className="grid size-9 place-items-center rounded-md border border-gm-yellow/40 bg-gm-yellow/15 text-gm-yellow">
+              <Pencil className="size-4" />
             </span>
             <div>
-              <DialogTitle>Actualizar precio</DialogTitle>
-              <DialogDescription className="mt-0.5">
-                Modificá el precio por abono.
-              </DialogDescription>
+              <DialogTitle>Editar tarifa</DialogTitle>
+              <DialogDescription className="mt-0.5">Ajustá el precio por unidad.</DialogDescription>
             </div>
           </div>
         </DialogHeader>
@@ -86,41 +78,12 @@ export function UpdateTicketPriceWeekOrDayDialog({ ticketPrice }: { ticketPrice:
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="ticketTimeType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo de Ticket</FormLabel>
-                  <FormControl>
-                    <Select
-                      disabled={isPending}
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="DIA">Día/s</SelectItem>
-                        <SelectItem value="SEMANA">Semana/s</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="vehicleType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tipo de Vehículo</FormLabel>
+                  <FormLabel>Tipo de vehículo</FormLabel>
                   <FormControl>
-                    <Select
-                      disabled={isPending}
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select disabled={isPending} onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecciona un tipo" />
                       </SelectTrigger>
@@ -136,19 +99,47 @@ export function UpdateTicketPriceWeekOrDayDialog({ ticketPrice }: { ticketPrice:
             />
             <FormField
               control={form.control}
-              name="ticketTimePrice"
+              name="ticketTimeType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Precio de Ticket</FormLabel>
+                  <FormLabel>Duración</FormLabel>
                   <FormControl>
-                    <Input disabled={isPending} {...field} />
+                    <Select disabled={isPending} onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona una duración" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="DIA">Día</SelectItem>
+                        <SelectItem value="SEMANA">Semana</SelectItem>
+                        <SelectItem value="MES">Mes</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="ticketTimePrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Precio por unidad</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      disabled={isPending}
+                      value={field.value ?? ''}
+                      onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <Button className="w-full" type="submit" disabled={isPending}>
-              {isPending ? <Loader2 className="size-4 animate-spin" /> : <Pencil className="size-4" />}
               Guardar cambios
             </Button>
           </form>

@@ -108,7 +108,7 @@ export function CustomerActionsBar({
         {/* Exportaciones Excel */}
         <div data-tour="customer-excel" className="flex items-center gap-1">
           <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground mr-1">
-            Excel
+            Excel y PDF
           </span>
           <ExportCustomersExcel receipts={receipts} type={type} />
           <ExportGarageNumberExcel customers={activeCustomers} />
