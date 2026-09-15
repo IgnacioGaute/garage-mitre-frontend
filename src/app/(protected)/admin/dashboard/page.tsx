@@ -67,7 +67,7 @@ export default async function DashboardPage({
   return (
     <PageShell>
       <HashScroll />
-      <PageHeader breadcrumb={['Garage Mitre', 'Administración', 'Dashboard']} title="Dashboard" />
+      <PageHeader title="Dashboard" />
 
       <div>
         <ActivityRevenueChart data={activityRevenue} />

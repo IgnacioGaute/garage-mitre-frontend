@@ -12,7 +12,6 @@ export default async function InterestPage() {
   return (
     <PageShell>
       <PageHeader
-        breadcrumb={['Garage Mitre', 'Administración', 'Intereses']}
         title="Administrar intereses"
         description="Gestioná los intereses de los clientes."
       />

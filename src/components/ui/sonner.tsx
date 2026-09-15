@@ -9,23 +9,25 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme="dark"
       className="toaster group"
-      position="bottom-center"
+      position="bottom-right"
       toastOptions={{
         classNames: {
           toast:
-            'group toast group-[.toaster]:bg-card group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-[0_16px_48px_-8px_rgba(0,0,0,0.6)] group-[.toaster]:rounded-lg group-[.toaster]:overflow-hidden group-[.toaster]:border',
-          description: 'group-[.toast]:text-muted-foreground group-[.toast]:text-[12.5px]',
+            'group toast group-[.toaster]:bg-card group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-[0_24px_64px_-12px_rgba(0,0,0,0.7)] group-[.toaster]:rounded-xl group-[.toaster]:overflow-hidden group-[.toaster]:border',
+          description: 'group-[.toast]:text-muted-foreground',
           actionButton:
             'group-[.toast]:bg-gm-yellow group-[.toast]:text-gm-ink group-[.toast]:font-semibold group-[.toast]:text-[12px]',
           cancelButton:
             'group-[.toast]:bg-gm-surface-2 group-[.toast]:text-muted-foreground group-[.toast]:text-[12px]',
           success:
-            'group-[.toaster]:!border-[hsl(120_35%_55%/0.3)] group-[.toaster]:!bg-[hsl(120_35%_55%/0.08)]',
+            'group-[.toaster]:!border-[hsl(120_35%_55%/0.35)] group-[.toaster]:!bg-[hsl(120_35%_55%/0.1)]',
           error:
-            'group-[.toaster]:!border-destructive/30 group-[.toaster]:!bg-destructive/8',
+            'group-[.toaster]:!border-destructive/35 group-[.toaster]:!bg-destructive/10',
+          warning:
+            'group-[.toaster]:!border-gm-orange/35 group-[.toaster]:!bg-gm-orange/10',
           info:
-            'group-[.toaster]:!border-gm-yellow/30 group-[.toaster]:!bg-gm-yellow/8',
-          title: 'group-[.toast]:text-[13px] group-[.toast]:font-semibold',
+            'group-[.toaster]:!border-gm-yellow/35 group-[.toaster]:!bg-gm-yellow/10',
+          title: 'group-[.toast]:text-foreground',
         },
       }}
       {...props}

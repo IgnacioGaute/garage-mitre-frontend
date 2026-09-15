@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, useTransition, useEffect, ReactNode } from 'react';
+import { useState, useTransition, useEffect, useLayoutEffect, useRef, ReactNode } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -320,6 +320,7 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
   const [selectedYear, setSelectedYear]           = useState(dayjs().tz(TZ).year());
   const [selectedEntry, setSelectedEntry]         = useState<MonthEntry | null>(null);
   const [openDropdownId, setOpenDropdownId]       = useState<string | null>(null);
+  const timelineRef                               = useRef<HTMLDivElement>(null);
 
   const PAGE_SIZE = 5;
   const { data: session } = useSession();
@@ -353,18 +354,9 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
   const pendingCount  = pendingAll.length;
   const pendingTotal  = pendingAll.reduce((s, r) => s + (r.price > 0 ? r.price : r.startAmount), 0);
   const firstPending  = sorted.find(r => r.status === 'PENDING') ?? null;
-  const firstPendingEntry: MonthEntry | null = firstPending?.startDate
-    ? {
-        month: dayjs.tz(firstPending.startDate, TZ).month(),
-        year: dayjs.tz(firstPending.startDate, TZ).year(),
-        receipt: firstPending,
-        status: 'POR_COBRAR',
-        amount: firstPending.price > 0 ? firstPending.price : firstPending.startAmount,
-      }
-    : null;
-  // Sidebar always shows a specific month's balance, never the aggregate total —
-  // falls back to the current pending month when nothing is explicitly selected.
-  const effectiveEntry = selectedEntry ?? firstPendingEntry;
+  // Sin selección explícita, el panel muestra el TOTAL adeudado (todas las mensualidades
+  // pendientes sumadas) — solo se ve un mes puntual cuando el usuario toca esa tarjeta.
+  const effectiveEntry = selectedEntry;
 
   const totalPages    = Math.ceil(sorted.length / PAGE_SIZE);
   const paginated     = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -373,6 +365,15 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
   const availableYears = [...yearSet].sort((a, b) => b - a);
   const timeline      = buildTimeline(selectedYear, receipts);
   const habitualType  = getHabitual(receipts);
+
+  // El timeline arranca scrolleado al mes más reciente (el de la derecha) — sin esto siempre
+  // se abre mostrando Enero primero, y hay que scrollear a mano para ver dónde está parado hoy.
+  // useLayoutEffect (no useEffect) para que salte antes de pintar y no se vea el flash de Enero.
+  useLayoutEffect(() => {
+    if (timelineRef.current) {
+      timelineRef.current.scrollLeft = timelineRef.current.scrollWidth;
+    }
+  }, [open, selectedYear, timeline.length]);
 
   const typeLabel     = customer.customerType === 'OWNER' ? 'Propietario' : customer.customerType === 'RENTER' ? 'Inquilino' : 'Particular';
   const altaDate      = active.startDate ? dayjs.tz(active.startDate, TZ) : dayjs(active.createdAt);
@@ -589,7 +590,7 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
                   </div>
 
                   {timeline.length > 0 ? (
-                    <div className="flex gap-2 overflow-x-auto pb-2 mt-3">
+                    <div ref={timelineRef} className="flex gap-2 overflow-x-auto pb-2 mt-3">
                       {timeline.map(entry => {
                         const key = `${entry.year}-${entry.month}`;
                         const isSel = effectiveEntry?.year === entry.year && effectiveEntry?.month === entry.month;
@@ -836,30 +837,8 @@ export function PaymentSummaryTable({ customer, children, autoOpen }: PaymentSum
                       <p className="text-[11.5px] text-muted-foreground mt-1.5 leading-snug">
                         {pendingCount === 0
                           ? 'Sin mensualidades pendientes'
-                          : `${pendingCount} mensualidad${pendingCount !== 1 ? 'es' : ''} pendiente${pendingCount !== 1 ? 's' : ''}`}
+                          : `${pendingCount} mensualidad${pendingCount !== 1 ? 'es' : ''} pendiente${pendingCount !== 1 ? 's' : ''} · tocá un mes para cobrarlo`}
                       </p>
-                      {pendingCount > 0 && (
-                        <div className="space-y-2 mt-4">
-                          <Button
-                            className="w-full h-8 text-[12.5px] gap-2"
-                            onClick={() => firstPending && handleRegister(firstPending)}
-                          >
-                            <CreditCard size={13} />
-                            Registrar pago
-                          </Button>
-                          {waUrl && (
-                            <Button
-                              variant="ghost"
-                              className="w-full h-8 text-[12.5px] gap-2 text-muted-foreground hover:text-foreground"
-                              asChild
-                            >
-                              <a href={waUrl} target="_blank" rel="noopener noreferrer">
-                                <MessageCircle size={13} /> Recordar por WhatsApp
-                              </a>
-                            </Button>
-                          )}
-                        </div>
-                      )}
                     </>
                   )}
                 </section>

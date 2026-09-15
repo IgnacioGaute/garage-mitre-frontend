@@ -37,7 +37,6 @@ export default async function UserPage() {
   return (
     <PageShell>
       <PageHeader
-        breadcrumb={['Garage Mitre', 'Administración', 'Tickets']}
         title="Tickets y precios"
         description={
           sortedTickets.length > 0

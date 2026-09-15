@@ -18,7 +18,6 @@ export default async function OwnerPage() {
   return (
     <div className="container mx-auto px-4 py-6 sm:p-8 max-w-7xl">
       <PageHeader
-        breadcrumb={['Garage Mitre', 'Operación', 'Propietarios']}
         title="Propietarios"
         description={
           count > 0

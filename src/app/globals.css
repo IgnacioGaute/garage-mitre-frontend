@@ -191,9 +191,23 @@
   }
 }
 
-/* Sonner toast overrides */
+/* Sonner toast overrides — antes era una tarjetita chica con una franja de 3px; ahora tiene
+   más presencia: franja gruesa tipo cinta de peligro (como los diálogos), ícono en una
+   "baldosa" de color en vez de un SVG suelto, y más aire — igual en success/error/info/warning
+   porque se estiliza acá una sola vez, no en cada toast.error()/toast.success() suelto. */
+/* El contenedor <section> también trae su propio --width: 356px inline — si solo se agranda
+   el <li> de adentro, queda más ancho que su padre (que sigue anclado a la derecha a 356px) y
+   termina saliéndose de la pantalla por la derecha. Hay que agrandar los dos igual. */
+[data-sonner-toaster] {
+  width: 400px !important;
+  max-width: calc(100vw - 32px);
+}
 [data-sonner-toast] {
-  --border-radius: 8px;
+  width: 400px !important;
+  max-width: calc(100vw - 32px);
+  --border-radius: 12px;
+  padding: 18px 20px 18px 16px !important;
+  gap: 14px;
 }
 [data-sonner-toast]::before {
   content: "";
@@ -201,37 +215,87 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 6px;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
   background-image: repeating-linear-gradient(
     -45deg,
-    hsl(var(--gm-yellow)) 0 6px,
-    hsl(var(--gm-ink))    6px 12px
+    hsl(var(--gm-yellow)) 0 7px,
+    hsl(var(--gm-ink))    7px 14px
   );
   z-index: 1;
 }
 [data-sonner-toast][data-type="success"]::before {
   background-image: repeating-linear-gradient(
     -45deg,
-    hsl(120 35% 55%) 0 6px,
-    hsl(var(--gm-ink)) 6px 12px
+    hsl(120 35% 55%) 0 7px,
+    hsl(var(--gm-ink)) 7px 14px
   );
 }
 [data-sonner-toast][data-type="error"]::before {
   background-image: repeating-linear-gradient(
     -45deg,
-    hsl(var(--destructive)) 0 6px,
-    hsl(var(--gm-ink))      6px 12px
+    hsl(var(--destructive)) 0 7px,
+    hsl(var(--gm-ink))      7px 14px
   );
 }
+[data-sonner-toast][data-type="warning"]::before {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    hsl(var(--gm-orange)) 0 7px,
+    hsl(var(--gm-ink))    7px 14px
+  );
+}
+
+[data-sonner-toast] [data-icon] {
+  width: 36px;
+  height: 36px;
+  /* sonner trae un margin-left negativo pensado para su ícono chico de 16px (queda pegado al
+     borde) — con una baldosa de 36px eso la corre y la corta contra el borde redondeado. */
+  margin: 2px 0 0 0;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  border: 1px solid hsl(var(--gm-yellow) / 0.4);
+  background: hsl(var(--gm-yellow) / 0.15);
+}
 [data-sonner-toast] [data-icon] svg {
-  width: 16px;
-  height: 16px;
+  width: 19px;
+  height: 19px;
+  color: hsl(var(--gm-yellow));
+}
+[data-sonner-toast][data-type="success"] [data-icon] {
+  border-color: hsl(120 35% 55% / 0.4);
+  background: hsl(120 35% 55% / 0.15);
 }
 [data-sonner-toast][data-type="success"] [data-icon] svg {
   color: #9AD588;
 }
+[data-sonner-toast][data-type="error"] [data-icon] {
+  border-color: hsl(var(--destructive) / 0.4);
+  background: hsl(var(--destructive) / 0.15);
+}
 [data-sonner-toast][data-type="error"] [data-icon] svg {
   color: #F08775;
+}
+[data-sonner-toast][data-type="warning"] [data-icon] {
+  border-color: hsl(var(--gm-orange) / 0.4);
+  background: hsl(var(--gm-orange) / 0.15);
+}
+[data-sonner-toast][data-type="warning"] [data-icon] svg {
+  color: #FF8458;
+}
+
+[data-sonner-toast] [data-content] {
+  gap: 4px;
+}
+[data-sonner-toast] [data-title] {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+[data-sonner-toast] [data-description] {
+  font-size: 12.5px;
+  line-height: 1.45;
 }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }

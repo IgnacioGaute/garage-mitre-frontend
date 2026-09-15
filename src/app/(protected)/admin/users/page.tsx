@@ -14,7 +14,6 @@ export default async function UserPage() {
   return (
     <PageShell>
       <PageHeader
-        breadcrumb={['Garage Mitre', 'Administración', 'Usuarios']}
         title="Usuarios del sistema"
         description={
           total > 0

@@ -17,10 +17,14 @@ import { ActiveDayTicketDialog } from "./active-day-ticket-dialog";
 import { PaymentMethodDialog } from "./payment-method-dialog";
 import { PriceBracketMapDialog } from "./price-bracket-map-dialog";
 import { setPaymentMethodAction } from "@/actions/tickets/set-payment-method.action";
+import { retireOverdueRegistrationsAction } from "@/actions/tickets/retire-overdue-registrations.action";
 import { TicketPriceBracket } from "@/types/ticket-price-bracket.type";
 import { TicketSchedule } from "@/services/tickets.service";
 import ScannerButton from "../../components/scanner-button";
 import { useTour, tourHighlight, tourTransition } from "./ticket-tour";
+import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   Car,
   Clock,
@@ -29,6 +33,7 @@ import {
   CircleDollarSign,
   Timer,
   Settings,
+  Trash2,
 } from "lucide-react";
 
 dayjs.extend(utc);
@@ -232,6 +237,7 @@ export default function CardTicket({
     : null;
 
   const activeDayRegistrations = registrationsForDay.filter(isDayRegistrationActive);
+  const overdueDayRegistrations = activeDayRegistrations.filter(isDayRegistrationOverdue);
   const openDayRegistration = openDayRegistrationId
     ? activeDayRegistrations.find((r) => r.id === openDayRegistrationId) ?? null
     : null;
@@ -240,13 +246,6 @@ export default function CardTicket({
     <>
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="max-w-[1180px] mx-auto mb-5 lg:mb-7 short:mb-3">
-        <nav className="flex items-center gap-1.5 gm-mono text-[10.5px] font-bold uppercase tracking-[0.08em] text-muted-foreground mb-2 short:mb-1">
-          <span>Garage Mitre</span>
-          <span className="opacity-50">/</span>
-          <span>Operación</span>
-          <span className="opacity-50">/</span>
-          <span>Tickets</span>
-        </nav>
         <div className="flex items-end justify-between gap-4 flex-wrap border-b border-border pb-4 short:pb-3">
           <div>
             <h1 className="gm-display text-[22px] sm:text-[26px] md:text-[30px] short:text-[24px] font-bold tracking-[0.01em] text-foreground">
@@ -681,37 +680,79 @@ export default function CardTicket({
                   </div>
                 </>
               ) : activeDayRegistrations.length > 0 ? (
-                <div className="flex flex-col gap-1.5">
-                  {activeDayRegistrations.map((r) => {
-                    const overdue = isDayRegistrationOverdue(r);
-                    return (
-                      <button
-                        key={r.id}
-                        type="button"
-                        onClick={() => setOpenDayRegistrationId(r.id)}
-                        className={cn(
-                          "flex items-center justify-between gap-2 rounded-[8px] border px-2.5 py-1.5 text-left transition-colors",
-                          overdue
-                            ? "border-destructive/40 bg-destructive/10 hover:bg-destructive/15"
-                            : "border-gm-yellow/40 bg-gm-yellow/10 hover:bg-gm-yellow/20",
-                        )}
+                <div className="flex flex-col gap-2">
+                  {overdueDayRegistrations.length > 0 && (
+                    <div className="flex items-center justify-between gap-2 rounded-[8px] border border-destructive/30 bg-destructive/5 px-2.5 py-1.5">
+                      <span className="text-[11px] text-muted-foreground">
+                        {overdueDayRegistrations.length} vencido{overdueDayRegistrations.length === 1 ? "" : "s"}
+                      </span>
+                      <ConfirmActionDialog
+                        trigger={
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 gap-1 px-2 text-[11px] text-destructive hover:bg-destructive/15 hover:text-destructive"
+                          >
+                            <Trash2 className="size-3" />
+                            Eliminar vencidos
+                          </Button>
+                        }
+                        title="¿Eliminar los tickets vencidos?"
+                        description={`Se van a sacar ${overdueDayRegistrations.length} ticket${overdueDayRegistrations.length === 1 ? "" : "s"} vencido${overdueDayRegistrations.length === 1 ? "" : "s"} de esta lista.`}
+                        tone="warning"
+                        actionLabel="Eliminar vencidos"
+                        actionVariant="destructive"
+                        onConfirm={async () => {
+                          const result = await retireOverdueRegistrationsAction(
+                            overdueDayRegistrations.map((r) => r.id),
+                          );
+                          if ("error" in result && result.error) {
+                            toast.error(result.error);
+                          } else {
+                            toast.success("Tickets vencidos eliminados de la lista");
+                            router.refresh();
+                          }
+                        }}
                       >
-                        <span className="flex items-center gap-1.5 min-w-0">
-                          <span className="gm-mono text-[11.5px] font-bold text-foreground truncate">
-                            {r.vehiclePlateCustomer || 'Sin patente'}
-                          </span>
-                          {overdue && (
-                            <Badge variant="red" className="shrink-0 px-1.5 py-0 text-[9px]">
-                              Vencido
-                            </Badge>
+                        No se borra el registro ni afecta lo cobrado — solo deja de aparecer acá,
+                        como si se hubiera registrado la salida.
+                      </ConfirmActionDialog>
+                    </div>
+                  )}
+
+                  <div className="flex max-h-[380px] flex-col gap-1.5 overflow-y-auto pr-1">
+                    {activeDayRegistrations.map((r) => {
+                      const overdue = isDayRegistrationOverdue(r);
+                      return (
+                        <button
+                          key={r.id}
+                          type="button"
+                          onClick={() => setOpenDayRegistrationId(r.id)}
+                          className={cn(
+                            "flex items-center justify-between gap-2 rounded-[8px] border px-2.5 py-1.5 text-left transition-colors",
+                            overdue
+                              ? "border-destructive/40 bg-destructive/10 hover:bg-destructive/15"
+                              : "border-gm-yellow/40 bg-gm-yellow/10 hover:bg-gm-yellow/20",
                           )}
-                        </span>
-                        <span className="text-[10.5px] text-muted-foreground shrink-0">
-                          {r.lastNameCustomer || '—'}
-                        </span>
-                      </button>
-                    );
-                  })}
+                        >
+                          <span className="flex items-center gap-1.5 min-w-0">
+                            <span className="gm-mono text-[11.5px] font-bold text-foreground truncate">
+                              {r.vehiclePlateCustomer || 'Sin patente'}
+                            </span>
+                            {overdue && (
+                              <Badge variant="red" className="shrink-0 px-1.5 py-0 text-[9px]">
+                                Vencido
+                              </Badge>
+                            )}
+                          </span>
+                          <span className="text-[10.5px] text-muted-foreground shrink-0">
+                            {r.lastNameCustomer || '—'}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               ) : (
                 <div className="rounded-md border border-dashed border-border bg-gm-surface-2/40 p-4 text-center text-[12px] text-muted-foreground">

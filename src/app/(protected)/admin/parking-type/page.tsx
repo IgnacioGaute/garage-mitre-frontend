@@ -17,7 +17,6 @@ export default async function ParkingTypePage() {
   return (
     <PageShell>
       <PageHeader
-        breadcrumb={['Garage Mitre', 'Administración', 'Estacionamientos']}
         title="Tipos de estacionamientos"
         description={
           total > 0

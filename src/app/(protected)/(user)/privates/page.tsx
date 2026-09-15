@@ -18,7 +18,6 @@ export default async function PrivatePage() {
   return (
     <div className="container mx-auto px-4 py-6 sm:p-8 max-w-7xl">
       <PageHeader
-        breadcrumb={['Garage Mitre', 'Operación', 'Terceros']}
         title="Inquilinos de terceros"
         description={
           count > 0

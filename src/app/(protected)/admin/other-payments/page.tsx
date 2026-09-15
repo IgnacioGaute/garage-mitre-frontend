@@ -13,7 +13,6 @@ export default async function OtherPaymentPage() {
   return (
     <PageShell>
       <PageHeader
-        breadcrumb={['Garage Mitre', 'Administración', 'Ingresos y egresos']}
         title="Registrar ingresos o egresos"
         description="Cargá los movimientos que no provienen de tickets ni abonos."
         actions={<CreateOtherPaymentDialog />}

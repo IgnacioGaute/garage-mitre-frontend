@@ -8,7 +8,6 @@ export default async function UpdateAmountCustomersPage() {
   return (
     <PageShell>
       <PageHeader
-        breadcrumb={['Garage Mitre', 'Administración', 'Montos']}
         title="Actualizar montos"
         description="Actualizá el monto de los inquilinos."
       />

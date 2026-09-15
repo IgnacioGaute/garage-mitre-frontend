@@ -560,6 +560,33 @@ export const updateTicketStatus = async (
   }
 };
 
+export const retireOverdueRegistrations = async (ids: string[], authToken?: string) => {
+  try {
+    const response = await fetch(`${BASE_URL}/tickets/registrationForDays/retire-many`, {
+      method: 'PATCH',
+      headers: await getAuthHeaders(authToken),
+      body: JSON.stringify({ ids }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.error(data);
+      return {
+        error: {
+          code: data.code || 'UNKNOWN_ERROR',
+          message: data.message || 'Error desconocido',
+        },
+      };
+    }
+
+    revalidateTag(getCacheTag('registrationForDays', 'all'));
+    return data;
+  } catch (error) {
+    console.error(error);
+    return { error: { code: 'UNKNOWN_ERROR', message: 'Error desconocido' } };
+  }
+};
+
 export const deleteTicketRegistrationForDay = async (id: string, authToken?: string) => {
   try {
     const response = await fetch(`${BASE_URL}/tickets/registrationForDays/${id}`, {
