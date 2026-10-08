@@ -13,12 +13,78 @@ import { TicketScheduleSchemaType } from "@/schemas/ticket-schedule.schema";
 import { TicketPriceBracket } from "@/types/ticket-price-bracket.type";
 import { TicketPriceBracketSchemaType, UpdateTicketPriceBracketSchemaType } from "@/schemas/ticket-price-bracket.schema";
 import { AdvancePaymentSchemaType } from "@/schemas/advance-payment.schema";
+import type { TariffDraft, TariffPlan } from "@/types/tariff-plan.type";
+import type { PricingPreviewResult } from "@/types/pricing-options.type";
 
 export type TicketSchedule = { dayStartHour: number; dayEndHour: number; graceMinutes: number; barcodeTicketsEnabled: boolean };
 
 
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+type TariffResult<T> = { data: T } | { error: { code: string; message: string; status: number } };
+const tariffError = (data: { code?: string; message?: string | string[] }, status: number, fallback: string) => ({
+  error: {
+    code: data.code || 'UNKNOWN_ERROR',
+    message: Array.isArray(data.message) ? data.message.join('. ') : data.message || fallback,
+    status,
+  },
+});
+
+// El plan de tarifas por tiempo se lee sin caché: el editor compara su revisión para no pisar
+// cambios de otra persona, así que nunca puede trabajar sobre una copia vieja.
+export const getTariffPlan = async (authToken?: string): Promise<TariffResult<TariffPlan>> => {
+  try {
+    const response = await fetch(`${BASE_URL}/tickets/tariff-plan`, {
+      headers: await getAuthHeaders(authToken),
+      cache: 'no-store',
+    });
+    const data = await response.json();
+    if (!response.ok) return tariffError(data, response.status, 'No se pudieron cargar las tarifas.');
+    return { data: data as TariffPlan };
+  } catch (error) {
+    console.error(error);
+    return tariffError({}, 0, 'No se pudieron cargar las tarifas. Revisá la conexión e intentá nuevamente.');
+  }
+};
+
+export const updateTariffPlan = async (expectedRevision: string, plan: TariffDraft, authToken?: string): Promise<TariffResult<TariffPlan>> => {
+  try {
+    const response = await fetch(`${BASE_URL}/tickets/tariff-plan`, {
+      method: 'PATCH',
+      headers: await getAuthHeaders(authToken),
+      body: JSON.stringify({ expectedRevision, schedule: plan.schedule, brackets: plan.brackets }),
+    });
+    const data = await response.json();
+    if (!response.ok) return tariffError(data, response.status, 'No se pudieron aplicar las tarifas.');
+    // La pantalla de tickets lee las franjas y el horario con estas etiquetas.
+    revalidateTag(getCacheTag('priceBrackets', 'all'));
+    revalidateTag(getCacheTag('ticketSchedule', 'all'));
+    return { data: data as TariffPlan };
+  } catch (error) {
+    console.error(error);
+    return tariffError({}, 0, 'No se pudieron aplicar las tarifas. Tu borrador se conserva; revisá la conexión e intentá nuevamente.');
+  }
+};
+
+export const simulateTariffPlan = async (
+  body: { vehicleType: string; entryAt: string; elapsedMinutes: number; plan?: TariffDraft },
+  authToken?: string,
+): Promise<TariffResult<PricingPreviewResult>> => {
+  try {
+    const response = await fetch(`${BASE_URL}/tickets/tariff-plan/simulate`, {
+      method: 'POST',
+      headers: await getAuthHeaders(authToken),
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    if (!response.ok) return tariffError(data, response.status, 'No se pudo calcular el ejemplo.');
+    return { data: data as PricingPreviewResult };
+  } catch (error) {
+    console.error(error);
+    return tariffError({}, 0, 'No se pudo calcular. Revisá la conexión e intentá nuevamente.');
+  }
+};
 
 export const getTicketSchedule = async (authToken?: string) => {
   try {
