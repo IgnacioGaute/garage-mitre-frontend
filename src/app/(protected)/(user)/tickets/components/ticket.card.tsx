@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dayjs from "dayjs";
@@ -25,7 +25,7 @@ import { useTour, tourHighlight, tourTransition } from "./ticket-tour";
 import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Settings, Trash2 } from "lucide-react";
+import { Car, Clock, LogIn, LogOut, ReceiptText, ScanBarcode, Settings, Trash2 } from "lucide-react";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -117,13 +117,41 @@ function isDayRegistrationOverdue(r: TicketRegistrationForDay) {
   return dueDate.getTime() < new Date().setHours(0, 0, 0, 0);
 }
 
-function Field({ label, value }: { label: string; value: ReactNode }) {
+function TimePoint({
+  label,
+  time,
+  date,
+  align = "left",
+}: {
+  label: string;
+  time?: string;
+  date?: string;
+  align?: "left" | "right";
+}) {
   return (
-    <div className="space-y-1">
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-xl font-semibold text-foreground gm-tnum">{value || "—"}</dd>
+    <div className={cn("min-w-0", align === "right" && "text-right")}>
+      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="mt-1 text-2xl font-semibold text-foreground gm-tnum">{time || "—"}</p>
+      <p className="mt-0.5 text-sm text-muted-foreground gm-tnum">{date || "—"}</p>
     </div>
   );
+}
+
+// Duración entre entrada y salida ("2 h 05 min"). `null` si falta algún dato.
+function stayDuration(r: TicketRegistration): string | null {
+  if (!r.entryDay || !r.entryTime || !r.departureDay || !r.departureTime) return null;
+  const start = dayjs(`${r.entryDay} ${r.entryTime}`);
+  const end = dayjs(`${r.departureDay} ${r.departureTime}`);
+  if (!start.isValid() || !end.isValid() || end.isBefore(start)) return null;
+  const totalMinutes = end.diff(start, "minute");
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+  const parts = [];
+  if (days) parts.push(`${days} d`);
+  if (hours || days) parts.push(`${hours} h`);
+  parts.push(`${String(minutes).padStart(2, "0")} min`);
+  return parts.join(" ");
 }
 
 export default function CardTicket({
@@ -203,11 +231,21 @@ export default function CardTicket({
 
   const tabClass = (tab: "hourly" | "daily") =>
     cn(
-      "flex h-11 flex-1 items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-colors",
+      "flex h-10 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-md text-[13px] font-semibold transition-colors",
       sidebarTab === tab
-        ? "bg-card text-foreground shadow-sm"
+        ? "bg-card text-foreground shadow-sm ring-1 ring-border"
         : "text-muted-foreground hover:text-foreground",
     );
+
+  const countClass = (tab: "hourly" | "daily") =>
+    cn(
+      "min-w-6 rounded-full px-1.5 py-0.5 text-[11px] font-bold gm-tnum",
+      sidebarTab === tab ? "bg-gm-yellow text-gm-ink" : "bg-gm-surface-3 text-muted-foreground",
+    );
+
+  const occupancyPct = sortedCatalog.length
+    ? Math.round((activeTickets.length / sortedCatalog.length) * 100)
+    : 0;
 
   return (
     <>
@@ -251,54 +289,124 @@ export default function CardTicket({
           <div
             ref={(el) => tour.refFor("ticket")(el)}
             style={tourStyle("ticket")}
-            className="rounded-xl border border-border bg-card"
+            className="overflow-hidden rounded-xl border border-border bg-card"
           >
             <div className="flex items-center justify-between gap-3 border-b border-border px-6 py-4">
-              <h2 className="text-lg font-semibold text-foreground">Último registro</h2>
+              <div className="flex items-center gap-3">
+                <span className="grid size-9 place-items-center rounded-lg bg-gm-surface-2 text-muted-foreground">
+                  <ReceiptText className="size-5" />
+                </span>
+                <div>
+                  <h2 className="text-base font-semibold text-foreground">Último registro</h2>
+                  <p className="text-xs text-muted-foreground">
+                    {latestRegistration
+                      ? isEntry
+                        ? "Entrada registrada correctamente"
+                        : "Salida registrada correctamente"
+                      : "Esperando el primer escaneo"}
+                  </p>
+                </div>
+              </div>
               {latestRegistration && (
-                <Badge variant={isEntry ? "blue" : "green"} className="px-3 py-1 text-sm">
+                <Badge variant={isEntry ? "blue" : "green"} className="gap-1.5 px-3 py-1 text-xs">
+                  {isEntry ? <LogIn className="size-3.5" /> : <LogOut className="size-3.5" />}
                   {isEntry ? "Entrada" : "Salida"}
                 </Badge>
               )}
             </div>
 
-            <div className="p-6">
-              {!latestRegistration ? (
-                <p className="py-8 text-center text-base text-muted-foreground">
-                  No hay registros todavía. Escaneá un código de barras para comenzar.
+            {!latestRegistration ? (
+              <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
+                <span className="mb-4 grid size-14 place-items-center rounded-xl bg-gm-surface-2 text-muted-foreground">
+                  <ScanBarcode className="size-7" />
+                </span>
+                <p className="text-base font-medium text-foreground">No hay registros todavía</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Escaneá un código de barras para comenzar.
                 </p>
-              ) : isEntry ? (
-                <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                  <Field label="Código" value={latestRegistration.ticket?.codeBar} />
-                  <Field
-                    label="Vehículo"
-                    value={latestRegistration.ticket?.vehicleType === "AUTO" ? "Automóvil" : "Camioneta"}
-                  />
-                  <Field label="Día de entrada" value={formatDate(latestRegistration.entryDay)} />
-                  <Field label="Horario de entrada" value={latestRegistration.entryTime} />
-                  {latestRegistration.description && (
-                    <div className="sm:col-span-2">
-                      <Field label="Descripción" value={latestRegistration.description} />
+              </div>
+            ) : (
+              <>
+                {/* Ticket + vehículo / importe */}
+                <div className="flex flex-wrap items-center justify-between gap-6 px-6 py-6">
+                  <div className="flex items-center gap-4">
+                    <div className="rounded-lg border border-border bg-gm-surface-2 px-4 py-2.5">
+                      <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Ticket
+                      </p>
+                      <p className="gm-mono text-2xl font-bold text-foreground gm-tnum">
+                        {isEntry ? latestRegistration.ticket?.codeBar : latestRegistration.codeBarTicket}
+                      </p>
+                    </div>
+                    {isEntry && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Car className="size-4" />
+                        {latestRegistration.ticket?.vehicleType === "AUTO" ? "Automóvil" : "Camioneta"}
+                      </div>
+                    )}
+                  </div>
+
+                  {isEntry ? (
+                    <div className="text-right">
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Estado
+                      </p>
+                      <p className="mt-1 text-lg font-semibold text-foreground">En el playón</p>
+                    </div>
+                  ) : (
+                    <div className="text-right">
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Total a cobrar
+                      </p>
+                      <p className="mt-0.5 text-4xl font-bold text-gm-yellow gm-tnum">
+                        ${latestRegistration.price}
+                      </p>
                     </div>
                   )}
-                </dl>
-              ) : (
-                <div className="space-y-6">
-                  <div className="rounded-lg bg-gm-surface-2 p-5 text-center">
-                    <p className="text-sm text-muted-foreground">Total a cobrar</p>
-                    <p className="mt-1 text-4xl font-bold text-foreground gm-tnum">
-                      ${latestRegistration.price}
-                    </p>
-                  </div>
-                  <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                    <Field label="Código" value={latestRegistration.codeBarTicket} />
-                    <Field label="Día de salida" value={formatDate(latestRegistration.departureDay)} />
-                    <Field label="Horario de entrada" value={latestRegistration.entryTime} />
-                    <Field label="Horario de salida" value={latestRegistration.departureTime} />
-                  </dl>
                 </div>
-              )}
-            </div>
+
+                {/* Línea de tiempo entrada → salida */}
+                <div className="border-t border-border bg-gm-surface-2/40 px-6 py-5">
+                  <div className="flex items-center gap-4">
+                    <TimePoint
+                      label="Entrada"
+                      time={latestRegistration.entryTime}
+                      date={formatDate(latestRegistration.entryDay)}
+                    />
+                    <div className="flex flex-1 items-center gap-2">
+                      <span className="h-px flex-1 bg-border" />
+                      {!isEntry && stayDuration(latestRegistration) && (
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground gm-tnum">
+                          <Clock className="size-3.5" />
+                          {stayDuration(latestRegistration)}
+                        </span>
+                      )}
+                      <span className="h-px flex-1 bg-border" />
+                    </div>
+                    {isEntry ? (
+                      <div className="text-right">
+                        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Salida</p>
+                        <p className="mt-1 text-base font-medium text-muted-foreground">Pendiente</p>
+                      </div>
+                    ) : (
+                      <TimePoint
+                        label="Salida"
+                        time={latestRegistration.departureTime}
+                        date={formatDate(latestRegistration.departureDay)}
+                        align="right"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {isEntry && latestRegistration.description && (
+                  <div className="border-t border-border px-6 py-4 text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">Descripción:</span>{" "}
+                    {latestRegistration.description}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
 
@@ -313,14 +421,14 @@ export default function CardTicket({
             <PriceBracketMapDialog brackets={priceBrackets} schedule={schedule} />
           </div>
 
-          <div className="mb-5 flex gap-1 rounded-xl bg-gm-surface-2 p-1">
+          <div className="mb-5 flex gap-1 rounded-lg border border-border bg-gm-surface-2 p-1">
             <button type="button" onClick={() => setSidebarTab("hourly")} className={tabClass("hourly")}>
               Por hora
-              <span className="gm-tnum text-muted-foreground">({activeTickets.length})</span>
+              <span className={countClass("hourly")}>{activeTickets.length}</span>
             </button>
             <button type="button" onClick={() => setSidebarTab("daily")} className={tabClass("daily")}>
-              Día / Sem / Mes
-              <span className="gm-tnum text-muted-foreground">({activeDayRegistrations.length})</span>
+              Día/Sem/Mes
+              <span className={countClass("daily")}>{activeDayRegistrations.length}</span>
             </button>
           </div>
 
@@ -328,9 +436,20 @@ export default function CardTicket({
             <>
               {sortedCatalog.length > 0 ? (
                 <>
-                  <p className="mb-3 text-sm text-muted-foreground">
-                    {activeTickets.length} de {sortedCatalog.length} tickets ocupados
-                  </p>
+                  <div className="mb-4">
+                    <div className="mb-2 flex items-baseline justify-between">
+                      <span className="text-sm text-muted-foreground">Ocupación</span>
+                      <span className="text-sm font-semibold text-foreground gm-tnum">
+                        {activeTickets.length} / {sortedCatalog.length}
+                      </span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-gm-surface-3">
+                      <div
+                        className="h-full rounded-full bg-gm-yellow transition-[width] duration-500"
+                        style={{ width: `${occupancyPct}%` }}
+                      />
+                    </div>
+                  </div>
                   <div className="grid grid-cols-4 gap-2 mb-4">
                     {sortedCatalog.map((t) => {
                       const active = isTicketActive(t, registrations);

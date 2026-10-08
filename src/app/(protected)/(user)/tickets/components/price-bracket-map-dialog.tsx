@@ -23,7 +23,7 @@ export function PriceBracketMapDialog({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-gm-yellow"
+        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-gm-surface-2 hover:text-foreground"
       >
         <Map className="size-3.5" />
         Mapa de tarifas
