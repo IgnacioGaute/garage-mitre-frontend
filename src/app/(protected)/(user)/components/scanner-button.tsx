@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ReceiptSchemaType } from '@/schemas/receipt.schema';
 import { Receipt } from '@/types/receipt.type';
-import { Hash, Keyboard, QrCode, ScanLine, X } from 'lucide-react';
+import { Keyboard, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function ScannerButton({
@@ -146,58 +146,47 @@ export default function ScannerButton({
   };
 
   return (
-    <div className="flex w-full flex-col gap-4 short:gap-3">
-      {/* Action bar — live scanner state on the left, the real actions grouped right */}
-      <div className="flex flex-wrap items-center gap-3">
-        {/* Scanner status — reflects the real USB-scanner listener, not a clickable trigger */}
-        <div
-          ref={scannerRef}
-          style={{ ...scannerStyle, transform: isScanning ? 'scale(.98)' : 'scale(1)' }}
-          role="status"
+    <div className="flex w-full flex-col gap-4">
+      {/* Estado del lector — refleja el listener real del escáner USB, no es un botón */}
+      <div
+        ref={scannerRef}
+        style={scannerStyle}
+        role="status"
+        className="flex h-14 items-center gap-3 rounded-xl border border-border bg-card px-5"
+      >
+        <span
           className={cn(
-            'relative inline-flex h-[52px] short:h-11 cursor-default select-none items-center gap-2.5 rounded-2xl px-5 text-sm font-semibold uppercase tracking-[0.02em] transition-all duration-300',
-            isScanning
-              ? 'bg-gm-surface-2 text-muted-foreground'
-              : 'bg-gradient-to-br from-gm-yellow to-gm-yellow-deep text-gm-ink shadow-[0_8px_22px_-8px_hsl(var(--gm-yellow)/0.55)]',
+            'size-3 shrink-0 rounded-full',
+            manualInputVisible || isScanning ? 'bg-gm-yellow' : 'bg-[hsl(120_40%_50%)]',
+          )}
+        />
+        <span className="text-base font-medium text-foreground">
+          {manualInputVisible
+            ? 'Ingreso manual activo'
+            : isScanning
+              ? 'Escaneando…'
+              : 'Listo para escanear'}
+        </span>
+      </div>
+
+      {/* Acciones */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <button
+          ref={manualRef}
+          style={manualStyle}
+          onClick={() => setManualInputVisible((p) => !p)}
+          className={cn(
+            'inline-flex h-14 w-full items-center justify-center gap-3 rounded-xl px-6 text-base font-semibold transition-colors',
+            manualInputVisible
+              ? 'border border-border bg-card text-foreground hover:bg-gm-surface-2'
+              : 'bg-gm-yellow text-gm-ink hover:bg-[hsl(var(--gm-yellow-deep))]',
           )}
         >
-          <span
-            className="grid place-items-center"
-            style={isScanning ? { animation: 'gm-blink 0.8s steps(2, jump-none) infinite' } : undefined}
-          >
-            <QrCode className="size-5" strokeWidth={1.8} />
-          </span>
-          {isScanning ? 'Escaneando…' : 'Listo para escanear'}
-        </div>
+          {manualInputVisible ? <X className="size-5" /> : <Keyboard className="size-5" />}
+          {manualInputVisible ? 'Cancelar ingreso manual' : 'Ingresar código manual'}
+        </button>
 
-        <div className="flex flex-wrap items-center gap-2.5 sm:ml-auto">
-          {/* Manual entry toggle — same anatomy as the day-ticket action, yellow accent */}
-          <button
-            ref={manualRef}
-            style={manualStyle}
-            onClick={() => setManualInputVisible((p) => !p)}
-            className={cn(
-              'group relative inline-flex h-[52px] short:h-11 items-center gap-3 rounded-2xl border px-5 text-sm font-semibold uppercase tracking-[0.02em] backdrop-blur-xl transition-all duration-300',
-              manualInputVisible
-                ? 'border-gm-line-strong bg-gm-surface-2 text-foreground'
-                : 'border-gm-line-strong bg-card/40 text-foreground hover:border-gm-yellow/50 hover:bg-gm-yellow/10 hover:shadow-[0_8px_24px_-8px_hsl(var(--gm-yellow)/0.45)]',
-            )}
-          >
-            <span
-              className={cn(
-                'grid size-8 short:size-7 place-items-center rounded-xl border transition-colors',
-                manualInputVisible
-                  ? 'border-border bg-gm-surface-3 text-muted-foreground'
-                  : 'border-gm-yellow/30 bg-gm-yellow/15 text-gm-yellow group-hover:bg-gm-yellow/25',
-              )}
-            >
-              {manualInputVisible ? <X className="size-4" /> : <Keyboard className="size-4" />}
-            </span>
-            {manualInputVisible ? 'Cancelar' : 'Ingresar código'}
-          </button>
-
-          {extraActions}
-        </div>
+        {extraActions}
       </div>
 
       {/* Hidden input that captures scan input */}
@@ -219,28 +208,26 @@ export default function ScannerButton({
         />
       )}
 
-      {/* Manual entry form */}
+      {/* Ingreso manual */}
       {manualInputVisible && (
-        <div className="w-full max-w-md space-y-2">
-          <Label>Código de recibo o ticket</Label>
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                value={manualBarCode}
-                onChange={(e) => setManualBarCode(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSubmit(manualBarCode);
-                    setManualBarCode('');
-                    setManualInputVisible(false);
-                  }
-                }}
-                placeholder="Pegá o tipeá el código…"
-                className="pl-9 gm-mono tracking-[0.04em]"
-              />
-            </div>
+        <div className="space-y-2 rounded-xl border border-border bg-card p-4">
+          <Label className="text-base">Código de recibo o ticket</Label>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Input
+              autoFocus
+              value={manualBarCode}
+              onChange={(e) => setManualBarCode(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSubmit(manualBarCode);
+                  setManualBarCode('');
+                  setManualInputVisible(false);
+                }
+              }}
+              placeholder="Escribí el código y apretá Enter"
+              className="h-14 flex-1 text-lg gm-mono"
+            />
             <Button
               onClick={() => {
                 handleSubmit(manualBarCode);
@@ -248,14 +235,11 @@ export default function ScannerButton({
                 setManualInputVisible(false);
               }}
               disabled={!manualBarCode}
+              className="h-14 rounded-xl px-8 text-base font-semibold"
             >
-              <ScanLine className="size-4" />
               Confirmar
             </Button>
           </div>
-          <p className="text-[11px] text-muted-foreground">
-            Apretá <kbd className="gm-kbd">Enter</kbd> para procesar.
-          </p>
         </div>
       )}
 

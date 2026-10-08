@@ -80,11 +80,9 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
           setIsOpen(true);
           setIsDialogOpen(true);
         }}
-        className="group relative inline-flex h-[52px] short:h-11 items-center gap-3 rounded-2xl border border-gm-line-strong bg-card/40 px-5 text-sm font-semibold uppercase tracking-[0.02em] text-foreground backdrop-blur-xl transition-all duration-300 hover:border-gm-orange/50 hover:bg-gm-orange/10 hover:shadow-[0_8px_24px_-8px_hsl(var(--gm-orange)/0.45)]"
+        className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-xl border border-border bg-card px-6 text-base font-semibold text-foreground transition-colors hover:bg-gm-surface-2"
       >
-        <span className="grid size-8 short:size-7 place-items-center rounded-xl border border-gm-orange/30 bg-gm-orange/15 text-[#FF8458] transition-colors group-hover:bg-gm-orange/25">
-          <CalendarPlus className="size-4" />
-        </span>
+        <CalendarPlus className="size-5" />
         Ticket por día, semana o mes
       </button>
 
@@ -138,7 +136,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
                         }}
                         value={field.value}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-11 text-base">
                           <SelectValue placeholder="Selecciona un tipo" />
                         </SelectTrigger>
                         <SelectContent>
@@ -235,7 +233,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
                         onValueChange={field.onChange}
                         value={field.value}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-11 text-base">
                           <SelectValue placeholder="Selecciona un tipo" />
                         </SelectTrigger>
                         <SelectContent>
@@ -257,7 +255,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
                     <FormItem className="flex-1">
                       <FormLabel>Nombre (opcional)</FormLabel>
                       <FormControl>
-                        <Input disabled={isPending} placeholder="Nombre" {...field} />
+                        <Input className="h-11 text-base" disabled={isPending} placeholder="Nombre" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -270,7 +268,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
                     <FormItem className="flex-1">
                       <FormLabel>Apellido (opcional)</FormLabel>
                       <FormControl>
-                        <Input disabled={isPending} placeholder="Apellido" {...field} />
+                        <Input className="h-11 text-base" disabled={isPending} placeholder="Apellido" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -285,7 +283,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
                   <FormItem>
                     <FormLabel>Patente</FormLabel>
                     <FormControl>
-                      <Input disabled={isPending} placeholder="Ej: AB123CD" {...field} />
+                      <Input className="h-11 text-base" disabled={isPending} placeholder="Ej: AB123CD" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -304,7 +302,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
                         onValueChange={(value) => field.onChange(value === "true")}
                         value={field.value?.toString()}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-11 text-base">
                           <SelectValue placeholder="Selecciona una opción" />
                         </SelectTrigger>
                         <SelectContent>
@@ -327,7 +325,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
                       <FormLabel>¿Cómo pagó?</FormLabel>
                       <FormControl>
                         <Select disabled={isPending} onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger>
+                          <SelectTrigger className="h-11 text-base">
                             <SelectValue placeholder="Selecciona un método" />
                           </SelectTrigger>
                           <SelectContent>
@@ -342,7 +340,7 @@ export function CreateTicketRegistrationDialog({ setIsDialogOpen }: { setIsDialo
                 />
               )}
 
-              <Button className="w-full" type="submit" disabled={isPending || (isPaid && !form.watch('paymentMetodo'))}>
+              <Button className="h-12 w-full text-base font-semibold" type="submit" disabled={isPending || (isPaid && !form.watch('paymentMetodo'))}>
                 {isPending && <Loader2 className="mr-1.5 size-4 animate-spin" />}
                 Crear ticket
               </Button>
